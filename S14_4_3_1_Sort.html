@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ Trạng thái (State Transition): Tính năng Sort</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; }
+        
+        /* Hiệu ứng nhấp nháy cho mũi tên chuyển trạng thái */
+        .arrow-animate {
+            animation: dash 1s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -20; }
+        }
+
+        /* Hiệu ứng pop cho node được active */
+        .node-active {
+            transform: scale(1.1);
+            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
+            border-color: #4f46e5 !important;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .node-inactive {
+            transform: scale(1);
+            filter: grayscale(80%) opacity(60%);
+            transition: all 0.3s ease;
+        }
+
+        /* Animation cho table row */
+        .row-enter {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="p-4 lg:p-8 min-h-screen flex flex-col items-center">
+    <div id="root" class="w-full max-w-6xl"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo } = React;
+
+        const initialData = [
+            { id: 1, email: 'cuong.le@abc.vn', username: 'cuong.le', fullname: 'Lê Hùng Cường', dept: 'Kinh doanh', position: 'Nhân viên' },
+            { id: 2, email: 'an.nguyen@abc.vn', username: 'an.nguyen', fullname: 'Nguyễn Văn An', dept: 'IT', position: 'Admin' },
+            { id: 3, email: 'binh.tran@abc.vn', username: 'binh.tran', fullname: 'Trần Thị Bình', dept: 'Nhân sự', position: 'Trưởng phòng' },
+            { id: 4, email: 'dung.pham@abc.vn', username: 'dung.pham', fullname: 'Phạm Thùy Dung', dept: 'Marketing', position: 'Chuyên viên' },
+        ];
+
+        // Các trạng thái: 0: Default (Không sort theo cột này), 1: ASC (A-Z), 2: DESC (Z-A)
+        function App() {
+            // State quản lý cột đang được click và trạng thái sort
+            const [sortCol, setSortCol] = useState('username'); // Yêu cầu: Default sort theo username
+            const [sortState, setSortState] = useState(1); // 1: A-Z
+
+            // Xử lý khi click vào tiêu đề cột
+            const handleSort = (colName) => {
+                if (sortCol === colName) {
+                    // Cùng một cột, chuyển vòng trạng thái: 1(A-Z) -> 2(Z-A) -> 0(Default/Unsorted) -> 1...
+                    // Tuy nhiên UX thực tế thường là: A-Z -> Z-A -> A-Z (Toggle) hoặc Default -> A-Z -> Z-A -> Default.
+                    // Theo chuẩn UI bảng phổ biến: Mặc định -> A-Z -> Z-A -> Mặc định.
+                    const nextState = sortState === 0 ? 1 : sortState === 1 ? 2 : 0;
+                    setSortState(nextState);
+                    if (nextState === 0) {
+                        setSortCol(null); // Trở về không sort cột nào (hoặc fallback về default)
+                    }
+                } else {
+                    // Đổi sang cột khác -> Reset cột mới về trạng thái A-Z (1)
+                    setSortCol(colName);
+                    setSortState(1);
+                }
+            };
+
+            // Sắp xếp dữ liệu mô phỏng
+            const displayData = useMemo(() => {
+                if (sortState === 0 || !sortCol) return [...initialData]; // Trả về thứ tự gốc nếu ko sort
+                
+                return [...initialData].sort((a, b) => {
+                    const valA = a[sortCol].toLowerCase();
+                    const valB = b[sortCol].toLowerCase();
+                    if (valA < valB) return sortState === 1 ? -1 : 1;
+                    if (valA > valB) return sortState === 1 ? 1 : -1;
+                    return 0;
+                });
+            }, [sortCol, sortState]);
+
+            // Hàm vẽ mũi tên cong trong SVG
+            const DrawArrow = ({ fromNode, toNode, isActive, label, curve }) => {
+                const color = isActive ? '#4f46e5' : '#cbd5e1'; // indigo-600 vs slate-300
+                return (
+                    <g>
+                        <path 
+                            d={curve} 
+                            fill="none" 
+                            stroke={color} 
+                            strokeWidth={isActive ? "4" : "2"} 
+                            strokeDasharray={isActive ? "10,5" : "none"}
+                            className={isActive ? "arrow-animate" : ""}
+                            markerEnd={`url(#arrowhead-${isActive ? 'active' : 'inactive'})`}
+                        />
+                        <rect x={label.x - 25} y={label.y - 12} width="50" height="24" rx="12" fill={isActive ? '#e0e7ff' : '#f8fafc'} stroke={color} strokeWidth="1"/>
+                        <text x={label.x} y={label.y + 4} textAnchor="middle" fontSize="11" fontWeight="bold" fill={isActive ? '#4f46e5' : '#94a3b8'}>
+                            {label.text}
+                        </text>
+                    </g>
+                );
+            };
+
+            return (
+                <div className="w-full bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden flex flex-col">
+                    
+                    {/* Header */}
+                    <div className="bg-slate-800 text-white p-6 flex flex-col sm:flex-row justify-between items-center gap-4 relative overflow-hidden">
+                        <i className="fa-solid fa-rotate absolute -right-10 -bottom-10 text-9xl text-white opacity-5"></i>
+                        <div>
+                            <h1 className="text-2xl font-extrabold tracking-wide">
+                                STATE TRANSITION DIAGRAM: <span className="text-amber-400">CHỨC NĂNG SẮP XẾP</span>
+                            </h1>
+                            <p className="text-slate-300 text-sm mt-1">Từ văn bản yêu cầu đến Sơ đồ Chuyển đổi Trạng thái</p>
+                        </div>
+                        <div className="bg-slate-700 px-4 py-2 rounded-lg border border-slate-600">
+                            <span className="text-xs text-slate-400 block mb-1">Cột đang thao tác:</span>
+                            <span className="font-bold text-amber-400">{sortCol ? sortCol.toUpperCase() : 'KHÔNG CÓ'}</span>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
+                        
+                        {/* LEFT PANEL: Interactive UI (Mockup) */}
+                        <div className="w-full lg:w-1/2 p-6 lg:p-8 bg-slate-50">
+                            <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <i className="fa-solid fa-desktop text-indigo-500"></i>
+                                Giao diện Thực tế (Nhấp vào Tiêu đề cột)
+                            </h2>
+                            
+                            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-100 border-b border-slate-200">
+                                            {/* Helper function to render headers */}
+                                            {[
+                                                { key: 'email', label: 'Email' },
+                                                { key: 'username', label: 'Username' },
+                                                { key: 'fullname', label: 'Fullname' }
+                                            ].map(col => {
+                                                const isCurrentCol = sortCol === col.key;
+                                                return (
+                                                    <th 
+                                                        key={col.key}
+                                                        onClick={() => handleSort(col.key)}
+                                                        className={`py-3 px-4 font-bold text-sm cursor-pointer select-none transition-colors border-r border-slate-200 last:border-0 hover:bg-slate-200
+                                                            ${isCurrentCol ? 'text-indigo-700 bg-indigo-50' : 'text-slate-600'}`}
+                                                    >
+                                                        <div className="flex justify-between items-center">
+                                                            <span>{col.label}</span>
+                                                            <span className="flex flex-col text-[10px] leading-none ml-2">
+                                                                <i className={`fa-solid fa-caret-up ${isCurrentCol && sortState === 1 ? 'text-indigo-600 scale-125' : 'text-slate-300'}`}></i>
+                                                                <i className={`fa-solid fa-caret-down ${isCurrentCol && sortState === 2 ? 'text-indigo-600 scale-125' : 'text-slate-300'}`}></i>
+                                                            </span>
+                                                        </div>
+                                                    </th>
+                                                );
+                                            })}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {displayData.map((row, idx) => (
+                                            <tr key={row.id + sortState + sortCol} className="border-b border-slate-100 hover:bg-slate-50 row-enter" style={{ animationDelay: `${idx * 50}ms` }}>
+                                                <td className="py-3 px-4 text-sm text-slate-600">{row.email}</td>
+                                                <td className={`py-3 px-4 text-sm font-medium ${sortCol === 'username' ? 'text-indigo-700 bg-indigo-50/30' : 'text-slate-800'}`}>{row.username}</td>
+                                                <td className={`py-3 px-4 text-sm ${sortCol === 'fullname' ? 'text-indigo-700 bg-indigo-50/30' : 'text-slate-600'}`}>{row.fullname}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div className="mt-6 p-4 bg-indigo-50 rounded-xl border border-indigo-100 flex gap-4">
+                                <div className="text-3xl text-indigo-400 mt-1"><i className="fa-solid fa-hand-pointer animate-bounce"></i></div>
+                                <div>
+                                    <p className="text-sm text-indigo-900 font-medium leading-relaxed">
+                                        Hãy thử bấm liên tục vào chữ <strong>Username</strong> 3 lần. Sau đó bấm sang chữ <strong>Email</strong> để quan sát sự thay đổi trạng thái ở sơ đồ bên phải.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* RIGHT PANEL: State Transition Diagram */}
+                        <div className="w-full lg:w-1/2 p-6 lg:p-8 relative">
+                            <h2 className="text-lg font-bold text-slate-800 mb-8 flex items-center gap-2">
+                                <i className="fa-solid fa-diagram-project text-emerald-500"></i>
+                                Sơ đồ Chuyển đổi Trạng thái (1 Cột)
+                            </h2>
+
+                            {/* SVG Diagram Area */}
+                            <div className="relative w-full h-[350px] bg-slate-50 rounded-xl border border-slate-200 overflow-hidden flex justify-center items-center">
+                                
+                                {/* SVG for Arrows */}
+                                <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }}>
+                                    <defs>
+                                        <marker id="arrowhead-active" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                            <polygon points="0 0, 10 3.5, 0 7" fill="#4f46e5" />
+                                        </marker>
+                                        <marker id="arrowhead-inactive" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                            <polygon points="0 0, 10 3.5, 0 7" fill="#cbd5e1" />
+                                        </marker>
+                                    </defs>
+                                    
+                                    {/* Mặc định -> A-Z (Click lần 1) */}
+                                    <DrawArrow 
+                                        isActive={sortState === 1} 
+                                        curve="M 120 175 Q 180 80 280 175" 
+                                        label={{text: "Click lần 1", x: 200, y: 110}} 
+                                    />
+                                    
+                                    {/* A-Z -> Z-A (Click lần 2) */}
+                                    <DrawArrow 
+                                        isActive={sortState === 2} 
+                                        curve="M 280 175 Q 380 80 440 175" 
+                                        label={{text: "Click lần 2", x: 360, y: 110}} 
+                                    />
+                                    
+                                    {/* Z-A -> Mặc định (Click lần 3) */}
+                                    <DrawArrow 
+                                        isActive={sortState === 0} 
+                                        curve="M 440 175 Q 280 280 120 175" 
+                                        label={{text: "Click lần 3", x: 280, y: 240}} 
+                                    />
+                                </svg>
+
+                                {/* HTML Nodes for States */}
+                                <div className="absolute w-full h-full flex justify-between items-center px-10" style={{ zIndex: 10 }}>
+                                    
+                                    {/* Node 0: Default */}
+                                    <div className={`w-28 h-28 bg-white border-4 rounded-full flex flex-col items-center justify-center text-center shadow-lg
+                                        ${sortState === 0 ? 'node-active' : 'node-inactive border-slate-300'}`}>
+                                        <i className="fa-solid fa-sort text-2xl text-slate-400 mb-1"></i>
+                                        <span className="font-bold text-xs text-slate-700">Mặc định<br/>(Unsorted)</span>
+                                    </div>
+
+                                    {/* Node 1: A-Z */}
+                                    <div className={`w-28 h-28 bg-white border-4 rounded-full flex flex-col items-center justify-center text-center shadow-lg
+                                        ${sortState === 1 ? 'node-active' : 'node-inactive border-slate-300'}`}>
+                                        <i className="fa-solid fa-arrow-down-a-z text-2xl text-indigo-600 mb-1"></i>
+                                        <span className="font-bold text-xs text-slate-700">Chiều A-Z<br/>(Ascending)</span>
+                                    </div>
+
+                                    {/* Node 2: Z-A */}
+                                    <div className={`w-28 h-28 bg-white border-4 rounded-full flex flex-col items-center justify-center text-center shadow-lg
+                                        ${sortState === 2 ? 'node-active' : 'node-inactive border-slate-300'}`}>
+                                        <i className="fa-solid fa-arrow-down-z-a text-2xl text-emerald-600 mb-1"></i>
+                                        <span className="font-bold text-xs text-slate-700">Chiều Z-A<br/>(Descending)</span>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    {/* Teacher / QA Analysis Card */}
+                    <div className="p-6 lg:p-8 bg-slate-800 text-white">
+                        <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-amber-400">
+                            <i className="fa-solid fa-clipboard-check"></i>
+                            Góc nhìn Phân tích Test Case (QA Perspective)
+                        </h2>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            
+                            <div className="bg-slate-700 rounded-xl p-5 border border-slate-600">
+                                <h3 className="font-bold text-lg mb-3 text-indigo-300 border-b border-slate-600 pb-2">1. Test Transitions (Chuyển trạng thái)</h3>
+                                <ul className="space-y-3 text-sm text-slate-200">
+                                    <li><i className="fa-solid fa-check text-emerald-400 mr-2"></i> <strong>Trạng thái 0 -> 1:</strong> Bấm lần 1. KT data sắp xếp A-Z chưa? Icon đổi thành mũi tên Lên chưa?</li>
+                                    <li><i className="fa-solid fa-check text-emerald-400 mr-2"></i> <strong>Trạng thái 1 -> 2:</strong> Bấm lần 2. KT data đảo ngược Z-A chưa? Icon đổi thành mũi tên Xuống chưa?</li>
+                                    <li><i className="fa-solid fa-check text-emerald-400 mr-2"></i> <strong>Trạng thái 2 -> 0:</strong> Bấm lần 3. Data có reset về thứ tự gốc ban đầu không? Icon trở về mờ không?</li>
+                                </ul>
+                            </div>
+
+                            <div className="bg-slate-700 rounded-xl p-5 border border-slate-600">
+                                <h3 className="font-bold text-lg mb-3 text-rose-300 border-b border-slate-600 pb-2">2. Test Ngoại lệ & Tương tác chéo</h3>
+                                <ul className="space-y-3 text-sm text-slate-200">
+                                    <li><i className="fa-solid fa-bug text-rose-400 mr-2"></i> <strong>Đổi cột:</strong> Đang sort cột Email (A-Z), bấm sang cột Username. Cột Email có mất trạng thái sort không? Cột Username có thành A-Z không? (Tránh lỗi 2 cột đều có icon sort).</li>
+                                    <li><i className="fa-solid fa-bug text-rose-400 mr-2"></i> <strong>Data đặc biệt:</strong> Sắp xếp chuỗi có chứa Số (Ví dụ: user1, user10, user2) hoặc chuỗi có dấu tiếng Việt (Ánh vs An).</li>
+                                    <li><i className="fa-solid fa-bug text-rose-400 mr-2"></i> <strong>Paging:</strong> Sort xong bấm sang Trang 2 thì dữ liệu còn giữ đúng chiều sort đó không?</li>
+                                </ul>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

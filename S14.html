@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ngôi nhà Requirement Tương tác</title>
+    
+    <!-- Nhúng Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Nhúng React và ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Nhúng Babel để chạy JSX trong trình duyệt -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        .clip-roof { clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%); }
+        .animate-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Các thành phần Icon (Chuyển đổi từ thư viện Lucide)
+        const ShieldCheck = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2-1 4-2 7-2 2.5 0 4.5 1 7 2a1 1 0 0 1 1 1z"/>
+                <path d="m9 12 2 2 4-4"/>
+            </svg>
+        );
+
+        const GitMerge = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="18" cy="18" r="3"/>
+                <circle cx="6" cy="6" r="3"/>
+                <path d="M6 21V9a9 9 0 0 0 9 9"/>
+            </svg>
+        );
+
+        const Users = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+        );
+
+        const BookOpen = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+        );
+
+        function App() {
+            const [activeSection, setActiveSection] = useState(null);
+
+            const sections = {
+                rules: {
+                    title: "Mái nhà: RULES (Quy tắc & Ràng buộc)",
+                    icon: <ShieldCheck className="w-8 h-8 mb-2 mx-auto" />,
+                    color: "bg-rose-500 hover:bg-rose-600",
+                    borderColor: "border-rose-500",
+                    bgColor: "bg-rose-500",
+                    ringColor: "ring-rose-300",
+                    content: "Mái nhà che chắn toàn bộ hệ thống. Đây là những quy tắc kinh doanh (Business Rules), điều kiện ràng buộc (Constraints), và các quy tắc xác thực (Validation) mà hệ thống phải tuân thủ.",
+                    tips: [
+                        "Tìm các từ khóa: 'Phải', 'Không được phép', 'Tối đa', 'Bắt buộc'.",
+                        "Kiểm tra xem quy tắc có mâu thuẫn với Flow bên dưới không.",
+                        "Quy tắc này sẽ giúp QA/Tester viết Test Case chính xác."
+                    ]
+                },
+                flows: {
+                    title: "Cột nhà: FLOWS (Luồng xử lý)",
+                    icon: <GitMerge className="w-8 h-8 mb-2 mx-auto" />,
+                    color: "bg-sky-500 hover:bg-sky-600",
+                    borderColor: "border-sky-500",
+                    bgColor: "bg-sky-500",
+                    ringColor: "ring-sky-300",
+                    content: "Các cột chống đỡ mái nhà, là con đường để đạt được mục đích. Bao gồm Luồng chính (Happy Path), Luồng thay thế (Alternative Flow), và Luồng ngoại lệ (Exception Flow).",
+                    tips: [
+                        "Luôn đọc Happy Path (Luồng chính) trước để hiểu luồng chuẩn.",
+                        "Hình dung các ngã rẽ: 'Nếu người dùng nhập sai thì sao?' (Exception Flow).",
+                        "Dùng Flowchart hoặc Sequence Diagram để dễ hình dung hơn."
+                    ]
+                },
+                foundation: {
+                    title: "Móng nhà: ACTOR & PURPOSE (Đối tượng & Mục đích)",
+                    icon: <Users className="w-8 h-8 mb-2 mx-auto" />,
+                    color: "bg-emerald-600 hover:bg-emerald-700",
+                    borderColor: "border-emerald-600",
+                    bgColor: "bg-emerald-600",
+                    ringColor: "ring-emerald-300",
+                    content: "Nền tảng của hệ thống. Phải biết rõ 'Ai' sẽ sử dụng hệ thống này (Actor) và 'Họ muốn đạt được điều gì' (Purpose). Móng không vững thì nhà sẽ sập.",
+                    tips: [
+                        "Không bao giờ đọc Flow khi chưa biết Actor là ai.",
+                        "Xác định rõ quyền hạn của từng Actor (Admin khác User thường).",
+                        "Mỗi requirement sinh ra đều phải phục vụ một Mục đích kinh doanh cụ thể."
+                    ]
+                }
+            };
+
+            const currentData = activeSection ? sections[activeSection] : null;
+
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center p-8 font-sans text-slate-800">
+                    <div className="max-w-5xl w-full flex flex-col lg:flex-row gap-12 items-center lg:items-start">
+                        
+                        {/* Phần Hình Ngôi Nhà */}
+                        <div className="flex-1 flex flex-col items-center w-full max-w-md cursor-pointer select-none">
+                            
+                            {/* Mái nhà - RULES */}
+                            <div 
+                                onClick={() => setActiveSection('rules')}
+                                className={`w-full h-32 transition-all duration-300 transform clip-roof flex flex-col items-center justify-center text-white
+                                    ${activeSection === 'rules' ? 'scale-105 shadow-xl ring-4 ring-rose-300 z-10' : 'shadow-md'} 
+                                    ${sections.rules.color}`}
+                            >
+                                {sections.rules.icon}
+                                <span className="font-bold text-lg tracking-wide uppercase">Rules (Mái)</span>
+                            </div>
+
+                            {/* Cột nhà - FLOWS */}
+                            <div className="w-4/5 flex justify-between mt-2 mb-2 relative">
+                                <div className="absolute inset-0 z-0" onClick={() => setActiveSection('flows')}></div>
+                                {[1, 2, 3].map((pillar) => (
+                                    <div 
+                                        key={pillar}
+                                        onClick={() => setActiveSection('flows')}
+                                        className={`w-1/4 h-48 transition-all duration-300 relative z-10 flex flex-col items-center justify-center text-white text-sm font-semibold
+                                            ${activeSection === 'flows' ? 'scale-105 shadow-xl ring-4 ring-sky-300' : 'shadow-md'} 
+                                            ${sections.flows.color}`}
+                                    >
+                                        {pillar === 2 && <GitMerge className="w-6 h-6 mb-1 mx-auto" />}
+                                        {pillar === 1 ? 'Main' : pillar === 2 ? 'Flow' : 'Alt'}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Móng nhà - ACTOR/PURPOSE */}
+                            <div 
+                                onClick={() => setActiveSection('foundation')}
+                                className={`w-[110%] h-28 rounded-md transition-all duration-300 transform flex flex-col items-center justify-center text-white
+                                    ${activeSection === 'foundation' ? 'scale-105 shadow-xl ring-4 ring-emerald-300 z-10' : 'shadow-md'} 
+                                    ${sections.foundation.color}`}
+                            >
+                                {sections.foundation.icon}
+                                <span className="font-bold text-lg tracking-wide uppercase">Actor / Purpose (Móng)</span>
+                            </div>
+                            
+                            <div className="mt-8 text-slate-500 animate-pulse text-sm font-medium flex items-center gap-2">
+                                <span>👆 Nhấp chuột vào từng phần của ngôi nhà để xem chi tiết bên phải</span>
+                            </div>
+                        </div>
+
+                        {/* Phần Nội dung Hiển thị */}
+                        <div className="flex-1 w-full min-h-[400px]">
+                            {currentData ? (
+                                <div className={`p-8 rounded-2xl shadow-lg border-t-4 bg-white transition-all duration-300 animate-in ${currentData.borderColor}`}>
+                                    <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
+                                        <span className={`p-2 rounded-lg text-white ${currentData.bgColor}`}>
+                                            {currentData.icon}
+                                        </span>
+                                        {currentData.title}
+                                    </h2>
+                                    <p className="text-slate-600 text-lg mb-6 leading-relaxed">
+                                        {currentData.content}
+                                    </p>
+                                    
+                                    <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
+                                        <h3 className="font-bold flex items-center gap-2 text-indigo-900 mb-4 text-lg">
+                                            <BookOpen className="w-5 h-5 text-indigo-600" />
+                                            Gợi ý:
+                                        </h3>
+                                        <ul className="space-y-4">
+                                            {currentData.tips.map((tip, index) => (
+                                                <li key={index} className="flex items-start gap-3 text-slate-700">
+                                                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold mt-0.5">
+                                                        {index + 1}
+                                                    </span>
+                                                    <span className="text-[1.05rem] leading-tight pt-1">{tip}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="h-full flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center bg-white/50">
+                                    <BookOpen className="w-20 h-20 mb-4 text-slate-300" />
+                                    <p className="text-2xl font-medium text-slate-500 mb-2">Hướng dẫn Đọc Requirement</p>
+                                    <p className="text-slate-400 text-lg">Hãy chọn một phần của ngôi nhà (Mái, Cột hoặc Móng) để bắt đầu bài giảng.</p>
+                                </div>
+                            )}
+                        </div>
+
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

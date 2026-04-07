@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Portal - Private Training</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Modern Base Styles */
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #f1f5f9; 
+            color: #334155;
+            margin: 0;
+            padding: 2rem 1rem;
+        }
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #0f172a;
+            font-size: 2.25rem;
+            margin-bottom: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+
+        /* Main Lesson Accordion */
+        .lesson-block {
+            margin-bottom: 1.25rem;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            transition: box-shadow 0.2s ease;
+        }
+        .lesson-block:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+
+        .lesson-header {
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .lesson-header:hover { background-color: #f8fafc; }
+        .lesson-header.active { border-bottom: 1px solid #e2e8f0; }
+        
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .header-icon {
+            color: #64748b;
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+        .active > .header-icon.chevron { transform: rotate(180deg); }
+
+        /* Lesson Content Container */
+        .lesson-content {
+            display: none; 
+            padding: 1.25rem;
+            background-color: #f8fafc; /* Slightly darker to contrast inner categories */
+        }
+        .lesson-content.show {
+            display: block;
+            animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* --- NEW: Nested Category Accordion --- */
+        .category-block {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+        }
+        .category-block:last-child { margin-bottom: 0; }
+
+        .category-header {
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background-color: #ffffff;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+        .category-header:hover { background-color: #f1f5f9; }
+        .category-header.active { 
+            border-bottom: 1px solid #e2e8f0; 
+            background-color: #f8fafc;
+        }
+        
+        .category-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #3b82f6;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            letter-spacing: 0.02em;
+        }
+        
+        .category-content {
+            display: none;
+            padding: 1.25rem;
+            background-color: #ffffff;
+        }
+        .category-content.show {
+            display: block;
+            animation: slideDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Menu Links */
+        .menu-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 0.75rem;
+        }
+        .menu-list a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #475569;
+            background-color: #f8fafc;
+            padding: 0.875rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        .menu-list a:before {
+            content: '\f15b'; /* File icon */
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 400;
+            margin-right: 0.75rem;
+            color: #94a3b8;
+        }
+        .menu-list a:hover {
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            border-color: #bfdbfe;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .menu-list a:hover:before { color: #3b82f6; }
+
+        /* Locked State */
+        .locked-state {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #64748b;
+        }
+
+        /* Modern Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .modal-box {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            width: 320px;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .modal-box h3 {
+            margin-top: 0;
+            color: #0f172a;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .modal-box input {
+            width: 100%;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            box-sizing: border-box;
+            text-align: center;
+            font-size: 1.5rem;
+            letter-spacing: 0.25em;
+            font-weight: bold;
+            color: #1e293b;
+            transition: border-color 0.2s;
+        }
+        .modal-box input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        .error-msg {
+            color: #ef4444;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: none;
+            margin-top: -0.5rem;
+            margin-bottom: 1rem;
+        }
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover { background-color: #2563eb; }
+        .btn-cancel {
+            background: none;
+            border: none;
+            color: #64748b;
+            margin-top: 1rem;
+            cursor: pointer;
+            font-weight: 500;
+            padding: 0.5rem;
+        }
+        .btn-cancel:hover { color: #0f172a; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Private Training Portal</h1>
+        <div id="course-container"></div>
+    </div>
+
+    <div class="modal-overlay" id="pinModal">
+        <div class="modal-box">
+            <h3>Lesson Locked</h3>
+            <p id="modalLessonTitle" style="color: #64748b; margin: 0;"></p>
+            <input type="password" id="pinInput" placeholder="PIN" maxlength="10" autocomplete="off" />
+            <div class="error-msg" id="pinError">Incorrect PIN. Please try again.</div>
+            <button class="btn-primary" onclick="verifyPin()">Unlock Lesson</button>
+            <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+
+    <script>
+        let currentUnlockingLesson = null;
+
+        function renderPortal() {
+            const container = document.getElementById('course-container');
+            
+            // Track open states before re-rendering so UI doesn't collapse randomly
+            const openDropdowns = Array.from(document.querySelectorAll('.lesson-content.show')).map(el => el.id);
+            const openCategories = Array.from(document.querySelectorAll('.category-content.show')).map(el => el.id);
+            
+            container.innerHTML = '';
+
+            COURSE_CONFIG.forEach(lesson => {
+                const isUnlocked = sessionStorage.getItem(`unlocked_${lesson.lessonId}`) === 'true';
+                const hasPin = !!lesson.pin;
+                const isAccessible = isUnlocked || !hasPin;
+                const shouldBeOpen = openDropdowns.includes(`content-${lesson.lessonId}`);
+
+                let html = `
+                    <div class="lesson-block">
+                        <div class="lesson-header ${shouldBeOpen ? 'active' : ''}" 
+                             id="header-${lesson.lessonId}" 
+                             onclick="handleHeaderClick('${lesson.lessonId}', ${isAccessible})">
+                            <div class="header-title">
+                                <i class="fa-solid fa-book-open" style="color: #3b82f6;"></i>
+                                ${lesson.lessonTitle}
+                            </div>
+                            <div class="header-icon ${isAccessible ? 'chevron' : ''}">
+                                ${isAccessible ? '<i class="fa-solid fa-chevron-down"></i>' : '<i class="fa-solid fa-lock" style="color: #94a3b8;"></i>'}
+                            </div>
+                        </div>
+                        <div class="lesson-content ${shouldBeOpen ? 'show' : ''}" id="content-${lesson.lessonId}">
+                `;
+
+                if (isAccessible) {
+                    lesson.categories.forEach((cat, index) => {
+                        const catId = `${lesson.lessonId}-cat-${index}`;
+                        const catShouldBeOpen = openCategories.includes(`content-${catId}`);
+
+                        html += `
+                            <div class="category-block">
+                                <div class="category-header ${catShouldBeOpen ? 'active' : ''}"
+                                     id="header-${catId}"
+                                     onclick="toggleCategory('${catId}')">
+                                    <div class="category-title">
+                                        <i class="fa-solid fa-folder-open text-blue-400"></i>
+                                        ${cat.sectionTitle}
+                                    </div>
+                                    <div class="header-icon chevron">
+                                        <i class="fa-solid fa-chevron-down text-sm"></i>
+                                    </div>
+                                </div>
+                                <div class="category-content ${catShouldBeOpen ? 'show' : ''}" id="content-${catId}">
+                                    <ul class="menu-list">
+                                        ${cat.links.map(link => `<li><a href="${link.url}" target="_blank">${link.name}</a></li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        // Toggle Main Lesson
+        function handleHeaderClick(lessonId, isAccessible) {
+            if (!isAccessible) {
+                openPinModal(lessonId);
+            } else {
+                toggleElement(`content-${lessonId}`, `header-${lessonId}`);
+            }
+        }
+
+        // Toggle Nested Category
+        function toggleCategory(catId) {
+            toggleElement(`content-${catId}`, `header-${catId}`);
+        }
+
+        // Reusable Toggle Function
+        function toggleElement(contentId, headerId) {
+            const content = document.getElementById(contentId);
+            const header = document.getElementById(headerId);
+            
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+                header.classList.remove('active');
+            } else {
+                content.classList.add('show');
+                header.classList.add('active');
+            }
+        }
+
+        // PIN Logic
+        function openPinModal(lessonId) {
+            currentUnlockingLesson = COURSE_CONFIG.find(l => l.lessonId === lessonId);
+            document.getElementById('modalLessonTitle').innerText = currentUnlockingLesson.lessonTitle;
+            document.getElementById('pinInput').value = '';
+            document.getElementById('pinError').style.display = 'none';
+            document.getElementById('pinModal').style.display = 'flex';
+            document.getElementById('pinInput').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('pinModal').style.display = 'none';
+            currentUnlockingLesson = null;
+        }
+
+        function verifyPin() {
+            const input = document.getElementById('pinInput').value;
+            if (input === currentUnlockingLesson.pin) {
+                sessionStorage.setItem(`unlocked_${currentUnlockingLesson.lessonId}`, 'true');
+                closeModal();
+                renderPortal(); 
+                
+                // Automatically open the main lesson dropdown after successful unlock
+                setTimeout(() => { toggleElement(`content-${currentUnlockingLesson.lessonId}`, `header-${currentUnlockingLesson.lessonId}`); }, 50);
+            } else {
+                document.getElementById('pinError').style.display = 'block';
+                document.getElementById('pinInput').focus();
+            }
+        }
+
+        document.getElementById('pinInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') verifyPin();
+        });
+
+        document.getElementById('pinModal').addEventListener('mousedown', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // Initial render
+        renderPortal();
+    </script>
+</body>
+</html>

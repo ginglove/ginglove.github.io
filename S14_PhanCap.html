@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ Phân cấp: Requirement -> Test Condition -> Test Case</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- FontAwesome (Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+        
+        /* CSS cho cấu trúc cây */
+        .tree-line-v {
+            position: absolute;
+            left: 24px; /* Giữa icon tròn */
+            top: 48px;
+            bottom: -20px;
+            width: 2px;
+            background-color: #cbd5e1;
+            z-index: 0;
+        }
+        .tree-line-h {
+            position: absolute;
+            left: -20px;
+            top: 24px;
+            width: 20px;
+            height: 2px;
+            background-color: #cbd5e1;
+            z-index: 0;
+        }
+        .tree-node { position: relative; z-index: 10; }
+        
+        /* Hiệu ứng mở rộng/thu gọn */
+        .expand-enter { opacity: 0; transform: translateY(-10px); }
+        .expand-enter-active { opacity: 1; transform: translateY(0); transition: all 0.3s ease-out; }
+        
+        /* Cấu hình màu cho từng level */
+        .color-req { color: #3b82f6; border-color: #3b82f6; background-color: #eff6ff; }
+        .color-cond { color: #f59e0b; border-color: #f59e0b; background-color: #fffbeb; }
+        .color-case { color: #10b981; border-color: #10b981; background-color: #ecfdf5; }
+    </style>
+</head>
+<body>
+    <div id="root" class="min-h-screen p-8 flex justify-center"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // --- Data Structure ---
+        const treeData = {
+            id: 'req-1',
+            type: 'Requirement',
+            label: 'REQ-001: Chức năng Đăng nhập',
+            desc: 'Người dùng có thể đăng nhập vào hệ thống bằng Email và Mật khẩu.',
+            icon: 'fa-book-open',
+            colorClass: 'color-req',
+            expanded: true, // Mặc định mở gốc
+            children: [
+                {
+                    id: 'cond-1',
+                    type: 'Test Condition',
+                    label: 'TCond-01: Kiểm tra đăng nhập với thông tin hợp lệ (Happy Path)',
+                    desc: 'Dựa trên nghiệp vụ cơ bản, hệ thống phải cho phép login khi email/pass đúng.',
+                    icon: 'fa-list-check',
+                    colorClass: 'color-cond',
+                    expanded: false,
+                    children: [
+                        { id: 'tc-1', type: 'Test Case', label: 'TC-01: Đăng nhập thành công với tài khoản Admin.', icon: 'fa-vial', colorClass: 'color-case' },
+                        { id: 'tc-2', type: 'Test Case', label: 'TC-02: Đăng nhập thành công với tài khoản User thường.', icon: 'fa-vial', colorClass: 'color-case' }
+                    ]
+                },
+                {
+                    id: 'cond-2',
+                    type: 'Test Condition',
+                    label: 'TCond-02: Kiểm tra chức năng Validation dữ liệu đầu vào',
+                    desc: 'Dựa trên các quy tắc (Rules) về định dạng email và độ dài mật khẩu.',
+                    icon: 'fa-list-check',
+                    colorClass: 'color-cond',
+                    expanded: false,
+                    children: [
+                        { id: 'tc-3', type: 'Test Case', label: 'TC-03: Báo lỗi khi để trống trường Email.', icon: 'fa-vial', colorClass: 'color-case' },
+                        { id: 'tc-4', type: 'Test Case', label: 'TC-04: Báo lỗi khi Email sai định dạng (thiếu @).', icon: 'fa-vial', colorClass: 'color-case' },
+                        { id: 'tc-5', type: 'Test Case', label: 'TC-05: Báo lỗi khi Mật khẩu nhập dưới 6 ký tự.', icon: 'fa-vial', colorClass: 'color-case' }
+                    ]
+                },
+                {
+                    id: 'cond-3',
+                    type: 'Test Condition',
+                    label: 'TCond-03: Kiểm tra luồng ngoại lệ (Exception Flow/Security)',
+                    desc: 'Dựa trên các yêu cầu bảo mật và giới hạn của hệ thống.',
+                    icon: 'fa-list-check',
+                    colorClass: 'color-cond',
+                    expanded: false,
+                    children: [
+                        { id: 'tc-6', type: 'Test Case', label: 'TC-06: Khóa tài khoản sau 5 lần nhập sai liên tiếp.', icon: 'fa-vial', colorClass: 'color-case' }
+                    ]
+                }
+            ]
+        };
+
+        // --- Component đệ quy vẽ Node ---
+        const TreeNode = ({ node, isLastChild, onToggle }) => {
+            const hasChildren = node.children && node.children.length > 0;
+
+            const handleToggle = (e) => {
+                e.stopPropagation();
+                if (hasChildren) {
+                    onToggle(node.id);
+                }
+            };
+
+            return (
+                <div className="relative pl-10 mb-2">
+                    {/* Đường kẻ ngang nối từ node cha */}
+                    <div className="tree-line-h"></div>
+                    
+                    {/* Đường kẻ dọc nối các children (nếu có child và đang mở) */}
+                    {hasChildren && node.expanded && !isLastChild && (
+                         <div className="tree-line-v"></div>
+                    )}
+
+                    <div 
+                        className={`tree-node flex items-start gap-3 p-3 rounded-xl border-2 transition-all duration-200 shadow-sm
+                            ${node.colorClass} 
+                            ${hasChildren ? 'cursor-pointer hover:shadow-md hover:brightness-95' : ''}`}
+                        onClick={handleToggle}
+                    >
+                        {/* Biểu tượng Icon của Node */}
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-white border-2 border-current flex items-center justify-center text-lg mt-1">
+                            <i className={`fa-solid ${node.icon}`}></i>
+                        </div>
+                        
+                        <div className="flex-grow">
+                            <div className="flex justify-between items-center">
+                                <span className="font-extrabold text-sm uppercase tracking-wide opacity-80">{node.type}</span>
+                                {hasChildren && (
+                                    <span className="text-xl leading-none">
+                                        <i className={`fa-solid fa-chevron-${node.expanded ? 'up' : 'down'} opacity-50`}></i>
+                                    </span>
+                                )}
+                            </div>
+                            <h3 className="font-bold text-lg text-slate-800 mt-1">{node.label}</h3>
+                            {node.desc && <p className="text-sm text-slate-600 mt-1">{node.desc}</p>}
+                        </div>
+                    </div>
+
+                    {/* Hiển thị children nếu được expand */}
+                    {hasChildren && node.expanded && (
+                        <div className="relative mt-2 ml-4 animate-[fadeIn_0.3s_ease-out]">
+                             {/* Đường kẻ dọc ảo để nối các children */}
+                            <div className="absolute left-[4px] top-0 bottom-[24px] w-[2px] bg-slate-300"></div>
+                            
+                            {node.children.map((child, index) => (
+                                <TreeNode 
+                                    key={child.id} 
+                                    node={child} 
+                                    isLastChild={index === node.children.length - 1}
+                                    onToggle={onToggle}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        function App() {
+            const [data, setData] = useState(treeData);
+
+            // Hàm tìm và toggle node trong cây (đệ quy)
+            const toggleNode = (nodes, id) => {
+                if (nodes.id === id) {
+                    return { ...nodes, expanded: !nodes.expanded };
+                }
+                if (nodes.children) {
+                    return {
+                        ...nodes,
+                        children: nodes.children.map(child => toggleNode(child, id))
+                    };
+                }
+                return nodes;
+            };
+
+            const handleToggle = (id) => {
+                setData(prevData => toggleNode(prevData, id));
+            };
+
+            const expandAll = () => {
+                const setExpand = (node, state) => {
+                    const newNode = { ...node, expanded: state };
+                    if (newNode.children) {
+                        newNode.children = newNode.children.map(c => setExpand(c, state));
+                    }
+                    return newNode;
+                };
+                setData(prev => setExpand(prev, true));
+            };
+
+            return (
+                <div className="w-full max-w-5xl bg-white p-8 rounded-2xl shadow-xl flex flex-col lg:flex-row gap-8 border-t-8 border-indigo-600">
+                    
+                    {/* Cột trái: Sơ đồ cây */}
+                    <div className="flex-1">
+                        <div className="flex justify-between items-center mb-6 border-b pb-4">
+                            <div>
+                                <h1 className="text-2xl font-black text-slate-800">Cấu trúc Thiết kế Kiểm thử</h1>
+                                <p className="text-slate-500 font-medium">Theo chuẩn ISTQB Foundation</p>
+                            </div>
+                            <button 
+                                onClick={expandAll}
+                                className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg font-bold hover:bg-indigo-200 transition-colors text-sm"
+                            >
+                                Mở rộng tất cả
+                            </button>
+                        </div>
+                        
+                        <div className="pt-2">
+                            {/* Wrapper giả để node gốc giống như các child */}
+                            <div className="relative -ml-10">
+                                <TreeNode node={data} isLastChild={true} onToggle={handleToggle} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Cột phải: Giải thích lý thuyết ISTQB */}
+                    <div className="w-full lg:w-1/3 bg-slate-50 rounded-xl p-6 border border-slate-200 h-fit sticky top-8">
+                        <h2 className="text-xl font-bold text-slate-800 mb-4 border-b-2 border-indigo-200 pb-2 flex items-center gap-2">
+                            <i className="fa-solid fa-graduation-cap text-indigo-600"></i>
+                            Góc Giảng Viên
+                        </h2>
+                        
+                        <div className="space-y-6">
+                            <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-r-md">
+                                <h3 className="font-bold text-blue-800 text-sm mb-1 uppercase tracking-wider">1. Requirement (Test Basis)</h3>
+                                <p className="text-sm text-slate-700">Tài liệu đầu vào (SRS, User Story). Trả lời câu hỏi: <strong>"Hệ thống cần làm cái gì?"</strong>.</p>
+                            </div>
+
+                            <div className="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-md relative">
+                                {/* Mũi tên chỉ xuống */}
+                                <div className="absolute -top-5 left-4 text-slate-400"><i className="fa-solid fa-arrow-down"></i></div>
+                                <h3 className="font-bold text-amber-800 text-sm mb-1 uppercase tracking-wider">2. Test Condition</h3>
+                                <p className="text-sm text-slate-700 mb-2">Điều kiện/Hạng mục cần test. Trả lời câu hỏi: <strong>"Ta cần test khía cạnh nào của Requirement này?"</strong> (Ví dụ: Test UI, Test Logic hợp lệ, Test Báo lỗi).</p>
+                                <p className="text-xs text-amber-900 bg-amber-100 p-2 rounded italic">
+                                    💡 Tip: Đọc kỹ Requirement, gạch dưới các tính từ/quy tắc để suy ra Test Condition.
+                                </p>
+                            </div>
+
+                            <div className="bg-emerald-50 border-l-4 border-emerald-500 p-3 rounded-r-md relative">
+                                 {/* Mũi tên chỉ xuống */}
+                                 <div className="absolute -top-5 left-4 text-slate-400"><i className="fa-solid fa-arrow-down"></i></div>
+                                <h3 className="font-bold text-emerald-800 text-sm mb-1 uppercase tracking-wider">3. Test Case</h3>
+                                <p className="text-sm text-slate-700">Kịch bản chi tiết với các bước thực hiện và dữ liệu cụ thể. Trả lời câu hỏi: <strong>"Làm sao để chứng minh Test Condition kia hoạt động đúng/sai?"</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+    <style>
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</body>
+</html>

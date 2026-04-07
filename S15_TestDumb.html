@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống thi trắc nghiệm - Giang Le Truong</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0052cc;
+            --primary-hover: #003d99;
+            --bg-body: #f4f5f7;
+            --bg-card: #ffffff;
+            --bg-sidebar: #172b4d;
+            --text-main: #172b4d;
+            --text-muted: #6b778c;
+            --text-sidebar: #b3bac5;
+            --border: #dfe1e6;
+            --error: #de350b;
+            --success: #00875a;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- HEADER TỔNG --- */
+        header {
+            background-color: var(--bg-card);
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            width: 240px; 
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-center {
+            flex-grow: 1;
+            display: none; 
+            align-items: center;
+            gap: 30px;
+            padding-left: 20px;
+        }
+
+        .nav-item {
+            color: var(--text-main);
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s;
+        }
+
+        .nav-item:hover { color: var(--primary); }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* --- USER PROFILE --- */
+        .user-profile-section {
+            display: none;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .icon-btn {
+            font-size: 18px;
+            color: var(--text-muted);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .user-dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: white;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            width: 200px;
+            overflow: hidden;
+        }
+
+        .dropdown-menu.active { display: block; }
+        .dropdown-menu div {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .dropdown-menu div:hover { background-color: var(--bg-body); }
+        .dropdown-menu .logout-text { color: var(--error); }
+
+        /* --- BUTTONS --- */
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn:hover { background-color: var(--primary-hover); }
+        
+        /* CSS BỔ SUNG CHO TÍNH NĂNG MỚI */
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-danger { background: var(--error); }
+        .btn-danger:hover { background: #b32b09; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .form-control { padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; outline: none; font-size: 14px; }
+        .form-control:focus { border-color: var(--primary); }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .flex-gap { display: flex; gap: 12px; align-items: center; }
+
+        /* --- BỐ CỤC CHÍNH --- */
+        .main-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        aside {
+            background-color: var(--bg-sidebar);
+            width: 260px;
+            display: none; 
+            flex-direction: column;
+            padding: 20px 0;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu li {
+            padding: 14px 24px;
+            color: var(--text-sidebar);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .sidebar-menu li:hover, .sidebar-menu li.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            border-left: 4px solid var(--primary);
+        }
+        
+        #menu-admin-account, #menu-admin-group { display: none; } 
+
+        /* --- NỘI DUNG CHÍNH --- */
+        main {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            position: relative; /* Cập nhật để hỗ trợ scroll list */
+        }
+
+        /* --- TRANG CHỦ & FORM ĐĂNG NHẬP --- */
+        .exam-code-box, .login-card {
+            background: var(--bg-card);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin: 0 auto;
+        }
+        .exam-code-box { text-align: center; width: 100%; max-width: 500px; margin-top: 100px; }
+        .login-card { width: 100%; max-width: 420px; display: none; margin-top: 100px; }
+
+        .exam-code-box h3, .login-card h2 { margin-bottom: 24px; color: var(--text-main); }
+        .login-card h2 { text-align: center; font-size: 24px; }
+        
+        .exam-input, .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+        .exam-input { font-size: 16px; margin-bottom: 20px; text-align: center; border-radius: 8px;}
+        .exam-input:focus, .form-group input:focus { border-color: var(--primary); }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; }
+        .form-options { display: flex; justify-content: space-between; margin-bottom: 24px; font-size: 14px; }
+        .form-options label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .error-msg { display: none; background: #ffebe6; color: var(--error); padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; border-left: 4px solid var(--error); }
+
+        /* --- COMPONENTS MỚI CHO LIST / TABLE --- */
+        .card { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow); padding: 24px; margin-bottom: 24px; }
+        .page-title { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: #f8f9fa; font-weight: 600; cursor: pointer; user-select: none; }
+        th:hover { background: #e9ecef; }
+        tbody tr:hover { background: #f4f5f7; cursor: pointer; }
+        
+        /* Modal & Notification */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal { background: white; padding: 24px; border-radius: 8px; width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--success); color: white; padding: 12px 24px; border-radius: 4px; display: none; z-index: 1000; box-shadow: var(--shadow); }
+        
+        /* Group Edit Members */
+        .member-list-box { border: 1px solid var(--border); border-radius: 4px; height: 300px; overflow-y: auto; padding: 8px; }
+        .member-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; transition: background 0.2s; }
+        .member-item:hover { background: #f0f4f8; }
+        .current-member-item .btn-remove { visibility: hidden; opacity: 0; transition: opacity 0.2s; padding: 4px 8px; font-size: 12px; }
+        .current-member-item:hover .btn-remove { visibility: visible; opacity: 1; }
+        .badge-added { background: #e3fcef; color: #006644; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 4px;}
+        
+        .profile-grid { display: grid; grid-template-columns: 150px 1fr; gap: 16px; font-size: 15px; }
+        .profile-label { font-weight: 600; color: var(--text-muted); }
+
+        /* --- FOOTER --- */
+        footer {
+            background-color: white;
+            text-align: center;
+            padding: 12px;
+            font-size: 13px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <div class="logo" onclick="showScreen('home')">
+                <i class="fa-solid fa-graduation-cap"></i> Giang Le Truong
+            </div>
+        </div>
+
+        <div class="header-center" id="header-nav">
+            <div class="nav-item"><i class="fa-regular fa-calendar-check"></i> Chấm điểm</div>
+            <div class="nav-item"><i class="fa-solid fa-chart-pie"></i> Kỳ thi</div>
+        </div>
+
+        <div class="header-right">
+            <button class="btn" id="btn-show-login" onclick="showScreen('login')">Đăng nhập</button>
+
+            <div class="user-profile-section" id="user-profile">
+                <div class="icon-btn"><i class="fa-regular fa-bell"></i></div>
+                <div class="user-dropdown-toggle" onclick="toggleDropdown()">
+                    <div class="avatar" id="user-avatar">D</div>
+                    <span id="user-name-display">Duy Admin</span>
+                    <i class="fa-solid fa-caret-down"></i>
+                    
+                    <div class="dropdown-menu" id="dropdown-menu">
+                        <div><i class="fa-regular fa-user"></i> Hồ sơ cá nhân</div>
+                        <div class="logout-text" onclick="handleLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-wrapper">
+        <aside id="sidebar">
+            <ul class="sidebar-menu">
+                <li class="active" onclick="showScreen('home')" id="menu-home"><i class="fa-solid fa-gauge"></i> Dashboard</li>
+                <li><i class="fa-solid fa-building"></i> Quản lý kỳ thi</li>
+                <li><i class="fa-solid fa-file-lines"></i> Quản lý đề thi</li>
+                <li><i class="fa-solid fa-list-ul"></i> Quản lý câu hỏi</li>
+                <li><i class="fa-solid fa-layer-group"></i> Quản lý DMCH</li>
+                <li id="menu-admin-group" onclick="showScreen('groups')"><i class="fa-solid fa-users-rectangle"></i> Quản lý nhóm TK</li>
+                <li><i class="fa-solid fa-flag"></i> Báo cáo</li>
+                <li id="menu-admin-account" onclick="showScreen('accounts')"><i class="fa-solid fa-users-gear"></i> Quản lý tài khoản</li>
+            </ul>
+        </aside>
+
+        <main>
+            <div class="exam-code-box" id="screen-home">
+                <h3>Vào thi trắc nghiệm</h3>
+                <input type="text" class="exam-input" placeholder="Nhập mã code của kỳ thi">
+                <button class="btn" style="width: 100%; font-size: 16px; justify-content: center;">Test</button>
+            </div>
+
+            <div class="login-card" id="screen-login">
+                <h2>Đăng nhập hệ thống</h2>
+                <div id="error-alert" class="error-msg"></div>
+
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="username">User name</label>
+                        <input type="text" id="username" placeholder="Nhập từ 1 - 15 ký tự">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Nhập mật khẩu">
+                    </div>
+                    <div class="form-options">
+                        <label><input type="checkbox" id="remember"> Remember me</label>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%; justify-content: center;">Đăng nhập</button>
+                </form>
+            </div>
+
+            <div id="screen-accounts" style="display: none;">
+                <div class="card">
+                    <h2 class="page-title">Danh sách Tài khoản</h2>
+                    <div class="flex-between" style="margin-bottom: 16px;">
+                        <div class="flex-gap">
+                            <input type="text" id="acc-search" class="form-control" placeholder="Tìm kiếm Username, Fullname..." onkeypress="if(event.key === 'Enter') accountCtrl.renderList()">
+                            <button class="btn btn-outline" onclick="accountCtrl.renderList()">Search</button>
+                        </div>
+                        <div class="flex-gap">
+                            <select id="acc-filter-dept" class="form-control" onchange="accountCtrl.renderList()">
+                                <option value="">Tất cả Department</option>
+                                <option value="RRC">RRC</option><option value="RDC">RDC</option><option value="DU">DU</option>
+                            </select>
+                            <select id="acc-filter-pos" class="form-control" onchange="accountCtrl.renderList()">
+                                <option value="">Tất cả Position</option>
+                                <option value="Dev">Dev</option><option value="QA">QA</option><option value="SM">SM</option>
+                            </select>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th onclick="accountCtrl.sort('email')">Email <i class="fa-solid fa-sort"></i></th>
+                                <th onclick="accountCtrl.sort('username')">Username <i class="fa-solid fa-sort"></i></th>
+                                <th onclick="accountCtrl.sort('fullname')">Fullname <i class="fa-solid fa-sort"></i></th>
+                                <th onclick="accountCtrl.sort('department')">Department <i class="fa-solid fa-sort"></i></th>
+                                <th onclick="accountCtrl.sort('position')">Position <i class="fa-solid fa-sort"></i></th>
+                                <th>Groups Joined</th>
+                            </tr>
+                        </thead>
+                        <tbody id="acc-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="screen-profile" style="display: none;">
+                <div class="card" style="max-width: 600px; margin: 0 auto;">
+                    <div class="flex-between" style="margin-bottom: 24px;">
+                        <h2 class="page-title" style="margin: 0;">Profile User</h2>
+                        <button class="btn btn-outline" onclick="showScreen('accounts')">Quay lại</button>
+                    </div>
+                    <div class="profile-grid" id="profile-details"></div>
+                </div>
+            </div>
+
+            <div id="screen-groups" style="display: none;">
+                <div class="card">
+                    <div class="flex-between mb-3">
+                        <h2 class="page-title">Danh sách Nhóm Tài khoản</h2>
+                        <button class="btn" onclick="groupCtrl.showCreateModal()"><i class="fa-solid fa-plus"></i> Tạo nhóm</button>
+                    </div>
+                    <div class="flex-between" style="margin-bottom: 16px; background: #f8f9fa; padding: 12px; border-radius: 4px;">
+                        <div class="flex-gap">
+                            <input type="text" id="grp-search" class="form-control" placeholder="Tìm tên nhóm..." onkeypress="if(event.key === 'Enter') groupCtrl.renderList()">
+                            <button class="btn btn-outline" onclick="groupCtrl.renderList()">Search</button>
+                        </div>
+                        <div class="flex-gap">
+                            <span style="font-size: 14px; font-weight: 500;">Filter:</span>
+                            <input type="date" id="grp-filter-from" class="form-control" title="Từ ngày" onchange="groupCtrl.renderList()">
+                            <span style="font-size: 14px;">đến</span>
+                            <input type="date" id="grp-filter-to" class="form-control" title="Đến ngày" onchange="groupCtrl.renderList()">
+                            <input type="number" id="grp-filter-members" class="form-control" placeholder="Số lượng TV" style="width: 120px;" oninput="groupCtrl.renderList()">
+                            <button class="btn btn-danger" id="btn-delete-group" disabled onclick="groupCtrl.showDeleteConfirm()"><i class="fa-solid fa-trash"></i> Delete</button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;"><input type="checkbox" id="chk-all-groups" onchange="groupCtrl.toggleAllChecks(this)"></th>
+                                <th onclick="groupCtrl.sort('name')">Group Name <i class="fa-solid fa-sort"></i></th>
+                                <th onclick="groupCtrl.sort('memberCount')">Members <i class="fa-solid fa-sort"></i></th>
+                                <th onclick="groupCtrl.sort('creator')">Creator <i class="fa-solid fa-sort"></i></th>
+                                <th onclick="groupCtrl.sort('createdDate')">Created Date <i class="fa-solid fa-sort"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody id="grp-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="screen-group-details" style="display: none;">
+                <div class="card">
+                    <div class="flex-between" style="margin-bottom: 24px;">
+                        <h2 class="page-title" id="gd-title">Chi tiết nhóm</h2>
+                        <div class="flex-gap">
+                            <button class="btn" onclick="groupCtrl.openEdit()"><i class="fa-solid fa-pen"></i> Update</button>
+                            <button class="btn btn-outline" onclick="showScreen('groups')">Quay lại</button>
+                        </div>
+                    </div>
+                    <div class="profile-grid" style="margin-bottom: 24px; background: #f9f9f9; padding: 16px; border-radius: 4px;">
+                        <div class="profile-label">Tên nhóm:</div><div id="gd-name-display" style="font-weight: 600;"></div>
+                        <div class="profile-label">Ngày tạo:</div><div id="gd-date"></div>
+                        <div class="profile-label">Người tạo:</div><div id="gd-creator"></div>
+                        <div class="profile-label">Số lượng thành viên:</div><div id="gd-count"></div>
+                    </div>
+                    
+                    <h4>Danh sách Account trong nhóm</h4>
+                    <div class="flex-between" style="margin: 16px 0;">
+                        <div class="flex-gap">
+                            <input type="text" id="gd-search" class="form-control" placeholder="Tìm Fullname..." onkeypress="if(event.key === 'Enter') groupCtrl.renderGroupDetails()">
+                            <button class="btn btn-outline" onclick="groupCtrl.renderGroupDetails()">Search</button>
+                        </div>
+                        <div class="flex-gap">
+                            <select id="gd-filter-dept" class="form-control" onchange="groupCtrl.renderGroupDetails()"><option value="">Tất cả Dept</option><option value="RRC">RRC</option><option value="RDC">RDC</option><option value="DU">DU</option></select>
+                            <select id="gd-filter-pos" class="form-control" onchange="groupCtrl.renderGroupDetails()"><option value="">Tất cả Pos</option><option value="Dev">Dev</option><option value="QA">QA</option><option value="SM">SM</option></select>
+                            <input type="date" id="gd-filter-date" class="form-control" title="Hiển thị kể từ ngày" onchange="groupCtrl.renderGroupDetails()">
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th onclick="groupCtrl.sortGd('email')">Email <i class="fa-solid fa-sort"></i></th>
+                                <th onclick="groupCtrl.sortGd('username')">Username <i class="fa-solid fa-sort"></i></th>
+                                <th onclick="groupCtrl.sortGd('fullname')">Fullname <i class="fa-solid fa-sort"></i></th>
+                                <th onclick="groupCtrl.sortGd('department')">Department <i class="fa-solid fa-sort"></i></th>
+                                <th onclick="groupCtrl.sortGd('position')">Position <i class="fa-solid fa-sort"></i></th>
+                                <th onclick="groupCtrl.sortGd('addedDate')">Ngày Add <i class="fa-solid fa-sort"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody id="gd-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="screen-group-edit" style="display: none;">
+                <div class="card" style="max-width: 900px; margin: 0 auto;">
+                    <h2 class="page-title">Cập nhật Nhóm</h2>
+                    <div style="margin-bottom: 16px;">
+                        <label style="font-weight: 500;">Tên nhóm <span style="color:red">*</span></label>
+                        <input type="text" id="edit-grp-name" class="form-control" style="width: 100%; margin-top: 8px;">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px;">
+                        <div>
+                            <h4>Tìm kiếm Account</h4>
+                            <input type="text" id="edit-search-acc" class="form-control" placeholder="Gõ Họ và tên hoặc Tên đăng nhập..." style="width: 100%; margin: 8px 0;" oninput="groupCtrl.renderEditSearchList()">
+                            <div class="member-list-box" id="edit-list-available"></div>
+                        </div>
+                        <div>
+                            <h4>Account đã Add (<span id="edit-count">0</span>)</h4>
+                            <div class="member-list-box" style="margin-top: 48px;" id="edit-list-current"></div>
+                        </div>
+                    </div>
+                    <div class="flex-gap" style="margin-top: 24px; justify-content: flex-end;">
+                        <button class="btn btn-outline" onclick="showScreen('group-details')">Hủy</button>
+                        <button class="btn" onclick="groupCtrl.saveEdit()">OK</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="modal-create-group">
+        <div class="modal">
+            <h3>Tạo nhóm tài khoản</h3>
+            <input type="text" id="create-grp-name" class="form-control" placeholder="Nhập tên nhóm..." style="width: 100%; margin: 16px 0;">
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button class="btn btn-outline" onclick="document.getElementById('modal-create-group').style.display='none'">Hủy</button>
+                <button class="btn" onclick="groupCtrl.submitCreateGroup()">Tạo nhóm</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-confirm-delete">
+        <div class="modal" style="width: 350px;">
+            <p style="font-size: 16px; margin-bottom: 24px;">Bạn có muốn xóa không?</p>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button class="btn btn-outline" onclick="groupCtrl.executeDelete(false)">không</button>
+                <button class="btn btn-danger" onclick="groupCtrl.executeDelete(true)">có</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast-msg"></div>
+
+    <footer>
+        Power by Le Truong Giang © 2026
+    </footer>
+
+    <script>
+        // --- 1. MOCK DATA TÀI KHOẢN ---
+        const mockAMS = {
+            'member': { pass: '12345678', role: 'Member', fullName: 'Duy Member' },
+            'manager': { pass: '12345678', role: 'Manager', fullName: 'Duy Manager' },
+            'admin': { pass: '12345678', role: 'Admin', fullName: 'Duy Admin' },
+            'NNDuy': { pass: '12345678', role: 'Admin', fullName: 'NN Duy' } 
+        };
+
+        // Mock data cho tính năng Quản lý
+        let MOCK_USERS = [
+            { id: 1, email: 'admin@cmc.com', username: 'admin', fullname: 'Nguyễn Văn Admin', department: 'DU', position: 'SM' },
+            { id: 2, email: 'ngocnva@cmc.com', username: 'ngocnva', fullname: 'Nguyễn Văn Anh Ngọc', department: 'RRC', position: 'Dev' },
+            { id: 3, email: 'ngocdv@cmc.com', username: 'ngocdv', fullname: 'Đoàn Văn Ngọc', department: 'RDC', position: 'QA' },
+            { id: 4, email: 'duynn@cmc.com', username: 'duynn', fullname: 'Nguyễn Ngọc Duy', department: 'DU', position: 'Dev' },
+            { id: 5, email: 'hieuht@cmc.com', username: 'hieuht', fullname: 'Hoàng Trọng Hiếu', department: 'RRC', position: 'QA' }
+        ];
+
+        let MOCK_GROUPS = [
+            { id: 1, name: 'Project Alpha', creator: 'admin', createdDate: '2017-10-20', memberIds: [2, 3, 4], addedDates: {'2': '2017-10-21', '3': '2017-10-21', '4':'2017-10-22'} },
+            { id: 2, name: 'QA Team', creator: 'admin', createdDate: '2017-11-05', memberIds: [3, 5], addedDates: {'3': '2017-11-06', '5': '2017-11-06'} }
+        ];
+
+        // --- 2. QUẢN LÝ DOM ELEMENTS ---
+        const btnShowLogin = document.getElementById('btn-show-login');
+        const userProfile = document.getElementById('user-profile');
+        const headerNav = document.getElementById('header-nav');
+        const sidebar = document.getElementById('sidebar');
+        const menuAdminAcc = document.getElementById('menu-admin-account');
+        const menuAdminGroup = document.getElementById('menu-admin-group');
+        const errorAlert = document.getElementById('error-alert');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+
+        let currentUserData = null;
+
+        // --- 3. KHỞI TẠO STATE ---
+        window.onload = () => {
+            const savedUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (savedUser) {
+                applyRoleUI(savedUser);
+            } else {
+                showScreen('home'); 
+            }
+        };
+
+        // --- 4. HÀM CHUYỂN ĐỔI MÀN HÌNH CHÍNH (Đã được nâng cấp) ---
+        function showScreen(screen) {
+            errorAlert.style.display = 'none'; 
+            
+            // Ẩn tất cả màn hình
+            const screens = ['home', 'login', 'accounts', 'profile', 'groups', 'group-details', 'group-edit'];
+            screens.forEach(s => {
+                const el = document.getElementById('screen-' + s);
+                if (el) el.style.display = 'none';
+            });
+
+            // Active class cho Sidebar
+            document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+            if(document.getElementById('menu-' + screen)) {
+                document.getElementById('menu-' + screen).classList.add('active');
+            }
+
+            // Hiển thị màn hình đích
+            const target = document.getElementById('screen-' + screen);
+            if (target) target.style.display = 'block';
+
+            // Gọi init data cho các màn hình quản lý
+            if (screen === 'accounts' && typeof accountCtrl !== 'undefined') accountCtrl.init();
+            if (screen === 'groups' && typeof groupCtrl !== 'undefined') groupCtrl.init();
+        }
+
+        // --- 5. HÀM XỬ LÝ ĐĂNG NHẬP (Giữ nguyên logic cũ) ---
+        function handleLogin(e) {
+            e.preventDefault();
+            const userIn = document.getElementById('username').value.trim();
+            const passIn = document.getElementById('password').value;
+
+            if (userIn.length === 0 || userIn.length > 15) {
+                showError("NDUY_09: User name trống hoặc vượt quá 15 ký tự."); return;
+            }
+            if (passIn.length === 0 || passIn.length > 25) {
+                showError("NDUY_10: Password trống hoặc vượt quá 25 ký tự."); return;
+            }
+
+            const account = mockAMS[userIn];
+            if (!account || account.pass !== passIn) {
+                showError("NDUY_11: Tài khoản hoặc mật khẩu không chính xác.");
+                document.getElementById('password').value = ""; 
+                return;
+            }
+
+            const userData = { username: userIn, role: account.role, name: account.fullName };
+            currentUserData = userData;
+            
+            if (document.getElementById('remember').checked) {
+                localStorage.setItem('currentUser', JSON.stringify(userData));
+            }
+
+            applyRoleUI(userData);
+            document.getElementById('password').value = ""; 
+        }
+
+        // --- 6. HÀM RENDER UI DỰA TRÊN ROLE (Nâng cấp ẩn hiện tính năng mới) ---
+        function applyRoleUI(user) {
+            currentUserData = user;
+            document.getElementById('user-name-display').innerText = user.name;
+            document.getElementById('user-avatar').innerText = user.name.charAt(0).toUpperCase();
+            
+            btnShowLogin.style.display = 'none';
+            userProfile.style.display = 'flex';
+            headerNav.style.display = 'flex'; 
+
+            if (user.role === 'Member') {
+                sidebar.style.display = 'none';
+            } 
+            else if (user.role === 'Manager') {
+                sidebar.style.display = 'flex';
+                if(menuAdminAcc) menuAdminAcc.style.display = 'none';
+                if(menuAdminGroup) menuAdminGroup.style.display = 'none';
+            } 
+            else if (user.role === 'Admin') {
+                sidebar.style.display = 'flex';
+                if(menuAdminAcc) menuAdminAcc.style.display = 'flex';
+                if(menuAdminGroup) menuAdminGroup.style.display = 'flex';
+            }
+
+            showScreen('home');
+        }
+
+        // --- 7. XỬ LÝ LOGOUT & UTILS ---
+        function handleLogout() {
+            localStorage.removeItem('currentUser');
+            currentUserData = null;
+            btnShowLogin.style.display = 'block';
+            userProfile.style.display = 'none';
+            headerNav.style.display = 'none';
+            sidebar.style.display = 'none';
+            dropdownMenu.classList.remove('active');
+            
+            document.getElementById('username').value = "";
+            showScreen('home');
+        }
+
+        function toggleDropdown() { dropdownMenu.classList.toggle('active'); }
+        function showError(msg) { errorAlert.innerText = msg; errorAlert.style.display = 'block'; }
+        
+        function showToast(msg) {
+            const toast = document.getElementById('toast-msg');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.closest('.user-dropdown-toggle')) {
+                dropdownMenu.classList.remove('active');
+            }
+        }
+
+        // ================= CÁC TÍNH NĂNG MỚI (JS LOGIC) =================
+
+        function getUserGroups(userId) {
+            return MOCK_GROUPS.filter(g => g.memberIds.includes(userId)).map(g => g.name).join(', ');
+        }
+
+        // --- CONTROLLER QUẢN LÝ TÀI KHOẢN ---
+        const accountCtrl = {
+            sortCol: 'username', sortAsc: true,
+            init: () => { accountCtrl.renderList(); },
+            sort: (col) => {
+                if(accountCtrl.sortCol === col) accountCtrl.sortAsc = !accountCtrl.sortAsc;
+                else { accountCtrl.sortCol = col; accountCtrl.sortAsc = true; }
+                accountCtrl.renderList();
+            },
+            renderList: () => {
+                let data = [...MOCK_USERS];
+                const keyword = document.getElementById('acc-search').value.toLowerCase();
+                const dept = document.getElementById('acc-filter-dept').value;
+                const pos = document.getElementById('acc-filter-pos').value;
+
+                if(keyword) data = data.filter(u => u.username.toLowerCase().includes(keyword) || u.fullname.toLowerCase().includes(keyword));
+                if(dept) data = data.filter(u => u.department === dept);
+                if(pos) data = data.filter(u => u.position === pos);
+
+                data.sort((a, b) => {
+                    let valA = a[accountCtrl.sortCol].toLowerCase();
+                    let valB = b[accountCtrl.sortCol].toLowerCase();
+                    if(valA < valB) return accountCtrl.sortAsc ? -1 : 1;
+                    if(valA > valB) return accountCtrl.sortAsc ? 1 : -1;
+                    return 0;
+                });
+
+                const tbody = document.getElementById('acc-table-body');
+                tbody.innerHTML = '';
+                data.forEach(u => {
+                    const tr = document.createElement('tr');
+                    tr.onclick = () => accountCtrl.viewProfile(u.id);
+                    tr.innerHTML = `<td>${u.email}</td><td>${u.username}</td><td>${u.fullname}</td><td>${u.department}</td><td>${u.position}</td><td>${getUserGroups(u.id)}</td>`;
+                    tbody.appendChild(tr);
+                });
+            },
+            viewProfile: (id) => {
+                const user = MOCK_USERS.find(u => u.id === id);
+                document.getElementById('profile-details').innerHTML = `
+                    <div class="profile-label">Họ và tên:</div><div>${user.fullname}</div>
+                    <div class="profile-label">Username:</div><div>${user.username}</div>
+                    <div class="profile-label">Department:</div><div>${user.department}</div>
+                    <div class="profile-label">Position:</div><div>${user.position}</div>
+                    <div class="profile-label">Email:</div><div>${user.email}</div>
+                    <div class="profile-label">Groups Joined:</div><div>${getUserGroups(user.id) || 'N/A'}</div>
+                `;
+                showScreen('profile');
+            }
+        };
+
+        // --- CONTROLLER QUẢN LÝ NHÓM ---
+        const groupCtrl = {
+            sortCol: 'createdDate', sortAsc: false,
+            currentGroupId: null, tempEditMembers: [],
+            sortGdCol: 'addedDate', sortGdAsc: false,
+
+            init: () => {
+                document.getElementById('chk-all-groups').checked = false;
+                document.getElementById('btn-delete-group').disabled = true;
+                groupCtrl.sortCol = 'createdDate'; groupCtrl.sortAsc = false;
+                groupCtrl.renderList(); 
+            },
+            sort: (col) => {
+                if(groupCtrl.sortCol === col) groupCtrl.sortAsc = !groupCtrl.sortAsc;
+                else { groupCtrl.sortCol = col; groupCtrl.sortAsc = true; }
+                groupCtrl.renderList();
+            },
+            renderList: () => {
+                let data = MOCK_GROUPS.map(g => ({ ...g, memberCount: g.memberIds.length }));
+                const keyword = document.getElementById('grp-search').value.toLowerCase();
+                const from = document.getElementById('grp-filter-from').value;
+                const to = document.getElementById('grp-filter-to').value;
+                const mems = document.getElementById('grp-filter-members').value;
+
+                if(keyword) data = data.filter(g => g.name.toLowerCase().includes(keyword));
+                if (from) data = data.filter(g => g.createdDate >= from);
+                if (to) data = data.filter(g => g.createdDate <= to);
+                if (mems) data = data.filter(g => g.memberCount == mems);
+
+                data.sort((a, b) => {
+                    let valA = a[groupCtrl.sortCol]; let valB = b[groupCtrl.sortCol];
+                    if(typeof valA === 'string') valA = valA.toLowerCase();
+                    if(typeof valB === 'string') valB = valB.toLowerCase();
+                    if(valA < valB) return groupCtrl.sortAsc ? -1 : 1;
+                    if(valA > valB) return groupCtrl.sortAsc ? 1 : -1;
+                    return 0;
+                });
+
+                const tbody = document.getElementById('grp-table-body');
+                tbody.innerHTML = '';
+                data.forEach(g => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td onclick="event.stopPropagation()"><input type="checkbox" class="chk-group" value="${g.id}" onchange="groupCtrl.checkSelection()"></td>
+                        <td onclick="groupCtrl.viewDetails(${g.id})" style="color:var(--primary); font-weight:500;">${g.name}</td>
+                        <td onclick="groupCtrl.viewDetails(${g.id})">${g.memberCount}</td>
+                        <td onclick="groupCtrl.viewDetails(${g.id})">${g.creator}</td>
+                        <td onclick="groupCtrl.viewDetails(${g.id})">${g.createdDate}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            },
+            toggleAllChecks: (source) => {
+                document.querySelectorAll('.chk-group').forEach(chk => chk.checked = source.checked);
+                groupCtrl.checkSelection();
+            },
+            checkSelection: () => {
+                const checked = document.querySelectorAll('.chk-group:checked');
+                document.getElementById('btn-delete-group').disabled = checked.length === 0;
+            },
+            showDeleteConfirm: () => { document.getElementById('modal-confirm-delete').style.display = 'flex'; },
+            executeDelete: (isConfirm) => {
+                document.getElementById('modal-confirm-delete').style.display = 'none';
+                if(isConfirm) {
+                    const checkedIds = Array.from(document.querySelectorAll('.chk-group:checked')).map(c => parseInt(c.value));
+                    MOCK_GROUPS = MOCK_GROUPS.filter(g => !checkedIds.includes(g.id));
+                    showToast("xóa thành công");
+                    groupCtrl.init();
+                }
+            },
+            showCreateModal: () => {
+                document.getElementById('create-grp-name').value = '';
+                document.getElementById('modal-create-group').style.display = 'flex';
+            },
+            submitCreateGroup: () => {
+                const name = document.getElementById('create-grp-name').value.trim();
+                if(!name) return alert("Tên nhóm không được để trống");
+                if(MOCK_GROUPS.some(g => g.name.toLowerCase() === name.toLowerCase())) return alert("Group name is existed");
+                
+                const today = new Date().toISOString().split('T')[0];
+                MOCK_GROUPS.push({ id: Date.now(), name, creator: currentUserData ? currentUserData.username : 'admin', createdDate: today, memberIds: [], addedDates: {} });
+                document.getElementById('modal-create-group').style.display = 'none';
+                groupCtrl.init();
+            },
+            viewDetails: (id) => {
+                groupCtrl.currentGroupId = id;
+                const group = MOCK_GROUPS.find(g => g.id === id);
+                document.getElementById('gd-name-display').innerText = group.name;
+                document.getElementById('gd-date').innerText = group.createdDate;
+                document.getElementById('gd-creator').innerText = group.creator;
+                
+                document.getElementById('gd-search').value = '';
+                document.getElementById('gd-filter-date').value = '';
+                groupCtrl.sortGdCol = 'addedDate'; groupCtrl.sortGdAsc = false;
+                groupCtrl.renderGroupDetails();
+                showScreen('group-details');
+            },
+            sortGd: (col) => {
+                if(groupCtrl.sortGdCol === col) groupCtrl.sortGdAsc = !groupCtrl.sortGdAsc;
+                else { groupCtrl.sortGdCol = col; groupCtrl.sortGdAsc = true; }
+                groupCtrl.renderGroupDetails();
+            },
+            renderGroupDetails: () => {
+                const group = MOCK_GROUPS.find(g => g.id === groupCtrl.currentGroupId);
+                document.getElementById('gd-count').innerText = group.memberIds.length;
+                
+                let accounts = group.memberIds.map(id => {
+                    let u = MOCK_USERS.find(user => user.id === id);
+                    return { ...u, addedDate: group.addedDates[id] };
+                });
+                
+                const kw = document.getElementById('gd-search').value.toLowerCase();
+                const dept = document.getElementById('gd-filter-dept').value;
+                const pos = document.getElementById('gd-filter-pos').value;
+                const fromDate = document.getElementById('gd-filter-date').value;
+                
+                if(kw) accounts = accounts.filter(u => u.fullname.toLowerCase().includes(kw));
+                if(dept) accounts = accounts.filter(u => u.department === dept);
+                if(pos) accounts = accounts.filter(u => u.position === pos);
+                if(fromDate) accounts = accounts.filter(u => u.addedDate >= fromDate);
+
+                accounts.sort((a, b) => {
+                    let valA = a[groupCtrl.sortGdCol]; let valB = b[groupCtrl.sortGdCol];
+                    if(typeof valA === 'string') valA = valA.toLowerCase();
+                    if(typeof valB === 'string') valB = valB.toLowerCase();
+                    if(valA < valB) return groupCtrl.sortGdAsc ? -1 : 1;
+                    if(valA > valB) return groupCtrl.sortGdAsc ? 1 : -1;
+                    return 0;
+                });
+
+                const tbody = document.getElementById('gd-table-body');
+                tbody.innerHTML = '';
+                accounts.forEach(u => {
+                    tbody.innerHTML += `<tr><td>${u.email}</td><td>${u.username}</td><td>${u.fullname}</td><td>${u.department}</td><td>${u.position}</td><td>${u.addedDate}</td></tr>`;
+                });
+            },
+            openEdit: () => {
+                const group = MOCK_GROUPS.find(g => g.id === groupCtrl.currentGroupId);
+                document.getElementById('edit-grp-name').value = group.name;
+                groupCtrl.tempEditMembers = [...group.memberIds]; 
+                document.getElementById('edit-search-acc').value = '';
+                
+                groupCtrl.renderEditSearchList();
+                groupCtrl.renderEditCurrentList();
+                showScreen('group-edit');
+            },
+            renderEditSearchList: () => {
+                const kw = document.getElementById('edit-search-acc').value.toLowerCase();
+                let available = MOCK_USERS;
+                if(kw) available = available.filter(u => u.fullname.toLowerCase().includes(kw) || u.username.toLowerCase().includes(kw));
+                
+                const box = document.getElementById('edit-list-available');
+                box.innerHTML = '';
+                available.forEach(u => {
+                    const isAdded = groupCtrl.tempEditMembers.includes(u.id);
+                    box.innerHTML += `
+                        <div class="member-item">
+                            <div><b>${u.fullname}</b> (${u.username})</div>
+                            ${isAdded ? `<span class="badge-added"><i class="fa-solid fa-check"></i> Đã thêm</span>` 
+                                      : `<button class="btn btn-outline" style="padding: 4px 8px; font-size:12px;" onclick="groupCtrl.toggleMember(${u.id}, true)">Add</button>`}
+                        </div>
+                    `;
+                });
+            },
+            renderEditCurrentList: () => {
+                const box = document.getElementById('edit-list-current');
+                document.getElementById('edit-count').innerText = groupCtrl.tempEditMembers.length;
+                box.innerHTML = '';
+                groupCtrl.tempEditMembers.forEach(id => {
+                    const u = MOCK_USERS.find(user => user.id === id);
+                    box.innerHTML += `
+                        <div class="member-item current-member-item">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <i class="fa-solid fa-user-check" style="color:var(--primary);"></i>
+                                <span><b>${u.fullname}</b> (${u.username})</span>
+                            </div>
+                            <button class="btn btn-danger btn-remove" onclick="groupCtrl.toggleMember(${u.id}, false)"><i class="fa-solid fa-trash"></i> Xóa</button>
+                        </div>
+                    `;
+                });
+            },
+            toggleMember: (userId, isAdd) => {
+                if(isAdd) groupCtrl.tempEditMembers.push(userId);
+                else groupCtrl.tempEditMembers = groupCtrl.tempEditMembers.filter(id => id !== userId);
+                groupCtrl.renderEditSearchList();
+                groupCtrl.renderEditCurrentList();
+            },
+            saveEdit: () => {
+                const newName = document.getElementById('edit-grp-name').value.trim();
+                if(!newName) return alert("Tên nhóm không được để trống");
+                
+                const group = MOCK_GROUPS.find(g => g.id === groupCtrl.currentGroupId);
+                if(newName.toLowerCase() !== group.name.toLowerCase() && 
+                   MOCK_GROUPS.some(g => g.name.toLowerCase() === newName.toLowerCase())) {
+                    return alert("Group name is existed");
+                }
+
+                group.name = newName;
+                const today = new Date().toISOString().split('T')[0];
+                groupCtrl.tempEditMembers.forEach(id => {
+                    if(!group.memberIds.includes(id)) group.addedDates[id] = today; 
+                });
+                
+                Object.keys(group.addedDates).forEach(k => {
+                    if(!groupCtrl.tempEditMembers.includes(parseInt(k))) delete group.addedDates[k];
+                });
+
+                group.memberIds = [...groupCtrl.tempEditMembers];
+                showToast("Cập nhật thành công!");
+                groupCtrl.viewDetails(group.id); 
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô phỏng Giao diện: Danh sách Tài khoản</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; }
+        .highlight-box {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .teacher-mode .highlight-box.active {
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2);
+            border-radius: 0.5rem;
+            z-index: 10;
+        }
+        .teacher-badge {
+            position: absolute;
+            top: -12px;
+            left: -12px;
+            background-color: #f59e0b;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 20;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .teacher-mode .highlight-box.active .teacher-badge {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="p-4 lg:p-8">
+    <div id="root" class="max-w-7xl mx-auto"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo } = React;
+
+        // Dữ liệu giả lập
+        const mockData = [
+            { id: 1, email: 'an.nguyen@congty.vn', username: 'an.nguyen', fullname: 'Nguyễn Văn An', dept: 'IT', position: 'System Admin', groups: ['Quản trị viên', 'Kỹ thuật'] },
+            { id: 2, email: 'binh.tran@congty.vn', username: 'binh.tran', fullname: 'Trần Thị Bình', dept: 'Nhân sự', position: 'HR Manager', groups: ['Trưởng phòng', 'Tuyển dụng'] },
+            { id: 3, email: 'cuong.le@congty.vn', username: 'cuong.le', fullname: 'Lê Hùng Cường', dept: 'Kinh doanh', position: 'Sales Executive', groups: ['Nhân viên Sales'] },
+            { id: 4, email: 'dung.pham@congty.vn', username: 'dung.pham', fullname: 'Phạm Thùy Dung', dept: 'Marketing', position: 'Content Creator', groups: ['Sáng tạo', 'Biên tập'] },
+            { id: 5, email: 'giang.vu@congty.vn', username: 'giang.vu', fullname: 'Vũ Trường Giang', dept: 'Kế toán', position: 'Kế toán trưởng', groups: ['Kế toán', 'Ban giám đốc'] }
+        ];
+
+        function App() {
+            const [teacherMode, setTeacherMode] = useState(false);
+            const [activeHighlight, setActiveHighlight] = useState(0);
+            const [searchTerm, setSearchTerm] = useState('');
+
+            // Lọc dữ liệu cơ bản để demo UI cho thật
+            const filteredData = mockData.filter(user => 
+                user.username.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                user.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                user.email.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            // Các điểm nhấn cho Teacher Mode
+            const srsPoints = [
+                { id: 1, text: "...các thông tin cơ bản của tài khoản như sau: Email, Username, Fullname, Department, Position, danh sách các nhóm...", target: 'columns' },
+                { id: 2, text: "List default sort theo trường username A->Z", target: 'sort' },
+                { id: 3, text: "Admin có thể thực hiện các chức năng như search, sort và filter...", target: 'controls' }
+            ];
+
+            return (
+                <div className="flex flex-col xl:flex-row gap-6">
+                    
+                    {/* KHU VỰC BÊN TRÁI: BẢN YÊU CẦU (SRS) & BẢNG ĐIỀU KHIỂN GIẢNG VIÊN */}
+                    <div className="w-full xl:w-1/3 flex flex-col gap-6">
+                        
+                        {/* Box SRS Text */}
+                        <div className="bg-slate-800 text-white rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                            <i className="fa-solid fa-file-contract absolute -right-4 -bottom-4 text-8xl text-slate-700 opacity-50"></i>
+                            <h2 className="text-xl font-bold mb-4 border-b border-slate-600 pb-2 flex items-center gap-2">
+                                <i className="fa-regular fa-file-lines text-indigo-400"></i>
+                                Trích đoạn SRS
+                            </h2>
+                            <div className="text-slate-300 text-sm leading-relaxed space-y-3 relative z-10 font-medium">
+                                <p>Danh sách các tài khoản trong hệ thông được hiển thị trong một bảng. Với mỗi dòng bao gồm <span className={`transition-colors ${teacherMode && activeHighlight === 1 ? 'bg-amber-400 text-amber-900 px-1 rounded' : ''}`}>các thông tin cơ bản của tài khoản như sau: Email, Username, Fullname, Department, Position, danh sách các nhóm</span> của tài khoản.</p>
+                                <p><span className={`transition-colors ${teacherMode && activeHighlight === 2 ? 'bg-amber-400 text-amber-900 px-1 rounded' : ''}`}>List default sort theo trường username A-&gt;Z</span></p>
+                                <p>Admin có thể <span className={`transition-colors ${teacherMode && activeHighlight === 3 ? 'bg-amber-400 text-amber-900 px-1 rounded' : ''}`}>thực hiện các chức năng như search, sort và filter</span> tài khoản ứng với các mô tả [Sort tài khoản],[Search tài khoản],[Filter tài khoản]</p>
+                            </div>
+                        </div>
+
+                        {/* Control Panel cho Giảng viên */}
+                        <div className="bg-white rounded-2xl p-6 shadow-md border-t-4 border-amber-500">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                    <i className="fa-solid fa-chalkboard-user text-amber-500"></i>
+                                    Góc phân tích UI
+                                </h2>
+                                {/* Toggle Switch */}
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                  <input type="checkbox" value="" className="sr-only peer" checked={teacherMode} onChange={() => {setTeacherMode(!teacherMode); setActiveHighlight(0);}} />
+                                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                                </label>
+                            </div>
+
+                            {teacherMode ? (
+                                <div className="space-y-2 animate-[fadeIn_0.3s_ease-out]">
+                                    <p className="text-sm text-slate-500 italic mb-3">Click vào từng dòng dưới đây để xem UI tương ứng:</p>
+                                    {srsPoints.map(point => (
+                                        <button 
+                                            key={point.id}
+                                            onClick={() => setActiveHighlight(point.id)}
+                                            className={`w-full text-left p-3 rounded-lg border text-sm transition-all flex items-start gap-3
+                                                ${activeHighlight === point.id ? 'bg-amber-50 border-amber-400 shadow-sm' : 'bg-white border-slate-200 hover:bg-slate-50'}`}
+                                        >
+                                            <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs mt-0.5
+                                                ${activeHighlight === point.id ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                                                {point.id}
+                                            </span>
+                                            <span className={activeHighlight === point.id ? 'text-amber-900 font-medium' : 'text-slate-600'}>
+                                                {point.id === 1 ? 'Ánh xạ Cột dữ liệu (Table Columns)' : 
+                                                 point.id === 2 ? 'Ánh xạ Logic Sắp xếp (Default Sort)' : 
+                                                 'Ánh xạ Bộ công cụ (Search/Filter)'}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-4 opacity-50">
+                                    <i className="fa-solid fa-eye-slash text-3xl mb-2"></i>
+                                    <p className="text-sm">Bật công tắc phía trên để bắt đầu phân tích bóc tách Requirement.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* KHU VỰC BÊN PHẢI: GIAO DIỆN MÔ PHỎNG (MOCKUP UI) */}
+                    <div className={`w-full xl:w-2/3 bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 ${teacherMode ? 'teacher-mode' : ''}`}>
+                        
+                        {/* Toolbar (Search, Filter, Actions) */}
+                        <div className="p-5 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <h2 className="text-xl font-bold text-slate-800">Quản lý Tài khoản</h2>
+                            
+                            <div className={`highlight-box flex gap-3 p-1 ${activeHighlight === 3 ? 'active' : 'border-transparent border-2'}`}>
+                                <div className="teacher-badge">3</div>
+                                
+                                {/* Search Bar */}
+                                <div className="relative">
+                                    <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Tìm Email, Username..." 
+                                        className="pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Filter Button */}
+                                <button className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2 shadow-sm">
+                                    <i className="fa-solid fa-filter text-slate-400"></i>
+                                    Bộ lọc
+                                </button>
+                                
+                                {/* Add Button */}
+                                <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-sm flex items-center gap-2">
+                                    <i className="fa-solid fa-plus"></i>
+                                    Thêm mới
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Data Table */}
+                        <div className="overflow-x-auto p-1">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className={`border-b-2 border-slate-200 bg-white highlight-box ${activeHighlight === 1 ? 'active' : 'border-transparent border-2'}`}>
+                                        {activeHighlight === 1 && <div className="teacher-badge">1</div>}
+                                        
+                                        <th className="py-4 px-6 font-semibold text-slate-600 text-sm">Email</th>
+                                        
+                                        {/* Cột Username đặc biệt vì có sort */}
+                                        <th className="py-4 px-6 text-sm relative">
+                                            <div className={`highlight-box inline-flex items-center gap-2 cursor-pointer p-1 -m-1 rounded hover:bg-slate-100 ${activeHighlight === 2 ? 'active' : 'border-transparent border-2'}`}>
+                                                {activeHighlight === 2 && <div className="teacher-badge" style={{left: '-16px', top: '-16px'}}>2</div>}
+                                                <span className="font-bold text-indigo-700 underline decoration-indigo-300 underline-offset-4">Username</span>
+                                                <div className="flex flex-col text-[10px] leading-none">
+                                                    <i className="fa-solid fa-caret-up text-indigo-600"></i>
+                                                    <i className="fa-solid fa-caret-down text-slate-300"></i>
+                                                </div>
+                                                {activeHighlight === 2 && (
+                                                    <span className="absolute -top-8 left-0 bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap animate-pulse">
+                                                        Mặc định: Sort A-Z
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </th>
+                                        
+                                        <th className="py-4 px-6 font-semibold text-slate-600 text-sm cursor-pointer hover:bg-slate-50 group">
+                                            Fullname <i className="fa-solid fa-sort text-slate-300 ml-1 opacity-0 group-hover:opacity-100"></i>
+                                        </th>
+                                        <th className="py-4 px-6 font-semibold text-slate-600 text-sm cursor-pointer hover:bg-slate-50 group">
+                                            Department <i className="fa-solid fa-sort text-slate-300 ml-1 opacity-0 group-hover:opacity-100"></i>
+                                        </th>
+                                        <th className="py-4 px-6 font-semibold text-slate-600 text-sm">Position</th>
+                                        <th className="py-4 px-6 font-semibold text-slate-600 text-sm">Nhóm (Groups)</th>
+                                        <th className="py-4 px-6 font-semibold text-slate-600 text-sm text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredData.length > 0 ? filteredData.map((user, index) => (
+                                        <tr key={user.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                            <td className="py-4 px-6 text-sm text-slate-600">{user.email}</td>
+                                            {/* Cột Username in đậm để nhấn mạnh đang được sort */}
+                                            <td className="py-4 px-6 text-sm font-semibold text-indigo-700">{user.username}</td>
+                                            <td className="py-4 px-6 text-sm text-slate-800 font-medium">{user.fullname}</td>
+                                            <td className="py-4 px-6 text-sm text-slate-600">
+                                                <span className="bg-slate-100 px-2 py-1 rounded text-xs font-semibold">{user.dept}</span>
+                                            </td>
+                                            <td className="py-4 px-6 text-sm text-slate-600">{user.position}</td>
+                                            <td className="py-4 px-6 text-sm">
+                                                <div className="flex flex-wrap gap-1">
+                                                    {user.groups.map((group, idx) => (
+                                                        <span key={idx} className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded text-[11px] whitespace-nowrap">
+                                                            {group}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </td>
+                                            <td className="py-4 px-6 text-sm text-center">
+                                                <button className="text-slate-400 hover:text-indigo-600 transition-colors"><i className="fa-solid fa-pen-to-square"></i></button>
+                                            </td>
+                                        </tr>
+                                    )) : (
+                                        <tr>
+                                            <td colSpan="7" className="py-8 text-center text-slate-500">
+                                                Không tìm thấy kết quả nào cho "{searchTerm}"
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Pagination (Trang trí) */}
+                        <div className="p-4 border-t border-slate-200 flex items-center justify-between text-sm text-slate-500 bg-white">
+                            <div>Hiển thị 1 đến {filteredData.length} trong {mockData.length} kết quả</div>
+                            <div className="flex gap-1">
+                                <button className="px-3 py-1 border rounded hover:bg-slate-50 disabled:opacity-50" disabled><i className="fa-solid fa-chevron-left"></i></button>
+                                <button className="px-3 py-1 border rounded bg-indigo-50 text-indigo-600 font-bold border-indigo-200">1</button>
+                                <button className="px-3 py-1 border rounded hover:bg-slate-50 disabled:opacity-50" disabled><i className="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

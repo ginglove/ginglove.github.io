@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ Cấu trúc: Form Lọc Tài Khoản</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+        
+        /* Hierarchy Tree CSS */
+        .tree ul {
+            padding-top: 20px; position: relative;
+            transition: all 0.5s;
+            display: flex;
+            justify-content: center;
+        }
+        .tree li {
+            float: left; text-align: center;
+            list-style-type: none;
+            position: relative;
+            padding: 20px 10px 0 10px;
+            transition: all 0.5s;
+        }
+        /* Đường kẻ dọc nối các node */
+        .tree li::before, .tree li::after {
+            content: '';
+            position: absolute; top: 0; right: 50%;
+            border-top: 2px solid #cbd5e1;
+            width: 50%; height: 20px;
+            z-index: 0;
+        }
+        .tree li::after {
+            right: auto; left: 50%;
+            border-left: 2px solid #cbd5e1;
+        }
+        /* Xóa đường kẻ cho node duy nhất */
+        .tree li:only-child::after, .tree li:only-child::before {
+            display: none;
+        }
+        .tree li:only-child { padding-top: 0; }
+        /* Xóa vạch thừa ở node đầu và cuối */
+        .tree li:first-child::before, .tree li:last-child::after {
+            border: 0 none;
+        }
+        /* Nối lại vạch cho node đầu và cuối */
+        .tree li:first-child::after {
+            border-radius: 10px 0 0 0;
+        }
+        .tree li:last-child::before {
+            border-radius: 0 10px 0 0;
+            border-right: 2px solid #cbd5e1;
+        }
+        /* Đường kẻ dọc kéo xuống node con */
+        .tree ul ul::before {
+            content: '';
+            position: absolute; top: 0; left: 50%;
+            border-left: 2px solid #cbd5e1;
+            width: 0; height: 20px;
+            transform: translateX(-1px);
+        }
+
+        /* Node Box Design */
+        .tree-node-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 140px;
+            position: relative;
+            z-index: 10;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .tree-node-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .node-active {
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2) !important;
+            transform: translateY(-5px);
+        }
+        
+        /* Hiệu ứng focus nhánh */
+        .tree li.active-branch > .tree-node-card { border-color: #818cf8; }
+        .tree li.active-branch > ul::before { border-color: #6366f1; }
+        .tree li.active-branch > ul > li::before, .tree li.active-branch > ul > li::after { border-color: #6366f1; }
+    </style>
+</head>
+<body class="p-4 lg:p-8 min-h-screen">
+    <div id="root" class="max-w-7xl mx-auto flex flex-col items-center"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        const nodeData = {
+            'root': {
+                title: 'Form Lọc Dữ Liệu',
+                subtitle: 'Filter Module',
+                icon: 'fa-filter',
+                color: 'text-indigo-600',
+                bgColor: 'bg-indigo-50',
+                qaText: "Đây là module tổng quản lý việc thu hẹp tập dữ liệu. Mục tiêu là giúp người dùng tìm chính xác danh sách tài khoản họ cần giữa hàng ngàn bản ghi.",
+                qaTips: [
+                    "Sự kết hợp (AND/OR): Khi chọn cả Dept và Position, hệ thống lấy tài khoản thỏa mãn CẢ 2 điều kiện (AND) hay MỘT TRONG 2 (OR)? (Thường mặc định là AND).",
+                    "Empty State: Lọc ra 0 kết quả thì UI hiển thị gì? Có hiện thông báo 'Không tìm thấy kết quả' không?",
+                    "Giữ trạng thái: Reload trang có làm mất các tiêu chí đang lọc không? (Có lưu trên URL tham số không?)"
+                ]
+            },
+            'inputs': {
+                title: 'Tiêu chí (Inputs)',
+                subtitle: 'Các trường chọn',
+                icon: 'fa-list-check',
+                color: 'text-emerald-600',
+                bgColor: 'bg-emerald-50',
+                qaText: "Nhánh quản lý các giá trị đầu vào để truy vấn. SRS chỉ liệt kê tên trường, QA cần làm rõ tính chất của từng trường.",
+                qaTips: [
+                    "Đây là Single-select (chọn 1) hay Multi-select (chọn nhiều)?",
+                    "Có giá trị mặc định là 'Tất cả' (All) không?",
+                    "Có ô nhập Text search trực tiếp trong Dropdown nếu danh sách Dept/Position quá dài không?"
+                ]
+            },
+            'actions': {
+                title: 'Thao tác (Actions)',
+                subtitle: 'Các nút bấm',
+                icon: 'fa-hand-pointer',
+                color: 'text-rose-600',
+                bgColor: 'bg-rose-50',
+                qaText: "SRS thường quên không nhắc đến các nút bấm, nhưng UI bắt buộc phải có để trigger (kích hoạt) hành động.",
+                qaTips: [
+                    "Auto-filter hay Manual: Chọn xong dropdown hệ thống tự lọc ngay (OnChange), hay phải bấm nút [Lọc] (OnSubmit)?",
+                    "Nút Reset/Clear: Nếu muốn xóa toàn bộ bộ lọc về trạng thái ban đầu thì làm thế nào?",
+                    "Trạng thái Loading: Bấm Lọc xong, nút Lọc có bị disable mờ đi chờ API trả về không?"
+                ]
+            },
+            'dept': {
+                title: 'Dropdown: Dept',
+                subtitle: 'Phòng ban (rrc, rdc, du...)',
+                icon: 'fa-building',
+                color: 'text-blue-600',
+                bgColor: 'bg-blue-50',
+                qaText: "Trường lọc theo đơn vị/phòng ban.",
+                qaTips: [
+                    "Nguồn dữ liệu: Danh sách 'rrc, rdc, du' là Fix cứng (Hardcode) hay Lấy từ Database (API)?",
+                    "Phân quyền: User ở phòng RRC có nhìn thấy lựa chọn phòng DU để lọc không, hay chỉ lọc được người trong phòng mình?",
+                    "Thứ tự hiển thị: Các item trong Dropdown được sắp xếp A-Z hay theo trật tự tạo?"
+                ]
+            },
+            'pos': {
+                title: 'Dropdown: Position',
+                subtitle: 'Vị trí (Dev, QA, SM...)',
+                icon: 'fa-user-tie',
+                color: 'text-teal-600',
+                bgColor: 'bg-teal-50',
+                qaText: "Trường lọc theo chức danh/vị trí công việc.",
+                qaTips: [
+                    "Sự phụ thuộc (Cascading): Chọn Dept là 'rrc' thì Position có tự động co lại chỉ hiển thị các vị trí tồn tại trong rrc không?",
+                    "Kiểm tra tính hợp lệ: Cố tình truyền tham số Position id không tồn tại lên URL thì API báo lỗi gì?"
+                ]
+            },
+            'btn-filter': {
+                title: 'Nút [Lọc]',
+                subtitle: 'Apply Filters',
+                icon: 'fa-magnifying-glass',
+                color: 'text-amber-600',
+                bgColor: 'bg-amber-50',
+                qaText: "Nút gửi request tìm kiếm lên hệ thống.",
+                qaTips: [
+                    "Pagination (Phân trang): Đang ở trang 3, bấm thay đổi điều kiện Lọc -> Hệ thống có tự reset về trang 1 không? (Bắt buộc phải reset về 1).",
+                    "Spam click: Bấm nút Lọc liên tục 10 lần có bắn ra 10 request làm treo server không?"
+                ]
+            },
+            'btn-clear': {
+                title: 'Nút [Xóa lọc]',
+                subtitle: 'Clear / Reset',
+                icon: 'fa-rotate-left',
+                color: 'text-slate-600',
+                bgColor: 'bg-slate-100',
+                qaText: "Chức năng khôi phục bảng dữ liệu về trạng thái mặc định (Lỗ hổng thường xuyên bị BA bỏ sót trong SRS).",
+                qaTips: [
+                    "Reset Form: Bấm xong các Dropdown có trở về giá trị 'Tất cả' (Default) không?",
+                    "Reset Data: Bảng danh sách tài khoản phía dưới có tải lại toàn bộ danh sách ban đầu không?",
+                    "Nút này chỉ khả dụng (enable) khi người dùng ĐÃ chọn ít nhất 1 tiêu chí, đúng không?"
+                ]
+            }
+        };
+
+        function App() {
+            const [activeNode, setActiveNode] = useState('root');
+
+            const currentData = nodeData[activeNode];
+
+            const NodeCard = ({ id }) => {
+                const node = nodeData[id];
+                const isActive = activeNode === id;
+                return (
+                    <div 
+                        onClick={(e) => { e.stopPropagation(); setActiveNode(id); }}
+                        className={`tree-node-card ${isActive ? 'node-active' : 'border-slate-200'}`}
+                    >
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg mb-2 ${node.bgColor} ${node.color}`}>
+                            <i className={`fa-solid ${node.icon}`}></i>
+                        </div>
+                        <h3 className={`font-bold text-sm ${isActive ? 'text-indigo-700' : 'text-slate-800'}`}>{node.title}</h3>
+                        <p className="text-[10px] text-slate-500 mt-1 font-medium bg-slate-50 px-2 py-0.5 rounded">{node.subtitle}</p>
+                    </div>
+                );
+            };
+
+            return (
+                <div className="w-full bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden flex flex-col mb-10">
+                    
+                    {/* Header */}
+                    <div className="bg-slate-800 text-white p-6 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500 rounded-full blur-3xl opacity-20"></div>
+                        <h1 className="text-2xl lg:text-3xl font-extrabold tracking-wide relative z-10 flex items-center gap-3">
+                            <i className="fa-solid fa-sitemap text-indigo-400"></i>
+                            CẤU TRÚC PHÂN RÃ: <span className="text-emerald-400">FORM LỌC TÀI KHOẢN</span>
+                        </h1>
+                        <p className="text-slate-300 text-sm mt-2 relative z-10 font-medium">Bóc tách Requirement từ Sơ đồ cây (Tree Diagram)</p>
+                    </div>
+
+                    <div className="flex flex-col xl:flex-row divide-y xl:divide-y-0 xl:divide-x divide-slate-200">
+                        
+                        {/* LEFT: Tree Diagram Area */}
+                        <div className="w-full xl:w-3/5 p-6 lg:p-10 bg-slate-50 overflow-x-auto flex justify-center items-start min-h-[450px]">
+                            <div className="tree">
+                                <ul>
+                                    <li className={['root', 'inputs', 'actions', 'dept', 'pos', 'btn-filter', 'btn-clear'].includes(activeNode) ? 'active-branch' : ''}>
+                                        <NodeCard id="root" />
+                                        <ul>
+                                            {/* Nhánh 1: Inputs */}
+                                            <li className={['inputs', 'dept', 'pos'].includes(activeNode) ? 'active-branch' : ''}>
+                                                <NodeCard id="inputs" />
+                                                <ul>
+                                                    <li className={activeNode === 'dept' ? 'active-branch' : ''}><NodeCard id="dept" /></li>
+                                                    <li className={activeNode === 'pos' ? 'active-branch' : ''}><NodeCard id="pos" /></li>
+                                                </ul>
+                                            </li>
+                                            
+                                            {/* Nhánh 2: Actions */}
+                                            <li className={['actions', 'btn-filter', 'btn-clear'].includes(activeNode) ? 'active-branch' : ''}>
+                                                <NodeCard id="actions" />
+                                                <ul>
+                                                    <li className={activeNode === 'btn-filter' ? 'active-branch' : ''}><NodeCard id="btn-filter" /></li>
+                                                    <li className={activeNode === 'btn-clear' ? 'active-branch' : ''}><NodeCard id="btn-clear" /></li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        {/* RIGHT: QA Analysis Panel */}
+                        <div className="w-full xl:w-2/5 p-6 lg:p-8 bg-white relative">
+                            <div className="absolute top-4 right-4 text-slate-100 text-6xl opacity-50 pointer-events-none">
+                                <i className={`fa-solid ${currentData.icon}`}></i>
+                            </div>
+                            
+                            <h2 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2 uppercase border-b-2 border-indigo-100 pb-3">
+                                <i className="fa-solid fa-user-secret text-indigo-500 text-xl"></i>
+                                Góc bóc tách Requirement
+                            </h2>
+
+                            <div key={activeNode} className="animate-[slideIn_0.3s_ease-out]">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-sm border border-slate-100 ${currentData.bgColor} ${currentData.color}`}>
+                                        <i className={`fa-solid ${currentData.icon}`}></i>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-slate-800">{currentData.title}</h3>
+                                        <p className="text-sm text-slate-500 font-medium">{currentData.subtitle}</p>
+                                    </div>
+                                </div>
+
+                                <p className="text-slate-700 font-medium text-sm leading-relaxed mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-inner">
+                                    {currentData.qaText}
+                                </p>
+
+                                <div className="space-y-3">
+                                    <h4 className="font-bold text-sm text-amber-600 flex items-center gap-2 mb-3">
+                                        <i className="fa-solid fa-triangle-exclamation"></i>
+                                        Câu hỏi "Bắt bài" Requirement (Loopholes):
+                                    </h4>
+                                    {currentData.qaTips.map((tip, idx) => (
+                                        <div key={idx} className="flex items-start gap-3 p-3 bg-amber-50/50 rounded-lg border border-amber-100 hover:bg-amber-50 transition-colors">
+                                            <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 text-xs font-bold mt-0.5">
+                                                ?
+                                            </div>
+                                            <p className="text-sm text-slate-700 leading-relaxed"><strong className="text-slate-800">{tip.split(':')[0]}:</strong> {tip.split(':')[1]}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ Tổ chức: Module Nhóm Tài Khoản</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+        
+        /* Hiệu ứng mượt mà cho các tương tác */
+        .node-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .node-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .node-active {
+            border-color: #4f46e5 !important;
+            background-color: #e0e7ff !important;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.2) !important;
+        }
+
+        /* SVG Connecting Lines */
+        .tree-container {
+            position: relative;
+        }
+        
+        /* Custom scrollbar cho panel bên trái */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="p-4 lg:p-8 min-h-screen">
+    <div id="root" class="max-w-7xl mx-auto"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Dữ liệu Sơ đồ theo đúng requirement của User
+        const hierarchyData = {
+            id: 'root',
+            title: 'Bài 2: Module Nhóm Tài Khoản',
+            purpose: 'Quản lý toàn bộ danh sách, thông tin và thành viên của các Nhóm tài khoản trong hệ thống.',
+            icon: 'fa-users-rectangle',
+            color: 'text-indigo-600',
+            bgIcon: 'bg-indigo-100',
+            border: 'border-indigo-500',
+            qaTips: [
+                "Nắm rõ phân quyền: Ai (Role nào) mới có quyền truy cập vào Module này?",
+                "Luồng dữ liệu: Module này có ảnh hưởng đến Module Tài khoản (Bài 1) như thế nào?"
+            ],
+            children: [
+                {
+                    id: '1', title: '1. View List', purpose: 'Xem nhóm tài khoản', icon: 'fa-list', color: 'text-blue-600', bgIcon: 'bg-blue-100', border: 'border-blue-400',
+                    qaTips: ["Test phân trang (Pagination) có hoạt động đúng không?", "Hiển thị mặc định khi lần đầu mở trang là gì?", "Nếu không có data (Empty state) thì hiển thị thế nào?"],
+                    children: [
+                        {
+                            id: '1.1', title: '1.1. Search nhóm', purpose: 'Tìm kiếm nhóm tài khoản', icon: 'fa-magnifying-glass', color: 'text-cyan-600', bgIcon: 'bg-cyan-100', border: 'border-cyan-400',
+                            qaTips: ["Tìm kiếm tương đối hay tuyệt đối? Có phân biệt hoa thường không?", "Nhập ký tự đặc biệt (!@#) hoặc script XSS xem có bị lỗi không?", "Tìm kiếm theo Tên nhóm hay ID nhóm?"]
+                        },
+                        {
+                            id: '1.2', title: '1.2. Sort nhóm', purpose: 'Sắp xếp tài khoản theo chiều A-Z hoặc ngược lại', icon: 'fa-sort', color: 'text-teal-600', bgIcon: 'bg-teal-100', border: 'border-teal-400',
+                            qaTips: ["Sắp xếp có đi kèm với Pagination không? (Sort trên toàn DB hay chỉ sort trên trang hiện tại?)", "Thứ tự default trước khi click là gì?"]
+                        },
+                        {
+                            id: '1.3', title: '1.3. Filter nhóm', purpose: 'Lọc nhóm theo các tiêu chí', icon: 'fa-filter', color: 'text-emerald-600', bgIcon: 'bg-emerald-100', border: 'border-emerald-400',
+                            qaTips: ["Kết hợp nhiều bộ lọc cùng lúc (AND logic).", "Có nút Clear/Reset filter để quay về ban đầu không?", "Lọc xong bấm sang trang 2 có bị mất tiêu chí lọc không?"]
+                        }
+                    ]
+                },
+                {
+                    id: '2', title: '2. Tạo nhóm', purpose: 'View Details nhóm tài khoản', icon: 'fa-square-plus', color: 'text-amber-500', bgIcon: 'bg-amber-100', border: 'border-amber-400',
+                    qaTips: ["Kiểm tra trùng lặp: Tạo tên nhóm đã tồn tại thì báo lỗi thế nào?", "Các trường bắt buộc (Mandatory) có dấu * đỏ không?", "Tạo xong có tự động chuyển hướng về màn View List không?"]
+                },
+                {
+                    id: '3', title: '3. Update nhóm', purpose: 'Cập nhật thông tin và thành viên của nhóm', icon: 'fa-pen-to-square', color: 'text-orange-500', bgIcon: 'bg-orange-100', border: 'border-orange-400',
+                    qaTips: ["Concurrent Update: Nếu 2 admin cùng mở form update 1 nhóm cùng lúc thì sao?"],
+                    children: [
+                        {
+                            id: '3.1', title: '3.1. Update tên nhóm', purpose: 'Update tên nhóm tài khoản', icon: 'fa-i-cursor', color: 'text-orange-600', bgIcon: 'bg-orange-100', border: 'border-orange-300',
+                            qaTips: ["Validate giới hạn ký tự (Max length, Min length).", "Update thành khoảng trắng (Space) thì có lưu được không?"]
+                        },
+                        {
+                            id: '3.2', title: '3.2. Update Account', purpose: 'Update Account nhóm tài khoản', icon: 'fa-users-gear', color: 'text-orange-600', bgIcon: 'bg-orange-100', border: 'border-orange-300',
+                            qaTips: ["Thêm Account đã bị khóa vào nhóm có được không?", "Có giới hạn số lượng Account tối đa trong 1 nhóm không?"]
+                        }
+                    ]
+                },
+                {
+                    id: '4', title: '4. Delete nhóm', purpose: 'Xóa Account nhóm tài khoản', icon: 'fa-trash-can', color: 'text-rose-500', bgIcon: 'bg-rose-100', border: 'border-rose-400',
+                    qaTips: ["Ràng buộc khóa ngoại: Nếu nhóm đang có Account bên trong thì có cho phép Xóa không? (Hay phải xóa hết user mới được xóa nhóm?)", "Có popup xác nhận 'Bạn có chắc chắn muốn xóa?' không?", "Là xóa cứng (Hard Delete - mất luôn DB) hay xóa mềm (Soft Delete - đổi trạng thái)?"]
+                }
+            ]
+        };
+
+        function App() {
+            const [activeNode, setActiveNode] = useState(hierarchyData); // Mặc định chọn Root
+
+            // Hàm đệ quy tìm kiếm node theo ID
+            const findNodeById = (node, id) => {
+                if (node.id === id) return node;
+                if (node.children) {
+                    for (let child of node.children) {
+                        const found = findNodeById(child, id);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            };
+
+            const handleNodeClick = (id, e) => {
+                e.stopPropagation();
+                const node = findNodeById(hierarchyData, id);
+                if (node) setActiveNode(node);
+            };
+
+            // Recursive Component vẽ Sơ đồ Cây
+            const TreeLevel = ({ node, isRoot = false }) => {
+                const hasChildren = node.children && node.children.length > 0;
+                const isActive = activeNode.id === node.id;
+
+                return (
+                    <div className={`flex items-stretch ${isRoot ? '' : 'mt-4'}`}>
+                        {/* Box của Node hiện tại */}
+                        <div 
+                            onClick={(e) => handleNodeClick(node.id, e)}
+                            className={`node-card cursor-pointer border-2 bg-white rounded-xl p-3 flex items-center gap-3 w-[260px] flex-shrink-0 z-10 relative
+                                ${isActive ? 'node-active' : `border-slate-200 hover:border-slate-400`}`}
+                        >
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${node.bgIcon} ${node.color}`}>
+                                <i className={`fa-solid ${node.icon}`}></i>
+                            </div>
+                            <div className="flex-grow overflow-hidden">
+                                <h3 className={`font-bold text-sm truncate ${isActive ? 'text-indigo-800' : 'text-slate-700'}`} title={node.title}>{node.title}</h3>
+                                <p className="text-[10px] text-slate-500 truncate" title={node.purpose}>{node.purpose}</p>
+                            </div>
+                            
+                            {/* Đường nối ngang sang phải (nếu có con) */}
+                            {hasChildren && (
+                                <div className="absolute right-0 top-1/2 w-8 border-t-2 border-slate-300" style={{ transform: 'translateX(100%)' }}></div>
+                            )}
+                        </div>
+
+                        {/* Rendering Children */}
+                        {hasChildren && (
+                            <div className="relative flex flex-col pl-8 ml-8">
+                                {/* Đường kẻ dọc nối các con */}
+                                <div className="absolute left-0 top-6 bottom-6 w-px border-l-2 border-slate-300"></div>
+                                
+                                {node.children.map((child, index) => (
+                                    <div key={child.id} className="relative flex items-center">
+                                        {/* Đường nối ngang từ đường kẻ dọc tới con */}
+                                        <div className="absolute left-0 top-1/2 w-8 border-t-2 border-slate-300" style={{ transform: 'translateX(-100%)' }}></div>
+                                        <TreeLevel node={child} />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            return (
+                <div className="w-full bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden flex flex-col xl:flex-row min-h-[600px]">
+                    
+                    {/* KHU VỰC BÊN TRÁI: TREE DIAGRAM */}
+                    <div className="w-full xl:w-3/5 bg-slate-50 p-6 lg:p-10 border-b xl:border-b-0 xl:border-r border-slate-200 overflow-auto flex items-center">
+                        <div className="mx-auto pb-4">
+                            <TreeLevel node={hierarchyData} isRoot={true} />
+                        </div>
+                    </div>
+
+                    {/* KHU VỰC BÊN PHẢI: DETAIL & QA PANEL */}
+                    <div className="w-full xl:w-2/5 p-6 lg:p-10 bg-white relative">
+                        {/* Background Decoration */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-slate-100 rounded-full blur-3xl opacity-50 -mr-20 -mt-20 pointer-events-none"></div>
+
+                        <div className="mb-8">
+                            <h2 className="text-sm font-bold text-slate-400 tracking-wider uppercase mb-1">
+                                Chi tiết Chức năng
+                            </h2>
+                            <h1 className="text-2xl font-black text-slate-800 border-b-2 border-indigo-100 pb-3 flex items-center gap-3">
+                                <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${activeNode.bgIcon} ${activeNode.color}`}>
+                                    <i className={`fa-solid ${activeNode.icon}`}></i>
+                                </span>
+                                {activeNode.title}
+                            </h1>
+                        </div>
+
+                        <div key={activeNode.id} className="fade-in space-y-6">
+                            
+                            {/* Mục đích Requirement */}
+                            <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 shadow-sm relative">
+                                <span className="absolute -top-3 left-4 bg-white px-2 text-xs font-bold text-indigo-600 border border-slate-200 rounded">
+                                    Mục đích (Requirement)
+                                </span>
+                                <p className="text-slate-700 font-medium leading-relaxed">
+                                    {activeNode.purpose}
+                                </p>
+                            </div>
+
+                            {/* Góc Test Case (QA) */}
+                            <div className="bg-amber-50 rounded-xl p-5 border border-amber-200 shadow-sm relative mt-8">
+                                <span className="absolute -top-3 left-4 bg-amber-500 text-white px-3 py-0.5 text-xs font-bold rounded shadow-sm flex items-center gap-1">
+                                    <i className="fa-solid fa-lightbulb"></i> QA Bắt Lỗi
+                                </span>
+                                
+                                <p className="text-sm text-amber-700 mb-4 italic mt-1">
+                                    Khi phân tích nhánh này, học viên cần đặt ra các kịch bản test sau:
+                                </p>
+
+                                <ul className="space-y-3">
+                                    {activeNode.qaTips.map((tip, idx) => (
+                                        <li key={idx} className="flex items-start gap-3">
+                                            <div className="w-5 h-5 rounded-full bg-amber-200 text-amber-700 flex items-center justify-center flex-shrink-0 text-[10px] font-bold mt-0.5">
+                                                {idx + 1}
+                                            </div>
+                                            <span className="text-slate-800 text-sm font-medium leading-relaxed">{tip}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                            
+                            <div className="mt-8 pt-4 border-t border-slate-100 flex items-center gap-3 text-slate-400 text-sm">
+                                <i className="fa-solid fa-hand-pointer animate-bounce text-indigo-400"></i>
+                                <span>Bấm vào các thẻ bên trái để xem bóc tách chi tiết từng chức năng.</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô phỏng Giao diện: App Chuyển Tiền</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #e2e8f0; }
+        
+        /* Mobile Device Frame */
+        .marvel-device {
+            width: 360px;
+            height: 720px;
+            background: #ffffff;
+            border-radius: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3), inset 0 0 0 10px #1e293b;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Notch / Dynamic Island fake */
+        .marvel-device::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 25px;
+            background: #1e293b;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            z-index: 50;
+        }
+
+        /* Screen Transitions */
+        .screen-enter { animation: slideInRight 0.3s forwards; }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Thêm hiệu ứng Fade-in nhẹ cho block hiển thị câu hỏi */
+        .fade-in { animation: fadeIn 0.3s ease-in-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* QA Highlight Styles */
+        .hl-target { transition: all 0.3s; position: relative; }
+        .hl-active {
+            z-index: 40;
+            animation: pulse-pink 1.5s infinite;
+            border-radius: 8px;
+        }
+        @keyframes pulse-pink {
+            0% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(236, 72, 153, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); }
+        }
+
+        /* Custom Scrollbar for App */
+        .app-scroll::-webkit-scrollbar { width: 4px; }
+        .app-scroll::-webkit-scrollbar-track { background: transparent; }
+        .app-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="p-4 lg:p-8 min-h-screen flex items-center justify-center">
+    <div id="root" class="max-w-[1200px] w-full mx-auto"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- MOCK DATA ---
+        const MY_BALANCE = 5000000; // 5 triệu VND
+        const TRANSFER_FEE = 0; // Miễn phí
+        const MIN_TRANSFER = 1000;
+        const CORRECT_PIN = "123456";
+
+        const MOCK_CONTACTS = [
+            { phone: '0987654321', name: 'Nguyễn Văn An', avatar: 'https://ui-avatars.com/api/?name=An+Nguyen&background=random' },
+            { phone: '0912345678', name: 'Trần Thị Bình', avatar: 'https://ui-avatars.com/api/?name=Binh+Tran&background=random' },
+            { phone: '0909090909', name: 'Lê Hoàng Cường', avatar: 'https://ui-avatars.com/api/?name=Cuong+Le&background=random' }
+        ];
+
+        // Format tiền tệ VN
+        const formatMoney = (amount) => {
+            if (!amount) return '0';
+            return new Intl.NumberFormat('vi-VN').format(amount);
+        };
+
+        function App() {
+            // --- APP STATE ---
+            const [screen, setScreen] = useState('RECIPIENT'); // RECIPIENT -> AMOUNT -> CONFIRM -> PIN -> SUCCESS
+            const [recipientPhone, setRecipientPhone] = useState('');
+            const [selectedRecipient, setSelectedRecipient] = useState(null);
+            const [amount, setAmount] = useState('');
+            const [message, setMessage] = useState('');
+            const [pin, setPin] = useState('');
+            const [errorMsg, setErrorMsg] = useState('');
+            
+            // --- TEACHER STATE ---
+            const [activeHighlight, setActiveHighlight] = useState(null);
+            const [showHints, setShowHints] = useState(false); // State quản lý ẩn/hiện câu hỏi
+
+            // --- Handlers cho luồng App ---
+            const handleFindRecipient = (phone) => {
+                const found = MOCK_CONTACTS.find(c => c.phone === phone);
+                if (found) {
+                    setSelectedRecipient(found);
+                    setScreen('AMOUNT');
+                    setErrorMsg('');
+                    setActiveHighlight(null);
+                } else if (phone.length >= 10) {
+                    setErrorMsg('Số điện thoại chưa đăng ký ví!');
+                }
+            };
+
+            const handleCheckAmount = () => {
+                const numAmount = parseInt(amount.replace(/\D/g, '') || 0);
+                if (numAmount < MIN_TRANSFER) {
+                    setErrorMsg(`Số tiền tối thiểu là ${formatMoney(MIN_TRANSFER)}đ`);
+                    return;
+                }
+                if (numAmount > MY_BALANCE) {
+                    setErrorMsg('Số dư không đủ để thực hiện giao dịch!');
+                    return;
+                }
+                setScreen('CONFIRM');
+                setErrorMsg('');
+                setActiveHighlight(null);
+            };
+
+            const handleConfirm = () => {
+                setScreen('PIN');
+                setPin('');
+                setErrorMsg('');
+                setActiveHighlight(null);
+            };
+
+            const handlePinSubmit = (enteredPin) => {
+                if (enteredPin === CORRECT_PIN) {
+                    setScreen('SUCCESS');
+                } else {
+                    setErrorMsg('Mã PIN không chính xác. Vui lòng thử lại!');
+                    setPin(''); // Reset pin
+                }
+            };
+
+            const handleReset = () => {
+                setScreen('RECIPIENT');
+                setRecipientPhone('');
+                setSelectedRecipient(null);
+                setAmount('');
+                setMessage('');
+                setPin('');
+                setErrorMsg('');
+                setActiveHighlight(null);
+            };
+
+            // --- CẤU TRÚC BÀI GIẢNG (THEO SCREEN) ---
+            const QA_DATA = {
+                'RECIPIENT': {
+                    title: '1. Nhập Thông Tin Người Nhận',
+                    desc: 'Bước đầu tiên để xác định đối tượng đích của luồng.',
+                    questions: [
+                        { id: 'phone_input', title: 'Validate Số Điện Thoại', text: 'Nhập chữ cái, emoji, khoảng trắng có bị chặn không? Paste (dán) số điện thoại có dấu +84 có tự động convert không?' },
+                        { id: 'unregistered', title: 'Số chưa đăng ký', text: 'Hệ thống báo lỗi như thế nào khi chuyển cho số không tồn tại? Có mời họ cài app không?' },
+                        { id: 'transfer_self', title: 'Chuyển cho chính mình', text: 'Nhập sđt của chính tài khoản đang login thì hệ thống có báo lỗi chặn lại không?' }
+                    ]
+                },
+                'AMOUNT': {
+                    title: '2. Nhập Số Tiền & Lời Nhắn',
+                    desc: 'Nơi áp dụng cực nhiều kỹ thuật BVA (Giá trị biên) và EP (Phân vùng tương đương).',
+                    questions: [
+                        { id: 'amount_boundary', title: 'Giá trị biên số tiền', text: 'Chuyển 0đ, chuyển số âm (-50k). Chuyển thấp hơn min (999đ). Chuyển cao hơn hạn mức ngày (ví dụ > 50 triệu/ngày).' },
+                        { id: 'insufficient_fund', title: 'Kiểm tra Số dư', text: `Tài khoản có ${formatMoney(MY_BALANCE)}đ. Chuyển đúng ${formatMoney(MY_BALANCE)}đ (OK), chuyển ${formatMoney(MY_BALANCE + 1)}đ (Báo lỗi).` },
+                        { id: 'message_injection', title: 'Security lời nhắn', text: 'Nhập script XSS (<script>), thẻ HTML, hoặc lời nhắn dài 10,000 ký tự vào ô này hệ thống có bị sập không?' }
+                    ]
+                },
+                'CONFIRM': {
+                    title: '3. Màn hình Xác nhận (Confirm)',
+                    desc: 'Chốt thông tin trước khi gọi API thanh toán.',
+                    questions: [
+                        { id: 'fee_calc', title: 'Tính toán Phí (Fee)', text: 'Phí giao dịch được cộng vào hay trừ đi? Tổng tiền = Số tiền + Phí giao dịch có hiển thị đúng logic cộng dồn không?' },
+                        { id: 'concurrency', title: 'Lỗi Concurrency (Đồng thời)', text: 'Trong lúc đang đứng ở màn hình này, một giao dịch khác trừ sạch tiền trong tài khoản. Bấm "Xác nhận" chuyện gì xảy ra?' },
+                        { id: 'network_timeout', title: 'Mất mạng', text: 'Bấm nút "Xác nhận" xong tắt Wifi ngay lập tức. App văng lỗi crash hay hiện "Đang xử lý, vui lòng kiểm tra lịch sử"?' }
+                    ]
+                },
+                'PIN': {
+                    title: '4. Xác thực Bảo mật (PIN/OTP)',
+                    desc: 'Chốt chặn an ninh cuối cùng.',
+                    questions: [
+                        { id: 'wrong_pin', title: 'Nhập sai PIN', text: 'Nhập sai 3 lần liên tiếp thì tài khoản có bị khóa không? Thời gian khóa là bao lâu?' },
+                        { id: 'background_app', title: 'Đẩy app xuống Background', text: 'Đang ở màn hình nhập PIN, thoát ra home screen rồi mở lại, app còn ở màn này không hay bị văng ra ngoài?' }
+                    ]
+                },
+                'SUCCESS': {
+                    title: '5. Giao dịch Thành công',
+                    desc: 'Hiển thị biên lai (Receipt).',
+                    questions: [
+                        { id: 'receipt_data', title: 'Tính toàn vẹn biên lai', text: 'Mã giao dịch (TransID) có được sinh ra duy nhất không? Thời gian ghi nhận trên biên lai có khớp với server không?' },
+                        { id: 'notification', title: 'Trigger Thông báo', text: 'Người nhận có nhận được Push Notification/Biến động số dư ngay lập tức không?' }
+                    ]
+                }
+            };
+
+            const currentQA = QA_DATA[screen];
+
+            return (
+                <div className="flex flex-col lg:flex-row gap-8 w-full max-w-[1000px] h-full items-center justify-center">
+                    
+                    {/* BẢNG BÊN TRÁI: TEACHER PANEL */}
+                    <div className="w-full lg:w-[450px] bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200 flex flex-col h-[720px]">
+                        
+                        <div className="bg-pink-600 text-white p-6 relative overflow-hidden flex-shrink-0">
+                            <i className="fa-solid fa-graduation-cap absolute -right-4 -bottom-4 text-7xl opacity-20"></i>
+                            <h2 className="text-xl font-black uppercase tracking-wide flex items-center gap-2 relative z-10">
+                                Bảng điều khiển QA
+                            </h2>
+                            <p className="text-pink-100 text-sm mt-1">Phân tích Requirement Chuyển tiền</p>
+                        </div>
+
+                        <div className="p-6 bg-slate-50 border-b border-slate-200 flex-shrink-0">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-bold text-lg">
+                                    {screen === 'RECIPIENT' ? '1' : screen === 'AMOUNT' ? '2' : screen === 'CONFIRM' ? '3' : screen === 'PIN' ? '4' : '5'}
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-slate-800">{currentQA.title}</h3>
+                                    <p className="text-xs text-slate-500 font-medium">{currentQA.desc}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-6 flex-1 overflow-y-auto">
+                            <div className="flex justify-between items-center mb-4">
+                                <h4 className="font-bold text-sm text-slate-800 flex items-center gap-2">
+                                    <i className="fa-solid fa-clipboard-question text-pink-500"></i>
+                                    Gợi ý câu hỏi:
+                                </h4>
+                                <button 
+                                    onClick={() => setShowHints(!showHints)}
+                                    className="text-xs font-bold text-pink-600 hover:text-pink-700 bg-pink-100 hover:bg-pink-200 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5 shadow-sm"
+                                >
+                                    {showHints ? <><i className="fa-solid fa-eye-slash"></i> Ẩn</> : <><i className="fa-solid fa-eye"></i> Xem</>}
+                                </button>
+                            </div>
+                            
+                            {showHints ? (
+                                <div className="space-y-4 fade-in">
+                                    {currentQA.questions.map((q, idx) => (
+                                        <div 
+                                            key={idx}
+                                            onMouseEnter={() => setActiveHighlight(q.id)}
+                                            onMouseLeave={() => setActiveHighlight(null)}
+                                            className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:border-pink-400 hover:shadow-md transition-all cursor-pointer group"
+                                        >
+                                            <h5 className="font-bold text-slate-800 text-sm mb-1 group-hover:text-pink-600 transition-colors">
+                                                {q.title}
+                                            </h5>
+                                            <p className="text-sm text-slate-600 leading-relaxed">
+                                                {q.text}
+                                            </p>
+                                            <div className="mt-2 text-[10px] text-pink-500 font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                                <i className="fa-solid fa-eye"></i> Hover để xem vị trí UI
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center p-8 text-slate-400 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 fade-in mt-4">
+                                    <i className="fa-solid fa-user-secret text-3xl mb-2 text-slate-300"></i>
+                                    <p className="text-sm font-medium">Gợi ý câu hỏi đang được ẩn</p>
+                                    <p className="text-xs mt-1">Hỏi học viên trước, sau đó bấm nút "Xem" để đối chiếu.</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-4 bg-slate-800 text-white text-xs text-center">
+                            <span className="text-slate-400">Số dư giả lập để Test:</span> <strong className="text-green-400">{formatMoney(MY_BALANCE)} VNĐ</strong>
+                        </div>
+                    </div>
+
+                    {/* BẢNG BÊN PHẢI: MOBILE APP MOCKUP */}
+                    <div className="marvel-device flex-shrink-0 bg-slate-50">
+                        
+                        {/* StatusBar Fake */}
+                        <div className="h-10 w-full flex justify-between items-center px-6 text-xs font-medium text-slate-800 z-10 pt-2">
+                            <span>14:30</span>
+                            <div className="flex gap-1.5 items-center">
+                                <i className="fa-solid fa-signal"></i>
+                                <i className="fa-solid fa-wifi"></i>
+                                <i className="fa-solid fa-battery-full"></i>
+                            </div>
+                        </div>
+
+                        {/* RENDER MÀN HÌNH TƯƠNG ỨNG */}
+                        <div className="flex-1 overflow-hidden relative screen-enter" key={screen}>
+                            
+                            {/* ================= SCREEN 1: RECIPIENT ================= */}
+                            {screen === 'RECIPIENT' && (
+                                <div className="h-full flex flex-col bg-white">
+                                    <div className="bg-pink-600 text-white p-4 pb-6 pt-2 flex items-center gap-4">
+                                        <i className="fa-solid fa-arrow-left text-lg cursor-pointer"></i>
+                                        <h1 className="text-lg font-bold">Chuyển tiền</h1>
+                                    </div>
+                                    <div className="px-4 -mt-4 relative z-10">
+                                        <div className={`hl-target bg-white rounded-xl shadow-lg border border-slate-100 p-4 ${activeHighlight === 'phone_input' || activeHighlight === 'transfer_self' || activeHighlight === 'unregistered' ? 'hl-active' : ''}`}>
+                                            <p className="text-xs font-bold text-slate-500 mb-2">Đến số điện thoại</p>
+                                            <div className="flex items-center gap-2 border-b-2 border-pink-500 pb-2">
+                                                <input 
+                                                    type="tel" 
+                                                    placeholder="Nhập số điện thoại..." 
+                                                    className="w-full text-lg font-bold outline-none text-slate-800 placeholder-slate-300"
+                                                    value={recipientPhone}
+                                                    onChange={(e) => {
+                                                        setRecipientPhone(e.target.value);
+                                                        setErrorMsg('');
+                                                    }}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') handleFindRecipient(recipientPhone);
+                                                    }}
+                                                />
+                                                <i className="fa-solid fa-address-book text-pink-600 text-xl cursor-pointer"></i>
+                                            </div>
+                                            {errorMsg && <p className="text-red-500 text-xs mt-2 font-bold animate-pulse">{errorMsg}</p>}
+                                            {recipientPhone.length >= 10 && !errorMsg && (
+                                                <button 
+                                                    onClick={() => handleFindRecipient(recipientPhone)}
+                                                    className="w-full mt-4 bg-pink-600 text-white rounded-lg py-2 font-bold hover:bg-pink-700"
+                                                >
+                                                    Tiếp tục
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex-1 px-4 mt-6">
+                                        <h3 className="font-bold text-slate-800 text-sm mb-4">Giao dịch gần đây</h3>
+                                        <div className="space-y-4">
+                                            {MOCK_CONTACTS.map((contact, idx) => (
+                                                <div 
+                                                    key={idx} 
+                                                    className="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-2 -mx-2 rounded-lg"
+                                                    onClick={() => {
+                                                        setRecipientPhone(contact.phone);
+                                                        handleFindRecipient(contact.phone);
+                                                    }}
+                                                >
+                                                    <img src={contact.avatar} className="w-10 h-10 rounded-full" alt="avatar" />
+                                                    <div>
+                                                        <p className="font-bold text-slate-800 text-sm">{contact.name}</p>
+                                                        <p className="text-xs text-slate-500">{contact.phone}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ================= SCREEN 2: AMOUNT ================= */}
+                            {screen === 'AMOUNT' && selectedRecipient && (
+                                <div className="h-full flex flex-col bg-slate-50">
+                                    <div className="bg-pink-600 text-white p-4 pt-2 flex items-center gap-4 h-24">
+                                        <i className="fa-solid fa-arrow-left text-lg cursor-pointer" onClick={() => setScreen('RECIPIENT')}></i>
+                                        <h1 className="text-lg font-bold">Chuyển tiền</h1>
+                                    </div>
+                                    
+                                    <div className="px-4 -mt-10 relative z-10 flex flex-col gap-4">
+                                        
+                                        {/* Card Người nhận */}
+                                        <div className="bg-white rounded-xl shadow-md p-4 flex items-center gap-3">
+                                            <img src={selectedRecipient.avatar} className="w-12 h-12 rounded-full" alt="avatar" />
+                                            <div>
+                                                <p className="font-bold text-slate-800">{selectedRecipient.name}</p>
+                                                <p className="text-sm text-slate-500">{selectedRecipient.phone}</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Card Nhập Tiền */}
+                                        <div className={`hl-target bg-white rounded-xl shadow-md p-5 flex flex-col items-center ${activeHighlight === 'amount_boundary' || activeHighlight === 'insufficient_fund' ? 'hl-active' : ''}`}>
+                                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">Nhập số tiền</span>
+                                            <div className="flex items-end justify-center gap-1 mt-2 mb-2 w-full">
+                                                <span className="text-xl font-bold text-slate-400 mb-1">đ</span>
+                                                <input 
+                                                    type="text" 
+                                                    className="text-4xl font-black text-slate-800 bg-transparent outline-none w-full text-center placeholder-slate-200"
+                                                    placeholder="0"
+                                                    value={formatMoney(amount)}
+                                                    onChange={(e) => {
+                                                        // Chỉ lấy số
+                                                        const rawValue = e.target.value.replace(/\D/g, '');
+                                                        setAmount(rawValue);
+                                                        setErrorMsg('');
+                                                    }}
+                                                />
+                                            </div>
+                                            {errorMsg && <p className="text-red-500 text-xs font-bold animate-pulse text-center">{errorMsg}</p>}
+                                            <div className={`mt-4 px-3 py-1.5 rounded-full text-xs font-bold ${amount && parseInt(amount) > MY_BALANCE ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'}`}>
+                                                Số dư: {formatMoney(MY_BALANCE)}đ
+                                            </div>
+                                        </div>
+
+                                        {/* Card Lời nhắn */}
+                                        <div className={`hl-target bg-white rounded-xl shadow-md p-4 ${activeHighlight === 'message_injection' ? 'hl-active' : ''}`}>
+                                            <textarea 
+                                                className="w-full outline-none text-sm resize-none" 
+                                                rows="2" 
+                                                placeholder="Thêm lời nhắn (Không bắt buộc)..."
+                                                value={message}
+                                                onChange={(e) => setMessage(e.target.value)}
+                                            ></textarea>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-auto p-4 bg-white border-t">
+                                        <button 
+                                            onClick={handleCheckAmount}
+                                            className={`w-full py-3.5 rounded-xl font-bold text-white transition-colors
+                                                ${amount && parseInt(amount) >= MIN_TRANSFER ? 'bg-pink-600 hover:bg-pink-700' : 'bg-slate-300 pointer-events-none'}`}
+                                        >
+                                            Tiếp tục
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ================= SCREEN 3: CONFIRM ================= */}
+                            {screen === 'CONFIRM' && selectedRecipient && (
+                                <div className="h-full flex flex-col bg-slate-100">
+                                    <div className="bg-white p-4 pt-2 flex items-center gap-4 border-b">
+                                        <i className="fa-solid fa-arrow-left text-lg cursor-pointer text-slate-600" onClick={() => setScreen('AMOUNT')}></i>
+                                        <h1 className="text-lg font-bold text-slate-800">Xác nhận giao dịch</h1>
+                                    </div>
+                                    
+                                    <div className="flex-1 p-4 app-scroll overflow-y-auto">
+                                        <div className="bg-white rounded-xl p-4 shadow-sm mb-4">
+                                            <div className="flex justify-between text-sm mb-3">
+                                                <span className="text-slate-500">Từ tài khoản</span>
+                                                <span className="font-bold text-slate-800">Ví MoMo</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-slate-500">Đến</span>
+                                                <div className="text-right">
+                                                    <span className="font-bold text-slate-800 block">{selectedRecipient.name}</span>
+                                                    <span className="text-xs text-slate-500">{selectedRecipient.phone}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className={`hl-target bg-white rounded-xl p-4 shadow-sm ${activeHighlight === 'fee_calc' ? 'hl-active' : ''}`}>
+                                            <div className="flex justify-between text-sm mb-3">
+                                                <span className="text-slate-500">Số tiền chuyển</span>
+                                                <span className="font-bold text-slate-800">{formatMoney(amount)}đ</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm mb-3">
+                                                <span className="text-slate-500">Phí giao dịch</span>
+                                                <span className="font-bold text-green-600">{TRANSFER_FEE === 0 ? 'Miễn phí' : formatMoney(TRANSFER_FEE) + 'đ'}</span>
+                                            </div>
+                                            <div className="border-t border-dashed border-slate-200 my-3"></div>
+                                            <div className="flex justify-between">
+                                                <span className="font-bold text-slate-800">Tổng tiền</span>
+                                                <span className="font-black text-xl text-pink-600">{formatMoney(parseInt(amount) + TRANSFER_FEE)}đ</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className={`hl-target p-4 bg-white border-t ${activeHighlight === 'network_timeout' || activeHighlight === 'concurrency' ? 'hl-active' : ''}`}>
+                                        <button 
+                                            onClick={handleConfirm}
+                                            className="w-full bg-pink-600 text-white rounded-xl py-3.5 font-bold hover:bg-pink-700"
+                                        >
+                                            Xác nhận
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ================= SCREEN 4: PIN ================= */}
+                            {screen === 'PIN' && (
+                                <div className="h-full flex flex-col bg-slate-800 text-white relative">
+                                    <div className="p-4 pt-2 flex items-center">
+                                        <i className="fa-solid fa-arrow-left text-lg cursor-pointer" onClick={() => setScreen('CONFIRM')}></i>
+                                    </div>
+                                    
+                                    <div className={`hl-target flex-1 flex flex-col items-center justify-center p-6 ${activeHighlight === 'background_app' || activeHighlight === 'wrong_pin' ? 'hl-active' : ''}`}>
+                                        <i className="fa-solid fa-lock text-4xl mb-4 text-pink-400"></i>
+                                        <h2 className="text-xl font-bold mb-2">Nhập mật khẩu</h2>
+                                        <p className="text-sm text-slate-400 mb-8 text-center">Vui lòng nhập mật khẩu để xác nhận giao dịch {formatMoney(amount)}đ</p>
+                                        
+                                        {/* PIN Dots */}
+                                        <div className="flex gap-4 mb-8">
+                                            {[...Array(6)].map((_, i) => (
+                                                <div key={i} className={`w-4 h-4 rounded-full border-2 ${i < pin.length ? 'bg-pink-500 border-pink-500' : 'border-slate-500'}`}></div>
+                                            ))}
+                                        </div>
+
+                                        {errorMsg && <p className="text-red-400 text-sm font-bold animate-pulse mb-4 text-center bg-red-400/10 px-4 py-2 rounded-lg">{errorMsg}</p>}
+                                        {activeHighlight === 'wrong_pin' && <p className="text-amber-400 text-xs italic mb-4">Gợi ý giảng viên: Nhập sai thử xem (PIN đúng: 123456)</p>}
+                                    </div>
+
+                                    {/* Number Pad Fake */}
+                                    <div className="grid grid-cols-3 gap-y-6 pb-10 px-8 text-2xl font-medium">
+                                        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+                                            <div 
+                                                key={num} 
+                                                className="flex justify-center items-center h-12 cursor-pointer active:bg-slate-700 rounded-full"
+                                                onClick={() => {
+                                                    if (pin.length < 6) {
+                                                        const newPin = pin + num;
+                                                        setPin(newPin);
+                                                        if (newPin.length === 6) {
+                                                            setTimeout(() => handlePinSubmit(newPin), 300); // Đợi xíu tạo cảm giác thật
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                {num}
+                                            </div>
+                                        ))}
+                                        <div></div>
+                                        <div className="flex justify-center items-center h-12 cursor-pointer active:bg-slate-700 rounded-full"
+                                            onClick={() => {
+                                                if (pin.length < 6) {
+                                                    const newPin = pin + '0';
+                                                    setPin(newPin);
+                                                    if (newPin.length === 6) setTimeout(() => handlePinSubmit(newPin), 300);
+                                                }
+                                            }}>0</div>
+                                        <div className="flex justify-center items-center h-12 cursor-pointer active:bg-slate-700 rounded-full"
+                                            onClick={() => setPin(pin.slice(0, -1))}><i className="fa-solid fa-delete-left text-xl"></i></div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ================= SCREEN 5: SUCCESS ================= */}
+                            {screen === 'SUCCESS' && (
+                                <div className="h-full flex flex-col bg-slate-100">
+                                    <div className="flex-1 p-4 flex flex-col items-center justify-center relative app-scroll overflow-y-auto">
+                                        <div className="absolute top-0 left-0 w-full h-48 bg-emerald-500 rounded-b-[40px] z-0"></div>
+                                        
+                                        <div className={`hl-target relative z-10 bg-white w-full rounded-2xl shadow-xl p-6 flex flex-col items-center mt-10 ${activeHighlight === 'receipt_data' || activeHighlight === 'notification' ? 'hl-active' : ''}`}>
+                                            <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center text-white text-3xl mb-4 border-4 border-white shadow-sm -mt-14">
+                                                <i className="fa-solid fa-check"></i>
+                                            </div>
+                                            <h2 className="text-xl font-bold text-slate-800 mb-1">Giao dịch thành công</h2>
+                                            <p className="text-sm text-slate-500 mb-6">{new Date().toLocaleString('vi-VN')}</p>
+                                            
+                                            <p className="text-3xl font-black text-slate-800 mb-6">{formatMoney(amount)}đ</p>
+                                            
+                                            <div className="w-full bg-slate-50 rounded-xl p-4 text-sm space-y-3 border border-slate-100">
+                                                <div className="flex justify-between">
+                                                    <span className="text-slate-500">Người nhận</span>
+                                                    <span className="font-bold text-slate-800">{selectedRecipient?.name}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-slate-500">Số điện thoại</span>
+                                                    <span className="font-bold text-slate-800">{selectedRecipient?.phone}</span>
+                                                </div>
+                                                {message && (
+                                                    <div className="flex justify-between">
+                                                        <span className="text-slate-500">Lời nhắn</span>
+                                                        <span className="font-medium text-slate-800 text-right max-w-[150px] truncate">{message}</span>
+                                                    </div>
+                                                )}
+                                                <div className="border-t border-dashed border-slate-300 my-2"></div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-slate-500">Mã giao dịch</span>
+                                                    <span className="font-mono text-xs text-slate-800">TXN{Math.floor(Math.random() * 100000000)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="p-4 bg-white border-t">
+                                        <button 
+                                            onClick={handleReset}
+                                            className="w-full bg-slate-100 text-pink-600 rounded-xl py-3.5 font-bold hover:bg-slate-200"
+                                        >
+                                            Về trang chủ
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

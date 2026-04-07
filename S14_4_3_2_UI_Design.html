@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô phỏng Giao diện: Quản lý Nhóm Tài Khoản Toàn Tập</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; }
+        
+        /* Highlight CSS cho Teacher Mode */
+        .hl-target { transition: all 0.3s ease; position: relative; }
+        .teacher-mode .hl-target.active {
+            z-index: 40;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.4);
+            border-color: #f59e0b !important;
+            border-radius: 0.5rem;
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+        
+        /* SRS Text styling */
+        .srs-line { cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; padding: 8px 12px; margin-bottom: 4px; border-radius: 0 8px 8px 0; }
+        .srs-line:hover { background-color: rgba(255,255,255,0.05); }
+        .srs-line.active { background-color: rgba(245, 158, 11, 0.2); border-left-color: #f59e0b; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* Hover remove button */
+        .member-row .remove-btn { opacity: 0; transition: opacity 0.2s; }
+        .member-row:hover .remove-btn { opacity: 1; }
+
+        /* Toast animation */
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .toast-anim { animation: slideUp 0.3s ease-out forwards; }
+    </style>
+</head>
+<body class="p-2 lg:p-4 min-h-screen">
+    <div id="root" class="max-w-[1600px] mx-auto h-[95vh] flex flex-col"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo, useEffect } = React;
+
+        // --- MOCK DATA ---
+        const MOCK_ACCOUNTS = [
+            { id: 'a1', fullname: 'Nguyễn Văn Anh Ngọc', username: 'ngoc.nva', email: 'ngoc.nva@abc.vn', dept: 'rrc', position: 'Dev', dateAdded: '2023-10-15' },
+            { id: 'a2', fullname: 'Đoàn Văn Ngọc', username: 'ngoc.dv', email: 'ngoc.dv@abc.vn', dept: 'rdc', position: 'QA', dateAdded: '2023-11-20' },
+            { id: 'a3', fullname: 'Trần Bình', username: 'binh.t', email: 'binh.t@abc.vn', dept: 'du', position: 'SM', dateAdded: '2024-01-10' },
+            { id: 'a4', fullname: 'Lê Cường', username: 'cuong.l', email: 'cuong.l@abc.vn', dept: 'rrc', position: 'Dev', dateAdded: '2024-02-05' },
+            { id: 'a5', fullname: 'Phạm Thu Thủy', username: 'thuy.pt', email: 'thuy.pt@abc.vn', dept: 'rdc', position: 'QA', dateAdded: '2024-03-12' },
+        ];
+
+        const INITIAL_GROUPS = [
+            { id: 1, groupName: 'Automation QA', members: 3, creator: 'admin', createdDate: '2023-10-15', accountIds: ['a1', 'a2', 'a5'] },
+            { id: 2, groupName: 'Backend Devs', members: 1, creator: 'admin', createdDate: '2023-12-01', accountIds: ['a4'] },
+            { id: 3, groupName: 'Scrum Masters', members: 1, creator: 'admin', createdDate: '2024-01-15', accountIds: ['a3'] },
+        ];
+
+        // --- MAIN APP COMPONENT ---
+        function App() {
+            // State View
+            const [currentView, setCurrentView] = useState('LIST'); // LIST, DETAIL
+            const [selectedGroup, setSelectedGroup] = useState(null);
+            
+            // State Modals
+            const [modals, setModals] = useState({ create: false, update: false, delete: false });
+            
+            // Data
+            const [groups, setGroups] = useState(INITIAL_GROUPS);
+            const [selectedGroupIds, setSelectedGroupIds] = useState([]);
+            const [toast, setToast] = useState(null);
+
+            // --- VIEW LIST: SEARCH, SORT, FILTER ---
+            const [searchInput, setSearchInput] = useState('');
+            const [searchQuery, setSearchQuery] = useState('');
+            const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+            const [filterDateFrom, setFilterDateFrom] = useState('');
+            const [filterDateTo, setFilterDateTo] = useState('');
+            const [filterMinMembers, setFilterMinMembers] = useState('');
+
+            // --- DETAIL VIEW: SEARCH, SORT, FILTER ---
+            const [detailSearchInput, setDetailSearchInput] = useState('');
+            const [detailSearchQuery, setDetailSearchQuery] = useState('');
+            const [detailFilterDept, setDetailFilterDept] = useState('Dept (All)');
+            const [detailFilterPos, setDetailFilterPos] = useState('Position (All)');
+            const [detailFilterDate, setDetailFilterDate] = useState('');
+            // Yêu cầu: Mặc định sort theo "Ngày add vào nhóm" giảm dần
+            const [detailSortConfig, setDetailSortConfig] = useState({ key: 'dateAdded', direction: 'desc' });
+
+            // Teacher Mode
+            const [teacherMode, setTeacherMode] = useState(false);
+            const [activeTab, setActiveTab] = useState('I');
+            const [activeSrs, setActiveSrs] = useState(null);
+
+            // --- STATE THÊM MỚI CHO LOGIC CRUD ---
+            const [createData, setCreateData] = useState({ name: '', error: '' });
+            const [updateData, setUpdateData] = useState({ name: '', accountIds: [], error: '' });
+
+            // Utils
+            const showToast = (msg, type='success') => {
+                setToast({ message: msg, type });
+                setTimeout(() => setToast(null), 3000);
+            };
+
+            const handleSrsClick = (reqId) => {
+                setActiveSrs(reqId);
+                if (reqId.startsWith('I.')) { setCurrentView('LIST'); setModals({create: false, update: false, delete: false}); }
+                if (reqId.startsWith('II.')) { 
+                    setCurrentView('LIST'); 
+                    setModals({create: true, update: false, delete: false}); 
+                    if (reqId === 'II.2') {
+                        setTimeout(() => setCreateData({ name: groups[0].groupName, error: 'Group name is existed' }), 50);
+                    } else {
+                        setTimeout(() => setCreateData({ name: 'Automation QA', error: '' }), 50);
+                    }
+                }
+                if (reqId.startsWith('III.')) { setCurrentView('DETAIL'); setSelectedGroup(groups[0]); setModals({create: false, update: false, delete: false}); }
+                if (reqId.startsWith('IV.')) { 
+                    setCurrentView('LIST'); 
+                    setSelectedGroup(groups[0]); 
+                    setModals({create: false, update: true, delete: false}); 
+                }
+                if (reqId.startsWith('V.')) { setCurrentView('LIST'); setModals({create: false, update: false, delete: false}); setSelectedGroupIds([groups[0]?.id]); }
+            };
+
+            // Init Update Modal State when opened
+            useEffect(() => {
+                if (modals.update && selectedGroup) {
+                    setUpdateData({ name: selectedGroup.groupName, accountIds: [...selectedGroup.accountIds], error: '' });
+                }
+            }, [modals.update, selectedGroup]);
+
+            useEffect(() => {
+                if (modals.create && !activeSrs?.startsWith('II.')) {
+                    setCreateData({ name: '', error: '' });
+                }
+            }, [modals.create]);
+
+            // --- CRUD LOGIC HANDLERS ---
+            const handleCreateGroup = () => {
+                const name = createData.name.trim();
+                if (!name) {
+                    setCreateData(p => ({ ...p, error: 'Tên nhóm không được để trống' }));
+                    return;
+                }
+                if (groups.some(g => g.groupName.toLowerCase() === name.toLowerCase())) {
+                    setCreateData(p => ({ ...p, error: 'Group name is existed' }));
+                    return;
+                }
+                const newGroup = {
+                    id: Date.now(),
+                    groupName: name,
+                    members: 0,
+                    creator: 'admin',
+                    createdDate: new Date().toISOString().split('T')[0],
+                    accountIds: []
+                };
+                setGroups([newGroup, ...groups]);
+                setModals(m => ({ ...m, create: false }));
+                showToast('Tạo nhóm thành công!');
+            };
+
+            const handleUpdateGroup = () => {
+                const name = updateData.name.trim();
+                if (!name) {
+                    setUpdateData(p => ({ ...p, error: 'Tên nhóm không được để trống' }));
+                    return;
+                }
+                if (groups.some(g => g.id !== selectedGroup.id && g.groupName.toLowerCase() === name.toLowerCase())) {
+                    setUpdateData(p => ({ ...p, error: 'Group name is existed' }));
+                    return;
+                }
+                const updatedGroup = {
+                    ...selectedGroup,
+                    groupName: name,
+                    accountIds: updateData.accountIds,
+                    members: updateData.accountIds.length
+                };
+                setGroups(groups.map(g => g.id === selectedGroup.id ? updatedGroup : g));
+                setSelectedGroup(updatedGroup);
+                setModals(m => ({ ...m, update: false }));
+                showToast('Cập nhật database thành công');
+            };
+
+            // Reset detail filters when switching group
+            useEffect(() => {
+                setDetailSearchInput(''); setDetailSearchQuery('');
+                setDetailFilterDept('Dept (All)'); setDetailFilterPos('Position (All)'); setDetailFilterDate('');
+                setDetailSortConfig({ key: 'dateAdded', direction: 'desc' });
+            }, [selectedGroup]);
+
+            // --- LOGIC: DANH SÁCH NHÓM (VIEW LIST) ---
+            const processedGroups = useMemo(() => {
+                let result = [...groups];
+
+                if (searchQuery) result = result.filter(item => item.groupName.toLowerCase().includes(searchQuery.toLowerCase()));
+                if (filterDateFrom) result = result.filter(item => item.createdDate >= filterDateFrom);
+                if (filterDateTo) result = result.filter(item => item.createdDate <= filterDateTo);
+                if (filterMinMembers) result = result.filter(item => item.members >= parseInt(filterMinMembers));
+
+                if (sortConfig.key) {
+                    result.sort((a, b) => {
+                        let aVal = a[sortConfig.key], bVal = b[sortConfig.key];
+                        if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+                        if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+                        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+                        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+                        return 0;
+                    });
+                }
+                return result;
+            }, [groups, searchQuery, filterDateFrom, filterDateTo, filterMinMembers, sortConfig]);
+
+            // --- LOGIC: DANH SÁCH TÀI KHOẢN (DETAIL VIEW) ---
+            const processedAccounts = useMemo(() => {
+                if (!selectedGroup) return [];
+                
+                // 1. Lọc tài khoản thuộc nhóm hiện tại
+                let result = MOCK_ACCOUNTS.filter(acc => selectedGroup.accountIds.includes(acc.id));
+
+                // 2. Logic Search (Fullname)
+                if (detailSearchQuery) {
+                    result = result.filter(acc => acc.fullname.toLowerCase().includes(detailSearchQuery.toLowerCase()));
+                }
+
+                // 3. Logic Filter
+                if (detailFilterDept !== 'Dept (All)') result = result.filter(acc => acc.dept.toLowerCase() === detailFilterDept.toLowerCase());
+                if (detailFilterPos !== 'Position (All)') result = result.filter(acc => acc.position.toLowerCase() === detailFilterPos.toLowerCase());
+                if (detailFilterDate) result = result.filter(acc => acc.dateAdded >= detailFilterDate); // Kể từ ngày
+
+                // 4. Logic Sort
+                if (detailSortConfig.key) {
+                    result.sort((a, b) => {
+                        let aVal = a[detailSortConfig.key], bVal = b[detailSortConfig.key];
+                        if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+                        if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+                        if (aVal < bVal) return detailSortConfig.direction === 'asc' ? -1 : 1;
+                        if (aVal > bVal) return detailSortConfig.direction === 'asc' ? 1 : -1;
+                        return 0;
+                    });
+                }
+                return result;
+            }, [selectedGroup, detailSearchQuery, detailFilterDept, detailFilterPos, detailFilterDate, detailSortConfig]);
+
+            // Handlers
+            const handleSearch = () => setSearchQuery(searchInput);
+            const handleKeyDown = (e) => { if (e.key === 'Enter') handleSearch(); };
+            
+            const handleDetailSearch = () => setDetailSearchQuery(detailSearchInput);
+            const handleDetailKeyDown = (e) => { if (e.key === 'Enter') handleDetailSearch(); };
+
+            const handleSort = (key) => {
+                let direction = 'asc';
+                if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
+                setSortConfig({ key, direction });
+            };
+
+            const handleDetailSort = (key) => {
+                let direction = 'asc';
+                if (detailSortConfig.key === key && detailSortConfig.direction === 'asc') direction = 'desc';
+                setDetailSortConfig({ key, direction });
+            };
+
+            const handleClearFilters = () => { setFilterDateFrom(''); setFilterDateTo(''); setFilterMinMembers(''); };
+            const handleClearDetailFilters = () => { setDetailFilterDept('Dept (All)'); setDetailFilterPos('Position (All)'); setDetailFilterDate(''); };
+
+            return (
+                <div className="flex flex-col lg:flex-row gap-4 h-full overflow-hidden">
+                    
+                    {/* BẢNG BÊN TRÁI: TEACHER PANEL */}
+                    <div className="w-full lg:w-[400px] flex-shrink-0 flex flex-col bg-slate-800 text-white rounded-2xl shadow-xl border-t-4 border-amber-500 overflow-hidden">
+                        <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/80 backdrop-blur z-10">
+                            <h2 className="text-lg font-black flex items-center gap-2 text-amber-400">
+                                <i className="fa-solid fa-chalkboard-user"></i>
+                                Chế độ Giảng viên
+                            </h2>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input type="checkbox" className="sr-only peer" checked={teacherMode} onChange={() => {setTeacherMode(!teacherMode); setActiveSrs(null);}} />
+                              <div className="w-9 h-5 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                            </label>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className={`flex border-b border-slate-700 bg-slate-900 ${!teacherMode && 'opacity-50 pointer-events-none'}`}>
+                            {['I', 'II', 'III', 'IV', 'V'].map(tab => (
+                                <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-2 text-xs font-bold border-b-2 transition-colors ${activeTab === tab ? 'border-amber-400 text-amber-400' : 'border-transparent text-slate-400 hover:bg-slate-800'}`}>
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className={`flex-1 overflow-y-auto p-4 ${!teacherMode && 'opacity-50 pointer-events-none filter blur-[2px]'}`}>
+                            {/* NỘI DUNG THEO TAB */}
+                            {activeTab === 'I' && (
+                                <div className="space-y-1 text-sm text-slate-300">
+                                    <h3 className="font-bold text-amber-400 mb-2 uppercase text-xs">I. View List Nhóm</h3>
+                                    <div className={`srs-line ${activeSrs === 'I.1' ? 'active' : ''}`} onClick={() => handleSrsClick('I.1')}>
+                                        <span className="font-bold text-cyan-300">[1. Search]</span> Nhập từ khóa, ấn Enter/Click Search -> Danh sách hiển thị nhóm có Group Name giống/gần giống.
+                                    </div>
+                                    <div className={`srs-line ${activeSrs === 'I.2' ? 'active' : ''}`} onClick={() => handleSrsClick('I.2')}>
+                                        <span className="font-bold text-teal-300">[2. Sort]</span> Bấm vào tiêu đề (Group Name, Members, Creator, Created Date) để sắp xếp A-Z hoặc ngược lại.
+                                    </div>
+                                    <div className={`srs-line ${activeSrs === 'I.3' ? 'active' : ''}`} onClick={() => handleSrsClick('I.3')}>
+                                        <span className="font-bold text-emerald-300">[3. Filter]</span> Lọc theo tiêu chí: Created Date (From - To), Members.
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'II' && (
+                                <div className="space-y-1 text-sm text-slate-300">
+                                    <h3 className="font-bold text-amber-400 mb-2 uppercase text-xs">II. Tạo nhóm</h3>
+                                    <div className={`srs-line ${activeSrs === 'II.1' ? 'active' : ''}`} onClick={() => handleSrsClick('II.1')}>
+                                        Click vào "Tạo nhóm" và nhập tên nhóm. Tên không được trống.
+                                    </div>
+                                    <div className={`srs-line ${activeSrs === 'II.2' ? 'active' : ''}`} onClick={() => handleSrsClick('II.2')}>
+                                        Tên nhóm phải là duy nhất. Trùng tên hiện thông báo "Group name is existed".
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'III' && (
+                                <div className="space-y-1 text-sm text-slate-300">
+                                    <h3 className="font-bold text-amber-400 mb-2 uppercase text-xs">III. Details nhóm</h3>
+                                    <div className={`srs-line ${activeSrs === 'III.1' ? 'active' : ''}`} onClick={() => handleSrsClick('III.1')}>
+                                        Click tên nhóm chuyển sang detail: Tên, Ngày tạo, Người tạo, Số lượng.
+                                    </div>
+                                    <div className={`srs-line ${activeSrs === 'III.2' ? 'active' : ''}`} onClick={() => handleSrsClick('III.2')}>
+                                        List Account: Email, Username, Fullname, Dept, Pos, Ngày add. Default sort: "Ngày add" giảm dần.
+                                    </div>
+                                    <div className={`srs-line ${activeSrs === 'III.3' ? 'active' : ''}`} onClick={() => handleSrsClick('III.3')}>
+                                        Bấm vào tiêu đề bảng account để sắp xếp chiều A-Z / ngược lại.
+                                    </div>
+                                    <div className={`srs-line ${activeSrs === 'III.4' ? 'active' : ''}`} onClick={() => handleSrsClick('III.4')}>
+                                        Search fullname trong bảng account.
+                                    </div>
+                                    <div className={`srs-line ${activeSrs === 'III.5' ? 'active' : ''}`} onClick={() => handleSrsClick('III.5')}>
+                                        Lọc account theo: Dept (rrc, rdc, du), Position (Dev, QA, SM), Ngày add (Kể từ ngày).
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'IV' && (
+                                <div className="space-y-1 text-sm text-slate-300">
+                                    <h3 className="font-bold text-amber-400 mb-2 uppercase text-xs">IV. Update nhóm</h3>
+                                    <div className={`srs-line ${activeSrs === 'IV.1' ? 'active' : ''}`} onClick={() => handleSrsClick('IV.1')}>
+                                        [1. Tên nhóm] Dữ liệu ban đầu được fill. Không được trống. Phải duy nhất ("Group name is existed").
+                                    </div>
+                                    <div className={`srs-line ${activeSrs === 'IV.2' ? 'active' : ''}`} onClick={() => handleSrsClick('IV.2')}>
+                                        [2. Search Account] Tìm theo Họ tên/Tên đăng nhập (VD: "Ngọc").
+                                    </div>
+                                    <div className={`srs-line ${activeSrs === 'IV.3' ? 'active' : ''}`} onClick={() => handleSrsClick('IV.3')}>
+                                        [2. Add/Remove] Click kết quả search -> chuyển sang list group. Hover vào list -> hiện nút Xóa. Click Xóa -> văng ra khỏi list.
+                                    </div>
+                                    <div className={`srs-line ${activeSrs === 'IV.4' ? 'active' : ''}`} onClick={() => handleSrsClick('IV.4')}>
+                                        Bấm OK lưu lại DB. Có icon phân biệt account thuộc group.
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'V' && (
+                                <div className="space-y-1 text-sm text-slate-300">
+                                    <h3 className="font-bold text-amber-400 mb-2 uppercase text-xs">V. Delete nhóm</h3>
+                                    <div className={`srs-line ${activeSrs === 'V.1' ? 'active' : ''}`} onClick={() => handleSrsClick('V.1')}>
+                                        Khi chưa chọn, button delete bị disable. Click checkbox để chọn.
+                                    </div>
+                                    <div className={`srs-line ${activeSrs === 'V.2' ? 'active' : ''}`} onClick={() => handleSrsClick('V.2')}>
+                                        Bấm Delete -> Popup "Bạn có muốn xóa không". Click Không -> Đóng.
+                                    </div>
+                                    <div className={`srs-line ${activeSrs === 'V.3' ? 'active' : ''}`} onClick={() => handleSrsClick('V.3')}>
+                                        Click Có -> Tắt popup -> Xóa DB -> Thông báo "xóa thành công" tự tắt -> Reload list.
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* BẢNG BÊN PHẢI: APP UI */}
+                    <div className={`flex-1 flex flex-col bg-slate-50 rounded-2xl shadow-xl overflow-hidden border border-slate-200 relative ${teacherMode ? 'teacher-mode' : ''}`}>
+                        
+                        {/* Topbar chung */}
+                        <div className="bg-white border-b border-slate-200 p-4 flex justify-between items-center z-10">
+                            <div className="flex items-center gap-4">
+                                {currentView === 'DETAIL' && (
+                                    <button onClick={() => setCurrentView('LIST')} className="w-8 h-8 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition">
+                                        <i className="fa-solid fa-arrow-left"></i>
+                                    </button>
+                                )}
+                                <h1 className="text-xl font-bold text-slate-800">
+                                    {currentView === 'LIST' ? 'Quản lý Nhóm Tài Khoản' : `Chi tiết: ${selectedGroup?.groupName}`}
+                                </h1>
+                            </div>
+                            <div className="flex gap-2">
+                                {currentView === 'LIST' && (
+                                    <button onClick={() => setModals({...modals, delete: true})} disabled={selectedGroupIds.length === 0}
+                                        className={`hl-target px-4 py-2 rounded text-sm font-bold flex items-center gap-2 transition-all ${selectedGroupIds.length === 0 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-rose-500 hover:bg-rose-600 text-white'} ${activeSrs === 'V.1' ? 'active' : ''}`}
+                                    >
+                                        <i className="fa-solid fa-trash-can"></i> Xóa ({selectedGroupIds.length})
+                                    </button>
+                                )}
+                                {currentView === 'LIST' && (
+                                    <button onClick={() => setModals({...modals, create: true})} className={`hl-target px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm font-bold flex items-center gap-2 ${activeSrs === 'II.1' ? 'active' : ''}`}>
+                                        <i className="fa-solid fa-plus"></i> Tạo Nhóm
+                                    </button>
+                                )}
+                                {currentView === 'DETAIL' && (
+                                    <button onClick={() => setModals({...modals, update: true})} className={`hl-target px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm font-bold flex items-center gap-2 ${activeSrs === 'IV.1' || activeSrs === 'IV.2' ? 'active' : ''}`}>
+                                        <i className="fa-solid fa-pen-to-square"></i> Update Nhóm
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* RENDER VIEW LIST */}
+                        {currentView === 'LIST' && (
+                            <div className="flex-1 flex flex-col overflow-hidden">
+                                <div className="bg-white p-4 border-b border-slate-200 flex flex-wrap gap-4 items-center">
+                                    <div className={`hl-target relative flex-1 min-w-[200px] ${activeSrs === 'I.1' ? 'active' : ''}`}>
+                                        <input type="text" placeholder="Search Group Name..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} onKeyDown={handleKeyDown} className="w-full pl-3 pr-10 py-2 border rounded focus:ring-1 focus:ring-indigo-500 text-sm"/>
+                                        <button onClick={handleSearch} className="absolute right-0 top-0 h-full px-3 text-slate-400 hover:text-indigo-600"><i className="fa-solid fa-magnifying-glass"></i></button>
+                                    </div>
+                                    <div className={`hl-target flex flex-wrap gap-2 items-center ${activeSrs === 'I.3' ? 'active p-1 bg-amber-50 rounded' : ''}`}>
+                                        <input type="date" value={filterDateFrom} onChange={e=>setFilterDateFrom(e.target.value)} className="border rounded px-2 py-1.5 text-sm text-slate-600" title="Từ ngày"/>
+                                        <input type="date" value={filterDateTo} onChange={e=>setFilterDateTo(e.target.value)} className="border rounded px-2 py-1.5 text-sm text-slate-600" title="Đến ngày"/>
+                                        <input type="number" value={filterMinMembers} onChange={e=>setFilterMinMembers(e.target.value)} placeholder="Min Members" className="border rounded px-2 py-1.5 text-sm w-28"/>
+                                        <button onClick={handleClearFilters} className="text-xs text-rose-500 hover:underline px-2">Xóa lọc</button>
+                                    </div>
+                                </div>
+                                <div className="flex-1 overflow-auto bg-slate-50 p-4">
+                                    <table className="w-full bg-white rounded-lg shadow-sm overflow-hidden text-left border-collapse">
+                                        <thead className="sticky top-0 bg-slate-50 shadow-sm">
+                                            <tr className={`border-b-2 border-slate-200 hl-target ${activeSrs === 'I.2' ? 'active' : ''}`}>
+                                                <th className="p-3 w-10 text-center"><input type="checkbox" onChange={(e) => setSelectedGroupIds(e.target.checked ? groups.map(g=>g.id) : [])} checked={selectedGroupIds.length === groups.length && groups.length > 0}/></th>
+                                                {[
+                                                    { key: 'groupName', label: 'Group Name' },
+                                                    { key: 'members', label: 'Members' },
+                                                    { key: 'creator', label: 'Creator' },
+                                                    { key: 'createdDate', label: 'Created Date' }
+                                                ].map(col => (
+                                                    <th key={col.key} onClick={() => handleSort(col.key)} className={`p-3 text-sm font-bold cursor-pointer hover:bg-slate-100 select-none ${sortConfig.key === col.key ? 'text-indigo-700 bg-indigo-50/50' : 'text-slate-600'}`}>
+                                                        <div className="flex items-center justify-between">
+                                                            <span>{col.label}</span>
+                                                            <span className="flex flex-col text-[10px] leading-none opacity-60">
+                                                                <i className={`fa-solid fa-caret-up ${sortConfig.key === col.key && sortConfig.direction === 'asc' ? 'text-indigo-600 scale-150 opacity-100' : ''}`}></i>
+                                                                <i className={`fa-solid fa-caret-down ${sortConfig.key === col.key && sortConfig.direction === 'desc' ? 'text-indigo-600 scale-150 opacity-100' : ''}`}></i>
+                                                            </span>
+                                                        </div>
+                                                    </th>
+                                                ))}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {processedGroups.map(group => (
+                                                <tr key={group.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                                    <td className="p-3 text-center"><input type="checkbox" checked={selectedGroupIds.includes(group.id)} onChange={(e) => { if(e.target.checked) setSelectedGroupIds([...selectedGroupIds, group.id]); else setSelectedGroupIds(selectedGroupIds.filter(id => id !== group.id)); }}/></td>
+                                                    <td className="p-3 text-sm">
+                                                        <span className={`font-bold cursor-pointer hover:underline hl-target ${activeSrs === 'III.1' ? 'active text-amber-600 bg-amber-100 px-1 rounded' : 'text-indigo-600'}`} onClick={() => { setSelectedGroup(group); setCurrentView('DETAIL'); }}>
+                                                            {searchQuery && group.groupName.toLowerCase().includes(searchQuery.toLowerCase()) ? (
+                                                                <span>{group.groupName.split(new RegExp(`(${searchQuery})`, 'gi')).map((part, i) => part.toLowerCase() === searchQuery.toLowerCase() ? <mark key={i} className="bg-yellow-200 rounded">{part}</mark> : part)}</span>
+                                                            ) : group.groupName}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-3 text-sm"><span className="bg-slate-200 px-2 rounded-full font-bold text-xs">{group.members}</span></td>
+                                                    <td className="p-3 text-sm text-slate-600">{group.creator}</td>
+                                                    <td className="p-3 text-sm text-slate-600">{group.createdDate}</td>
+                                                </tr>
+                                            ))}
+                                            {processedGroups.length === 0 && <tr><td colSpan="5" className="p-8 text-center text-slate-500">Không tìm thấy kết quả</td></tr>}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* RENDER DETAIL VIEW */}
+                        {currentView === 'DETAIL' && selectedGroup && (
+                            <div className="flex-1 flex flex-col overflow-hidden bg-slate-50 p-4">
+                                <div className={`hl-target bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-4 grid grid-cols-4 gap-4 ${activeSrs === 'III.1' ? 'active' : ''}`}>
+                                    <div><p className="text-xs text-slate-400 uppercase font-bold">Tên nhóm</p><p className="font-bold text-lg text-slate-800">{selectedGroup.groupName}</p></div>
+                                    <div><p className="text-xs text-slate-400 uppercase font-bold">Ngày tạo</p><p className="font-medium text-slate-700">{selectedGroup.createdDate}</p></div>
+                                    <div><p className="text-xs text-slate-400 uppercase font-bold">Người tạo</p><p className="font-medium text-slate-700">{selectedGroup.creator}</p></div>
+                                    <div><p className="text-xs text-slate-400 uppercase font-bold">Thành viên</p><p className="font-bold text-indigo-600 text-lg">{selectedGroup.accountIds.length}</p></div>
+                                </div>
+
+                                <div className={`hl-target flex-1 flex flex-col bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden ${activeSrs === 'III.2' ? 'active' : ''}`}>
+                                    <div className="p-3 border-b border-slate-200 flex flex-wrap gap-3 items-center bg-slate-50">
+                                        <div className={`hl-target relative w-48 ${activeSrs === 'III.4' ? 'active' : ''}`}>
+                                            <input type="text" placeholder="Search Fullname..." value={detailSearchInput} onChange={e=>setDetailSearchInput(e.target.value)} onKeyDown={handleDetailKeyDown} className="w-full pl-2 pr-8 py-1.5 border rounded text-xs"/>
+                                            <button onClick={handleDetailSearch} className="absolute right-0 top-0 h-full px-2 text-slate-400 hover:text-indigo-600"><i className="fa-solid fa-magnifying-glass text-xs"></i></button>
+                                        </div>
+                                        <div className={`hl-target flex flex-wrap items-center gap-2 ${activeSrs === 'III.5' ? 'active p-1 bg-amber-50 rounded' : ''}`}>
+                                            <select value={detailFilterDept} onChange={e=>setDetailFilterDept(e.target.value)} className="border rounded px-2 py-1.5 text-xs text-slate-600"><option>Dept (All)</option><option value="rrc">rrc</option><option value="rdc">rdc</option><option value="du">du</option></select>
+                                            <select value={detailFilterPos} onChange={e=>setDetailFilterPos(e.target.value)} className="border rounded px-2 py-1.5 text-xs text-slate-600"><option>Position (All)</option><option value="Dev">Dev</option><option value="QA">QA</option><option value="SM">SM</option></select>
+                                            <span className="text-[10px] text-slate-500 font-bold ml-1">Kể từ:</span>
+                                            <input type="date" value={detailFilterDate} onChange={e=>setDetailFilterDate(e.target.value)} title="Kể từ ngày" className="border rounded px-2 py-1.5 text-xs text-slate-600"/>
+                                            <button onClick={handleClearDetailFilters} className="text-xs text-rose-500 hover:underline px-2">Xóa lọc</button>
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 overflow-auto">
+                                        <table className="w-full text-left text-sm relative">
+                                            <thead className={`sticky top-0 bg-white shadow-sm hl-target ${activeSrs === 'III.3' || activeSrs === 'III.2' ? 'active' : ''}`}>
+                                                <tr className="border-b-2">
+                                                    {[
+                                                        { key: 'email', label: 'Email' },
+                                                        { key: 'username', label: 'Username' },
+                                                        { key: 'fullname', label: 'Fullname' },
+                                                        { key: 'dept', label: 'Dept' },
+                                                        { key: 'position', label: 'Position' },
+                                                        { key: 'dateAdded', label: 'Ngày add', isDefault: true }
+                                                    ].map(col => (
+                                                        <th key={col.key} onClick={() => handleDetailSort(col.key)} className={`p-3 font-bold cursor-pointer hover:bg-slate-50 select-none ${detailSortConfig.key === col.key ? 'text-indigo-700 bg-indigo-50/50' : 'text-slate-600'}`}>
+                                                            <div className="flex items-center justify-between">
+                                                                <div>
+                                                                    {col.label} 
+                                                                    {col.isDefault && <span className="block text-[9px] font-normal text-slate-400">(Default sort giảm dần)</span>}
+                                                                </div>
+                                                                <span className="flex flex-col text-[10px] leading-none opacity-60">
+                                                                    <i className={`fa-solid fa-caret-up ${detailSortConfig.key === col.key && detailSortConfig.direction === 'asc' ? 'text-indigo-600 scale-150 opacity-100' : ''}`}></i>
+                                                                    <i className={`fa-solid fa-caret-down ${detailSortConfig.key === col.key && detailSortConfig.direction === 'desc' ? 'text-indigo-600 scale-150 opacity-100' : ''}`}></i>
+                                                                </span>
+                                                            </div>
+                                                        </th>
+                                                    ))}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {processedAccounts.map(acc => (
+                                                    <tr key={acc.id} className="border-b border-slate-100 hover:bg-slate-50">
+                                                        <td className="p-3">{acc.email}</td><td className="p-3">{acc.username}</td>
+                                                        <td className="p-3 font-medium">
+                                                            {detailSearchQuery && acc.fullname.toLowerCase().includes(detailSearchQuery.toLowerCase()) ? (
+                                                                <span>{acc.fullname.split(new RegExp(`(${detailSearchQuery})`, 'gi')).map((part, i) => part.toLowerCase() === detailSearchQuery.toLowerCase() ? <mark key={i} className="bg-yellow-200 rounded">{part}</mark> : part)}</span>
+                                                            ) : acc.fullname}
+                                                        </td>
+                                                        <td className="p-3"><span className="uppercase text-[10px] font-bold bg-slate-200 px-1.5 rounded">{acc.dept}</span></td>
+                                                        <td className="p-3">{acc.position}</td>
+                                                        <td className="p-3 text-slate-500">{acc.dateAdded}</td>
+                                                    </tr>
+                                                ))}
+                                                {processedAccounts.length === 0 && <tr><td colSpan="6" className="p-8 text-center text-slate-400">Không tìm thấy thành viên nào phù hợp</td></tr>}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* --- MODALS --- */}
+                        {modals.create && (
+                            <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm flex justify-center items-center z-50 animate-[fadeIn_0.2s_ease]">
+                                <div className="bg-white rounded-xl shadow-2xl w-96 overflow-hidden">
+                                    <div className="p-4 border-b bg-slate-50 font-bold flex justify-between">Tạo nhóm tài khoản <button onClick={()=>setModals({...modals, create: false})}><i className="fa-solid fa-xmark"></i></button></div>
+                                    <div className="p-6">
+                                        <label className="block text-sm font-bold text-slate-700 mb-1">Tên nhóm <span className="text-red-500">*</span></label>
+                                        <input type="text" value={createData.name} onChange={e => setCreateData({name: e.target.value, error: ''})} className={`hl-target w-full border rounded p-2 text-sm focus:ring-1 focus:ring-indigo-500 ${activeSrs === 'II.1' || activeSrs === 'II.2' ? 'active' : ''}`} placeholder="Nhập tên nhóm..." />
+                                        {createData.error && <p className="text-xs text-red-500 mt-1 font-bold animate-[pulse_1s_infinite]"><i className="fa-solid fa-circle-exclamation"></i> {createData.error}</p>}
+                                    </div>
+                                    <div className="p-4 border-t bg-slate-50 flex justify-end gap-2">
+                                        <button onClick={()=>setModals({...modals, create: false})} className="px-4 py-2 bg-slate-200 rounded text-sm font-bold">Hủy</button>
+                                        <button onClick={handleCreateGroup} className="px-4 py-2 bg-indigo-600 text-white rounded text-sm font-bold">Tạo</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {modals.update && selectedGroup && (
+                            <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm flex justify-center items-center z-50 animate-[fadeIn_0.2s_ease] p-4">
+                                <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+                                    <div className="p-4 border-b bg-slate-50 font-bold flex justify-between">
+                                        <span>Cập nhật Nhóm: <span className="text-indigo-600">{selectedGroup.groupName}</span></span>
+                                        <button onClick={()=>setModals({...modals, update: false})}><i className="fa-solid fa-xmark"></i></button>
+                                    </div>
+                                    <div className="flex-1 overflow-auto p-6 flex flex-col gap-6">
+                                        <div className={`hl-target ${activeSrs === 'IV.1' ? 'active' : ''}`}>
+                                            <label className="block text-sm font-bold text-slate-700 mb-1">Tên nhóm (Fill từ DB) <span className="text-red-500">*</span></label>
+                                            <input type="text" value={updateData.name} onChange={e => setUpdateData({...updateData, name: e.target.value, error: ''})} className="w-full border rounded p-2 text-sm max-w-md" />
+                                            {updateData.error ? (
+                                                <p className="text-xs text-red-500 mt-1 font-bold animate-[pulse_1s_infinite]"><i className="fa-solid fa-circle-exclamation"></i> {updateData.error}</p>
+                                            ) : (
+                                                activeSrs === 'IV.1' && <p className="text-xs text-slate-500 mt-1 italic">Thử xóa trắng hoặc đổi thành tên bị trùng để test validation.</p>
+                                            )}
+                                        </div>
+                                        <div className="flex gap-4 h-80">
+                                            <div className="flex-1 border rounded-lg flex flex-col overflow-hidden">
+                                                <div className="bg-slate-100 p-2 border-b font-bold text-sm text-slate-700">Tìm kiếm Account để Thêm</div>
+                                                <div className={`p-2 border-b hl-target ${activeSrs === 'IV.2' ? 'active' : ''}`}>
+                                                    <input type="text" defaultValue={activeSrs === 'IV.2' ? 'Ngọc' : ''} placeholder="Tìm Họ tên, Tên đăng nhập..." className="w-full border p-1.5 text-sm rounded"/>
+                                                </div>
+                                                <div className="flex-1 overflow-auto bg-white p-2 space-y-1">
+                                                    <p className="text-[10px] text-slate-400 mb-1">Click vào tên để thêm vào nhóm bên phải <i className="fa-solid fa-arrow-right-long"></i></p>
+                                                    {MOCK_ACCOUNTS.filter(a => !updateData.accountIds.includes(a.id)).map(acc => (
+                                                        <div key={acc.id} onClick={() => setUpdateData(p => ({...p, accountIds: [...p.accountIds, acc.id]}))} className="p-2 border rounded hover:bg-indigo-50 cursor-pointer flex justify-between items-center group text-sm transition-colors">
+                                                            <div><p className="font-medium text-slate-800">{acc.fullname}</p><p className="text-xs text-slate-500">@{acc.username}</p></div>
+                                                            <i className="fa-solid fa-plus text-indigo-500 opacity-0 group-hover:opacity-100 transition"></i>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className={`flex-1 border rounded-lg flex flex-col overflow-hidden hl-target ${activeSrs === 'IV.3' ? 'active' : ''}`}>
+                                                <div className="bg-indigo-50 p-2 border-b font-bold text-sm text-indigo-800 flex justify-between">
+                                                    Danh sách trong Nhóm <span className="bg-indigo-200 px-2 rounded-full text-xs">{updateData.accountIds.length}</span>
+                                                </div>
+                                                <div className="flex-1 overflow-auto bg-white p-2 space-y-1">
+                                                    <p className="text-[10px] text-slate-400 mb-1">Hover để hiện nút Xóa (Remove)</p>
+                                                    {MOCK_ACCOUNTS.filter(a => updateData.accountIds.includes(a.id)).map(acc => (
+                                                        <div key={acc.id} className="member-row p-2 border border-indigo-100 bg-indigo-50/30 rounded flex justify-between items-center text-sm">
+                                                            <div className="flex items-center gap-2">
+                                                                <i className={`fa-solid fa-circle-check text-emerald-500 hl-target ${activeSrs === 'IV.4' ? 'active p-1 bg-white rounded' : ''}`} title="Icon phân biệt đã vào nhóm"></i>
+                                                                <div><p className="font-bold text-indigo-900">{acc.fullname}</p><p className="text-xs text-indigo-600/70">@{acc.username}</p></div>
+                                                            </div>
+                                                            <button onClick={() => setUpdateData(p => ({...p, accountIds: p.accountIds.filter(id => id !== acc.id)}))} className="remove-btn w-6 h-6 rounded bg-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-colors">
+                                                                <i className="fa-solid fa-xmark"></i>
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className={`p-4 border-t bg-slate-50 flex justify-end gap-2 hl-target ${activeSrs === 'IV.4' ? 'active' : ''}`}>
+                                        <button onClick={()=>setModals({...modals, update: false})} className="px-4 py-2 bg-slate-200 rounded text-sm font-bold">Hủy</button>
+                                        <button onClick={handleUpdateGroup} className="px-4 py-2 bg-indigo-600 text-white rounded text-sm font-bold">OK (Submit)</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {modals.delete && (
+                            <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm flex justify-center items-center z-50 animate-[fadeIn_0.2s_ease]">
+                                <div className={`bg-white rounded-xl shadow-2xl w-96 overflow-hidden hl-target ${activeSrs === 'V.2' || activeSrs === 'V.3' ? 'active' : ''}`}>
+                                    <div className="p-6 text-center">
+                                        <div className="w-16 h-16 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center text-3xl mx-auto mb-4">
+                                            <i className="fa-solid fa-triangle-exclamation"></i>
+                                        </div>
+                                        <h3 className="text-lg font-bold text-slate-800 mb-2">Bạn có muốn xóa không?</h3>
+                                        <p className="text-sm text-slate-500">Hành động này sẽ xóa các bản ghi khỏi database.</p>
+                                    </div>
+                                    <div className="p-4 bg-slate-50 flex gap-3 justify-center">
+                                        <button onClick={() => setModals({...modals, delete: false})} className={`flex-1 py-2 bg-slate-200 text-slate-700 font-bold rounded hl-target ${activeSrs === 'V.2' ? 'active ring-2 ring-amber-500 ring-offset-2' : ''}`}>Không</button>
+                                        <button onClick={() => { setModals({...modals, delete: false}); setGroups(groups.filter(g => !selectedGroupIds.includes(g.id))); setSelectedGroupIds([]); showToast('Xóa thành công'); }} className={`flex-1 py-2 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded hl-target ${activeSrs === 'V.3' ? 'active ring-2 ring-amber-500 ring-offset-2' : ''}`}>Có</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {toast && (
+                            <div className="absolute bottom-4 right-4 z-[60] toast-anim hl-target active">
+                                <div className="bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 border border-slate-700">
+                                    <i className="fa-solid fa-circle-check text-emerald-400"></i>
+                                    <span className="font-medium text-sm">{toast.message}</span>
+                                </div>
+                            </div>
+                        )}
+
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

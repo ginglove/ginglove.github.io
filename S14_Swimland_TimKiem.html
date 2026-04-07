@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ Swimlane: Luồng Tìm kiếm Tài khoản</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+        
+        .pulse-ring {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        
+        /* Hiệu ứng chuyển động mượt mà cho card */
+        .step-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .step-active {
+            transform: scale(1.1);
+            z-index: 20;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* Đường nối mũi tên (đơn giản hóa bằng CSS absolute) */
+        .arrow-line {
+            position: absolute;
+            z-index: 0;
+            transition: background-color 0.3s;
+        }
+    </style>
+</head>
+<body class="p-4 lg:p-8 min-h-screen flex flex-col items-center">
+    <div id="root" class="w-full max-w-6xl"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const flowSteps = [
+            {
+                id: 1,
+                lane: 'admin',
+                title: 'Nhập từ khóa',
+                desc: 'Gõ text vào ô Search',
+                icon: 'fa-keyboard',
+                color: 'bg-blue-500',
+                testTitle: 'Kiểm tra Dữ liệu đầu vào (Input Validation)',
+                testTips: [
+                    'Nhập ký tự đặc biệt (!@#$%^&*) hoặc Emoji xem có crash không?',
+                    'Bỏ trống ô search (Test trường hợp default lấy tất cả data).',
+                    'Nhập mã độc XSS (vd: <script>alert(1)<' + '/script>) hoặc SQL Injection.',
+                    'Gõ toàn khoảng trắng (Space) xem hệ thống có tự trim (cắt) không?'
+                ]
+            },
+            {
+                id: 2,
+                lane: 'admin',
+                title: 'Gửi yêu cầu',
+                desc: 'Nhấn phím Enter / Click icon',
+                icon: 'fa-hand-pointer',
+                color: 'bg-indigo-500',
+                testTitle: 'Kiểm tra Tương tác & Trạng thái',
+                testTips: [
+                    'Kiểm tra xem nhấn phím Enter trên bàn phím có kích hoạt tìm kiếm không?',
+                    'Click đúp (Double-click) hoặc click liên tục vào icon Kính lúp (Test spam request).',
+                    'Trạng thái Loading: Trong lúc chờ, màn hình có hiện Spinner mờ không? Nút search có bị disable tạm thời không?'
+                ]
+            },
+            {
+                id: 3,
+                lane: 'system',
+                title: 'Nhận Request',
+                desc: 'API Server tiếp nhận',
+                icon: 'fa-server',
+                color: 'bg-emerald-600',
+                testTitle: 'Kiểm tra Giao tiếp Client - Server (API)',
+                testTips: [
+                    'Tắt mạng wifi (Disconnect) ngay sau khi vừa bấm nút Search xem UI văng lỗi hay thông báo khéo léo?',
+                    'Chặn API request (dùng tool như Charles/Postman) và sửa payload gửi lên.',
+                    'Mô phỏng mạng 3G chậm (Throttling) để xem timeout xử lý như thế nào.'
+                ]
+            },
+            {
+                id: 4,
+                lane: 'system',
+                title: 'Truy vấn DB',
+                desc: "LIKE '%keyword%'",
+                icon: 'fa-database',
+                color: 'bg-teal-600',
+                testTitle: 'Kiểm tra Logic Truy vấn (Database Logic)',
+                testTips: [
+                    'Tìm kiếm có phân biệt hoa/thường không? (Search "an" có ra "An" không?)',
+                    'Tìm kiếm tương đối (Search "nguy" có ra "nguyen" không?)',
+                    'Search trên nhiều trường: Có quét cả Username, Fullname và Email cùng lúc không?',
+                    'Hiệu suất (Performance): Nếu DB có 1 triệu tài khoản, search mất mấy giây?'
+                ]
+            },
+            {
+                id: 5,
+                lane: 'system',
+                title: 'Trả kết quả',
+                desc: 'Return JSON Data',
+                icon: 'fa-file-code',
+                color: 'bg-emerald-500',
+                testTitle: 'Kiểm tra Dữ liệu Trả về (Response)',
+                testTips: [
+                    'Dữ liệu trả về có đúng cấu trúc JSON không?',
+                    'Test phân trang: Nếu có 100 kết quả, API có trả về từng trang (ví dụ 20 items/page) không?',
+                    'Test bảo mật: API có vô tình trả về cả Mật khẩu (Password hash) của user không? (Tuyệt đối cấm!)'
+                ]
+            },
+            {
+                id: 6,
+                lane: 'admin',
+                title: 'Hiển thị UI',
+                desc: 'Cập nhật lại Bảng',
+                icon: 'fa-table-list',
+                color: 'bg-blue-600',
+                testTitle: 'Kiểm tra Hiển thị Giao diện (UI Rendering)',
+                testTips: [
+                    'Keyword có được giữ nguyên trong ô search để user biết họ vừa tìm gì không?',
+                    'Nếu tìm thấy: Dữ liệu lên bảng có khớp với data trả về không? Có bị vỡ layout không?',
+                    'Nếu KHÔNG tìm thấy: Bảng có hiển thị thông báo "Không tìm thấy kết quả phù hợp" thay vì một bảng trống trơn khó hiểu không?',
+                    'Keyword được bôi vàng (Highlight) trong kết quả không (Nếu requirement có yêu cầu)?'
+                ]
+            }
+        ];
+
+        function App() {
+            const [activeStep, setActiveStep] = useState(1);
+            const [isPlaying, setIsPlaying] = useState(false);
+
+            // Xử lý auto play
+            useEffect(() => {
+                let interval;
+                if (isPlaying) {
+                    interval = setInterval(() => {
+                        setActiveStep(prev => {
+                            if (prev >= 6) {
+                                setIsPlaying(false);
+                                return 1;
+                            }
+                            return prev + 1;
+                        });
+                    }, 1800); // 1.8s mỗi bước
+                }
+                return () => clearInterval(interval);
+            }, [isPlaying]);
+
+            const currentData = flowSteps.find(s => s.id === activeStep);
+
+            // Hàm render 1 Node (Step Card)
+            const StepNode = ({ stepNum }) => {
+                const step = flowSteps.find(s => s.id === stepNum);
+                if (!step) return <div className="w-full h-24"></div>; // Placeholder
+                
+                const isActive = activeStep === step.id;
+                const isPassed = activeStep > step.id;
+
+                return (
+                    <div 
+                        onClick={() => { setActiveStep(step.id); setIsPlaying(false); }}
+                        className={`step-card relative w-full h-28 rounded-xl border-2 flex flex-col items-center justify-center p-2 cursor-pointer
+                            ${isActive ? `border-${step.color.split('-')[1]}-500 bg-white step-active ring-4 ring-${step.color.split('-')[1]}-200` : 
+                              isPassed ? 'border-slate-200 bg-slate-50 opacity-70' : 'border-slate-200 bg-white hover:border-slate-300'}
+                        `}
+                    >
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white mb-2 transition-all duration-300
+                            ${isActive || isPassed ? step.color : 'bg-slate-300'}`}>
+                            <i className={`fa-solid ${step.icon}`}></i>
+                        </div>
+                        <div className="text-center w-full">
+                            <h4 className={`font-bold text-xs leading-tight ${isActive ? 'text-slate-800' : 'text-slate-500'}`}>{step.title}</h4>
+                            <p className="text-[10px] text-slate-400 mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis px-1">{step.desc}</p>
+                        </div>
+
+                        {/* Điểm nhấn khi active */}
+                        {isActive && (
+                            <div className="absolute -top-3 -right-3 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shadow-md pulse-ring">
+                                {step.id}
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            // Hàm render mũi tên ngang
+            const ArrowHorizontal = ({ from, to }) => {
+                const isActive = activeStep >= to;
+                return (
+                    <div className="flex items-center justify-center w-full h-full relative z-0">
+                        <div className={`h-1 w-full transition-colors duration-500 ${isActive ? 'bg-indigo-500' : 'bg-slate-200'}`}></div>
+                        <div className={`absolute right-0 w-0 h-0 border-t-4 border-b-4 border-l-8 border-transparent transition-colors duration-500 ${isActive ? 'border-l-indigo-500' : 'border-l-slate-200'}`} style={{ marginRight: '-4px' }}></div>
+                    </div>
+                );
+            };
+
+            // Hàm render mũi tên chéo (giả lập bằng SVG)
+            const ArrowCross = ({ activeCondition, direction }) => {
+                const strokeColor = activeCondition ? '#6366f1' : '#e2e8f0'; // indigo-500 vs slate-200
+                const pathD = direction === 'down-right' 
+                    ? "M 0 0 C 40 0, 10 80, 50 80 L 100 80" 
+                    : "M 0 80 C 40 80, 10 0, 50 0 L 100 0";
+                
+                return (
+                    <div className="w-full h-full flex items-center justify-center overflow-visible">
+                        <svg className="w-full h-[100px] overflow-visible" viewBox="0 0 100 80" preserveAspectRatio="none">
+                            <path d={pathD} fill="none" stroke={strokeColor} strokeWidth="4" className="transition-all duration-500" />
+                            {/* Mũi tên */}
+                            {direction === 'down-right' ? (
+                                <polygon points="90,75 100,80 90,85" fill={strokeColor} className="transition-all duration-500"/>
+                            ) : (
+                                <polygon points="90,-5 100,0 90,5" fill={strokeColor} className="transition-all duration-500"/>
+                            )}
+                        </svg>
+                    </div>
+                );
+            };
+
+            return (
+                <div className="w-full bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden flex flex-col">
+                    
+                    {/* Header */}
+                    <div className="bg-slate-800 text-white p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div>
+                            <h1 className="text-2xl font-extrabold tracking-wide text-center sm:text-left">
+                                SWIMLANE: <span className="text-amber-400">LUỒNG TÌM KIẾM DỮ LIỆU</span>
+                            </h1>
+                            <p className="text-slate-300 text-sm mt-1 text-center sm:text-left">Hành trình của 1 Click từ Giao diện xuống Database</p>
+                        </div>
+                        <button 
+                            onClick={() => {
+                                if (isPlaying) { setIsPlaying(false); } 
+                                else { if(activeStep === 6) setActiveStep(1); setIsPlaying(true); }
+                            }}
+                            className={`px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all shadow-md
+                                ${isPlaying ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white'}`}
+                        >
+                            <i className={`fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'}`}></i>
+                            {isPlaying ? 'Dừng mô phỏng' : activeStep === 6 ? 'Chạy lại từ đầu' : 'Chạy mô phỏng'}
+                        </button>
+                    </div>
+
+                    {/* Swimlane Diagram Area */}
+                    <div className="p-6 lg:p-10 bg-slate-50 relative overflow-x-auto">
+                        
+                        {/* CSS Grid layout for Swimlane */}
+                        <div className="min-w-[800px] grid grid-cols-[120px_1fr_40px_1fr_40px_1fr_40px_1fr_40px_1fr_40px_1fr] gap-y-8 items-center">
+                            
+                            {/* --- ADMIN LANE --- */}
+                            {/* Title */}
+                            <div className="col-start-1 bg-blue-100 border-l-4 border-blue-500 p-4 rounded-r-lg h-28 flex flex-col justify-center shadow-sm">
+                                <h3 className="font-black text-blue-800 text-sm uppercase">ADMIN</h3>
+                                <p className="text-[10px] text-blue-600 font-medium">Giao diện (Frontend)</p>
+                            </div>
+                            
+                            {/* Nodes */}
+                            <div className="col-start-2"><StepNode stepNum={1} /></div>
+                            <div className="col-start-3"><ArrowHorizontal from={1} to={2} /></div>
+                            <div className="col-start-4"><StepNode stepNum={2} /></div>
+                            
+                            <div className="col-start-5 col-span-5 relative h-28 border-b-2 border-dashed border-slate-300 opacity-50">
+                                {/* Đường nối ảo đại diện cho việc UI đang nằm chờ */}
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <span className="bg-slate-50 px-2 text-xs font-semibold text-slate-400">Loading State...</span>
+                                </div>
+                            </div>
+                            
+                            <div className="col-start-11"><ArrowHorizontal from={5} to={6} /></div> {/* Mũi tên giả để liền mạch */}
+                            <div className="col-start-12"><StepNode stepNum={6} /></div>
+
+
+                            {/* --- ARROWS BETWEEN LANES (Cross) --- */}
+                            <div className="col-start-5 row-start-1 row-span-2 relative z-0" style={{ transform: 'translateY(15px)' }}>
+                                <ArrowCross activeCondition={activeStep >= 3} direction="down-right" />
+                            </div>
+                            <div className="col-start-11 row-start-1 row-span-2 relative z-0" style={{ transform: 'translateY(-15px)' }}>
+                                <ArrowCross activeCondition={activeStep >= 6} direction="up-right" />
+                            </div>
+
+
+                            {/* --- SYSTEM LANE --- */}
+                            {/* Title */}
+                            <div className="col-start-1 row-start-2 bg-emerald-100 border-l-4 border-emerald-600 p-4 rounded-r-lg h-28 flex flex-col justify-center shadow-sm mt-4">
+                                <h3 className="font-black text-emerald-900 text-sm uppercase">SYSTEM</h3>
+                                <p className="text-[10px] text-emerald-700 font-medium">Backend & DB</p>
+                            </div>
+
+                            {/* Nodes */}
+                            <div className="col-start-6 row-start-2 mt-4"><StepNode stepNum={3} /></div>
+                            <div className="col-start-7 row-start-2 mt-4"><ArrowHorizontal from={3} to={4} /></div>
+                            <div className="col-start-8 row-start-2 mt-4"><StepNode stepNum={4} /></div>
+                            <div className="col-start-9 row-start-2 mt-4"><ArrowHorizontal from={4} to={5} /></div>
+                            <div className="col-start-10 row-start-2 mt-4"><StepNode stepNum={5} /></div>
+
+                        </div>
+                    </div>
+
+                    {/* Teacher / QA Analysis Card */}
+                    <div className="p-6 lg:p-8 bg-white border-t border-slate-200">
+                        <div className="flex items-start gap-4">
+                            <div className={`flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center text-2xl text-white shadow-lg ${currentData.color}`}>
+                                <i className={`fa-solid ${currentData.icon}`}></i>
+                            </div>
+                            <div className="flex-grow">
+                                <h2 className="text-xl font-bold text-slate-800 mb-1">
+                                    <span className="text-slate-400 mr-2">Bước {currentData.id}:</span> 
+                                    {currentData.testTitle}
+                                </h2>
+                                <p className="text-sm text-slate-500 mb-4 font-medium">Góc nhìn phân tích Test Case (QA/Tester Perspective):</p>
+                                
+                                <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                                    <ul className="space-y-3">
+                                        {currentData.testTips.map((tip, idx) => (
+                                            <li key={idx} className="flex items-start gap-3">
+                                                <i className="fa-solid fa-bug text-amber-500 mt-1"></i>
+                                                <span className="text-slate-700 font-medium">{tip}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

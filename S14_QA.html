@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ: Sức mạnh của Q&A</title>
+    
+    <!-- Nhúng Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Nhúng React và ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Nhúng Babel để chạy JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        .thought-bubble {
+            position: relative;
+            background: white;
+            border-radius: 1rem;
+            padding: 1rem;
+            text-align: center;
+        }
+        .thought-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            margin-left: -15px;
+            border-width: 15px 15px 0;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+            display: block;
+            width: 0;
+        }
+        /* Hiệu ứng di chuyển vào phễu */
+        .moving-to-funnel {
+            transform: translateY(150px) scale(0.5);
+            opacity: 0;
+            transition: all 1.5s ease-in-out;
+        }
+        /* Hiệu ứng phễu rung/nhấp nháy khi xử lý */
+        .processing-funnel {
+            animation: funnelPulse 1s infinite alternate;
+        }
+        @keyframes funnelPulse {
+            from { transform: scale(1); filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.4)); }
+            to { transform: scale(1.05); filter: drop-shadow(0 0 25px rgba(99, 102, 241, 0.8)); }
+        }
+        /* Hiệu ứng kết quả xuất hiện */
+        .result-appear {
+            animation: popUp 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popUp {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen font-sans">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Các Icon SVG
+        const IconBA = () => <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>;
+        const IconDev = () => <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-600"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>;
+        const IconQA = () => <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-rose-600"><path d="m8 2 1.88 1.88"/><path d="M14.12 3.88 16 2"/><path d="M9 7.13v-1a3.003 3.003 0 1 1 6 0v1"/><path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6"/><path d="M12 20v-9"/><path d="M6.53 9C4.6 8.8 3 7.1 3 5"/><path d="M17.47 9c1.93-.2 3.53-1.9 3.53-3.9"/></svg>;
+        const IconFunnel = () => <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-600"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>;
+        const IconTarget = () => <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-yellow-500"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
+
+        function App() {
+            // State: 'initial' | 'processing' | 'done'
+            const [stage, setStage] = useState('initial');
+
+            const handleRunQA = () => {
+                if (stage !== 'initial') {
+                    setStage('initial'); // Reset nếu đang ở trạng thái khác
+                    return;
+                }
+                
+                setStage('processing');
+                
+                // Giả lập thời gian Q&A
+                setTimeout(() => {
+                    setStage('done');
+                }, 2000);
+            };
+
+            return (
+                <div className="flex flex-col items-center p-8 max-w-5xl mx-auto">
+                    
+                    {/* Header */}
+                    <div className="text-center mb-10 w-full flex justify-between items-center">
+                        <div>
+                            <h1 className="text-3xl font-extrabold text-slate-800 uppercase tracking-wide">
+                                Quy trình <span className="text-indigo-600">Q&A (Hỏi & Đáp)</span>
+                            </h1>
+                            <p className="text-slate-500 mt-2 font-medium text-lg">Từ "Đồng sàng dị mộng" đến "Một trí tuệ chung"</p>
+                        </div>
+                        <button 
+                            onClick={handleRunQA}
+                            className={`px-6 py-3 rounded-xl font-bold text-white transition-all shadow-lg text-lg flex items-center gap-2
+                                ${stage === 'initial' ? 'bg-indigo-600 hover:bg-indigo-700 hover:scale-105' : 'bg-slate-500 hover:bg-slate-600'}`}
+                        >
+                            {stage === 'initial' ? '▶ Bắt đầu phiên Q&A' : '↺ Reset Sơ đồ'}
+                        </button>
+                    </div>
+
+                    {/* Stage 1: The 3 Roles */}
+                    <div className="flex justify-between w-full gap-6 mb-8 relative z-10">
+                        
+                        {/* BA */}
+                        <div className="flex flex-col items-center w-1/3">
+                            <div className={`thought-bubble shadow-md border-t-4 border-blue-500 w-full mb-6 transition-all duration-1000 
+                                ${stage !== 'initial' ? 'opacity-0 transform translate-y-32 scale-50' : 'opacity-100 transform translate-y-0 scale-100'}`}>
+                                <p className="text-sm font-semibold text-blue-800 mb-1">Góc nhìn Kinh doanh</p>
+                                <p className="text-slate-600 text-sm">"Làm sao để luồng này chốt sale nhanh nhất? Hiệu ứng phải thật mượt!"</p>
+                            </div>
+                            <div className="bg-blue-100 p-4 rounded-full shadow-inner mb-2"><IconBA /></div>
+                            <h3 className="font-bold text-blue-900 text-xl">BA</h3>
+                            <p className="text-xs text-blue-600 font-medium">(Business Analyst)</p>
+                        </div>
+
+                        {/* Dev */}
+                        <div className="flex flex-col items-center w-1/3 mt-8">
+                            <div className={`thought-bubble shadow-md border-t-4 border-emerald-500 w-full mb-6 transition-all duration-1000 delay-100
+                                ${stage !== 'initial' ? 'opacity-0 transform translate-y-24 scale-50' : 'opacity-100 transform translate-y-0 scale-100'}`}>
+                                <p className="text-sm font-semibold text-emerald-800 mb-1">Góc nhìn Kỹ thuật</p>
+                                <p className="text-slate-600 text-sm">"Dùng bảng DB nào? Khách bấm 1000 lần/giây thì có sập server không?"</p>
+                            </div>
+                            <div className="bg-emerald-100 p-4 rounded-full shadow-inner mb-2"><IconDev /></div>
+                            <h3 className="font-bold text-emerald-900 text-xl">Developer</h3>
+                            <p className="text-xs text-emerald-600 font-medium">(Lập trình viên)</p>
+                        </div>
+
+                        {/* QA */}
+                        <div className="flex flex-col items-center w-1/3">
+                            <div className={`thought-bubble shadow-md border-t-4 border-rose-500 w-full mb-6 transition-all duration-1000 delay-200
+                                ${stage !== 'initial' ? 'opacity-0 transform translate-y-32 scale-50' : 'opacity-100 transform translate-y-0 scale-100'}`}>
+                                <p className="text-sm font-semibold text-rose-800 mb-1">Góc nhìn Rủi ro</p>
+                                <p className="text-slate-600 text-sm">"Nhập HTML script vào thì sao? Đang upload mà rớt mạng thì thế nào?"</p>
+                            </div>
+                            <div className="bg-rose-100 p-4 rounded-full shadow-inner mb-2"><IconQA /></div>
+                            <h3 className="font-bold text-rose-900 text-xl">QA / Tester</h3>
+                            <p className="text-xs text-rose-600 font-medium">(Kiểm thử viên)</p>
+                        </div>
+                    </div>
+
+                    {/* Stage 2: The Funnel */}
+                    <div className="relative w-full flex justify-center items-center my-4">
+                        {/* Background lines mapping to funnel */}
+                        <svg className="absolute w-full h-full -z-10 opacity-20" style={{ top: '-100px' }}>
+                            <path d="M 160 0 C 160 80, 480 80, 480 150" fill="transparent" stroke="#3b82f6" strokeWidth="4" strokeDasharray="5,5" />
+                            <path d="M 500 0 C 500 80, 500 80, 500 150" fill="transparent" stroke="#10b981" strokeWidth="4" strokeDasharray="5,5" />
+                            <path d="M 840 0 C 840 80, 520 80, 520 150" fill="transparent" stroke="#e11d48" strokeWidth="4" strokeDasharray="5,5" />
+                        </svg>
+
+                        <div className={`flex flex-col items-center transition-all duration-300 p-6 rounded-2xl
+                            ${stage === 'processing' ? 'processing-funnel bg-indigo-50 border border-indigo-200' : ''}`}>
+                            <IconFunnel />
+                            <span className="font-bold text-indigo-800 mt-2 text-lg tracking-widest">PHỄU LỌC Q&A</span>
+                            <span className="text-xs text-indigo-600 font-medium">(Giao tiếp, Đặt câu hỏi, Tranh luận)</span>
+                        </div>
+                    </div>
+
+                    {/* Stage 3: Unified Understanding */}
+                    <div className="h-48 w-full flex justify-center items-center mt-4 relative">
+                        
+                        {/* Empty state before done */}
+                        {stage !== 'done' && (
+                            <div className="text-slate-300 font-medium border-2 border-dashed border-slate-300 px-8 py-4 rounded-xl">
+                                Chờ kết quả từ phiên Q&A...
+                            </div>
+                        )}
+
+                        {/* Result state */}
+                        {stage === 'done' && (
+                            <div className="result-appear flex items-center gap-6 bg-gradient-to-r from-indigo-600 to-blue-600 p-6 rounded-2xl shadow-2xl text-white max-w-2xl">
+                                <div className="bg-white/20 p-4 rounded-full">
+                                    <IconTarget />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-black tracking-wide mb-1 shadow-sm">SHARED UNDERSTANDING</h2>
+                                    <p className="text-indigo-100 font-medium text-lg mb-2">Sự thấu hiểu chung (Chốt Requirement)</p>
+                                    <div className="flex gap-4 text-sm font-semibold bg-white/10 p-2 rounded-lg">
+                                        <span className="flex items-center gap-1">✅ Code đúng hướng</span>
+                                        <span className="flex items-center gap-1">✅ Test đúng trọng tâm</span>
+                                        <span className="flex items-center gap-1">✅ Khách hàng hài lòng</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Teacher's Note Section */}
+                    <div className="mt-12 bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r-xl w-full">
+                        <h4 className="font-bold text-amber-900 flex items-center gap-2 mb-3 text-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            Gợi ý Hướng dẫn Thực hiện Q&A cho Học viên:
+                        </h4>
+                        <ul className="text-amber-800 text-base space-y-2 list-disc ml-6">
+                            <li><strong>Góc nhìn đa chiều không phải là lỗi:</strong> Nhấn mạnh với học viên rằng việc QA nghĩ về bug, Dev nghĩ về code là bình thường. Vấn đề là <strong>nếu không nói ra</strong>, ai sẽ tự làm theo ý người nấy.</li>
+                            <li><strong>Phễu Q&A là một cái màng lọc:</strong> Những sự mơ hồ (Ambiguity), mâu thuẫn (Conflict) trong tài liệu ban đầu sẽ bị giữ lại tại phễu này và làm rõ.</li>
+                            <li><strong>Mục tiêu cuối cùng (Shared Understanding):</strong> Không phải là để cãi nhau xem ai đúng, mà là để khi chốt lại (viết thành Q&A Log), tất cả 3 người (BA, Dev, QA) đều gật đầu: <em>"Ok, chúng ta sẽ làm tính năng này theo đúng một cách hiểu này nhé!"</em></li>
+                        </ul>
+                    </div>
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
