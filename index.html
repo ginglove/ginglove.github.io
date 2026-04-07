@@ -276,6 +276,10 @@
 
     <script>
         let currentUnlockingLesson = null;
+        
+        // SỬA LỖI Ở ĐÂY: Lưu trạng thái trên RAM (Set) thay vì sessionStorage
+        // Khi F5 lại trang, biến này sẽ bị xóa sạch -> tự động khóa bài
+        let unlockedLessons = new Set();
 
         function renderPortal() {
             const container = document.getElementById('course-container');
@@ -287,7 +291,8 @@
             container.innerHTML = '';
 
             COURSE_CONFIG.forEach(lesson => {
-                const isUnlocked = sessionStorage.getItem(`unlocked_${lesson.lessonId}`) === 'true';
+                // SỬA LỖI Ở ĐÂY: Kiểm tra mở khóa từ biến RAM (unlockedLessons)
+                const isUnlocked = unlockedLessons.has(lesson.lessonId);
                 const hasPin = !!lesson.pin;
                 const isAccessible = isUnlocked || !hasPin;
                 const shouldBeOpen = openDropdowns.includes(`content-${lesson.lessonId}`);
@@ -390,7 +395,9 @@
         function verifyPin() {
             const input = document.getElementById('pinInput').value;
             if (input === currentUnlockingLesson.pin) {
-                sessionStorage.setItem(`unlocked_${currentUnlockingLesson.lessonId}`, 'true');
+                // SỬA LỖI Ở ĐÂY: Lưu ID bài học đã mở vào biến RAM (Set)
+                unlockedLessons.add(currentUnlockingLesson.lessonId);
+                
                 closeModal();
                 renderPortal(); 
                 
