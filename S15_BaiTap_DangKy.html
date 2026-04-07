@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký Tài khoản</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .input-field:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+        .input-error { border-color: #ef4444 !important; }
+        .input-error:focus { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important; }
+        
+        .rule-check.valid { color: #16a34a; }
+        .rule-check.invalid { color: #6b7280; }
+    </style>
+</head>
+<body class="bg-slate-50 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-slate-800">Tạo Tài Khoản</h1>
+            <p class="text-slate-500 text-sm mt-2">Vui lòng điền đầy đủ thông tin bên dưới</p>
+        </div>
+
+        <div id="system-error" class="hidden mb-4 p-3 bg-red-50 text-red-600 text-sm font-semibold rounded-lg text-center border border-red-200">
+            Email/Số điện thoại đã được sử dụng
+        </div>
+
+        <form id="registerForm" class="space-y-4" onsubmit="event.preventDefault();">
+            
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Họ và tên *</label>
+                <input type="text" id="fullname" class="input-field" placeholder="Nhập họ và tên" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Email *</label>
+                <input type="email" id="email" class="input-field" placeholder="ví dụ: user@gmail.com" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Số điện thoại *</label>
+                <div class="flex gap-2">
+                    <input type="tel" id="phone" class="input-field" placeholder="Nhập số điện thoại" required>
+                    <button type="button" id="btn-get-otp" class="whitespace-nowrap bg-indigo-50 text-indigo-600 border border-indigo-200 font-semibold px-4 rounded-lg hover:bg-indigo-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        Nhận OTP
+                    </button>
+                </div>
+            </div>
+
+            <div id="otp-section" class="hidden bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Nhập mã OTP (6 số) <span id="otp-timer" class="text-red-500 font-bold ml-2"></span></label>
+                <input type="text" id="otp-input" maxlength="6" class="input-field text-center tracking-[0.5em] font-bold text-lg" placeholder="••••••">
+                <p id="otp-msg" class="text-xs text-slate-500 mt-2">Mã OTP mặc định cho Demo là: <strong>123456</strong></p>
+            </div>
+            
+            <div id="block-section" class="hidden p-4 bg-red-50 text-red-600 rounded-lg text-center border border-red-200">
+                <i class="fa-solid fa-lock text-2xl mb-2"></i>
+                <p class="font-bold text-sm">Bạn đã nhập sai quá 3 lần!</p>
+                <p class="text-xs mt-1">Tính năng nhập OTP bị khóa trong <span id="block-timer" class="font-bold">15:00</span></p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Mật khẩu *</label>
+                <div class="relative">
+                    <input type="password" id="password" class="input-field pr-10" placeholder="Tạo mật khẩu" required>
+                    <button type="button" onclick="togglePassword('password', 'eye-pass')" class="absolute right-3 top-3 text-slate-400 hover:text-slate-600">
+                        <i id="eye-pass" class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+                <div class="mt-2 text-xs space-y-1 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <div id="rule-length" class="rule-check invalid"><i class="fa-solid fa-circle-check mr-1"></i> Từ 8 đến 16 ký tự</div>
+                    <div id="rule-upper" class="rule-check invalid"><i class="fa-solid fa-circle-check mr-1"></i> Có ít nhất 1 chữ hoa</div>
+                    <div id="rule-lower" class="rule-check invalid"><i class="fa-solid fa-circle-check mr-1"></i> Có ít nhất 1 chữ thường</div>
+                    <div id="rule-number" class="rule-check invalid"><i class="fa-solid fa-circle-check mr-1"></i> Có ít nhất 1 chữ số</div>
+                    <div id="rule-special" class="rule-check invalid"><i class="fa-solid fa-circle-check mr-1"></i> Có ít nhất 1 ký tự đặc biệt (!@#$%^&*)</div>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Xác nhận mật khẩu *</label>
+                <div class="relative">
+                    <input type="password" id="confirm-password" class="input-field pr-10" placeholder="Nhập lại mật khẩu" required>
+                    <button type="button" onclick="togglePassword('confirm-password', 'eye-confirm')" class="absolute right-3 top-3 text-slate-400 hover:text-slate-600">
+                        <i id="eye-confirm" class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+                <p id="match-error" class="text-xs text-red-500 mt-1 hidden">Mật khẩu không khớp!</p>
+            </div>
+
+            <button type="submit" id="btn-submit" disabled class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed mt-6 shadow-lg shadow-blue-600/30">
+                Đăng ký tài khoản
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // MOCK DATABASE (Giả lập dữ liệu đã tồn tại để test báo lỗi trùng)
+        const DB_MOCK = {
+            emails: ['admin@gmail.com', 'test@gmail.com'],
+            phones: ['0987654321', '0123456789']
+        };
+
+        // DOM Elements
+        const form = document.getElementById('registerForm');
+        const inputs = {
+            fullname: document.getElementById('fullname'),
+            email: document.getElementById('email'),
+            phone: document.getElementById('phone'),
+            password: document.getElementById('password'),
+            confirm: document.getElementById('confirm-password'),
+            otp: document.getElementById('otp-input')
+        };
+        const btnSubmit = document.getElementById('btn-submit');
+        const btnGetOtp = document.getElementById('btn-get-otp');
+        const sysError = document.getElementById('system-error');
+        const matchError = document.getElementById('match-error');
+
+        // Trạng thái (State)
+        let isPassValid = false;
+        let isOtpVerified = false;
+        let otpFailCount = 0;
+        let otpTimerInterval = null;
+        let blockTimerInterval = null;
+
+        // Toggle ẩn/hiện mật khẩu
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        // Logic kiểm tra độ mạnh Mật khẩu realtime
+        inputs.password.addEventListener('input', function() {
+            const val = this.value;
+            const rules = {
+                length: val.length >= 8 && val.length <= 16,
+                upper: /[A-Z]/.test(val),
+                lower: /[a-z]/.test(val),
+                number: /[0-9]/.test(val),
+                special: /[!@#$%^&*]/.test(val)
+            };
+
+            // Cập nhật UI cho từng quy tắc
+            const updateUI = (id, isValid) => {
+                const el = document.getElementById(`rule-${id}`);
+                if (isValid) {
+                    el.classList.replace('invalid', 'valid');
+                    el.querySelector('i').classList.replace('fa-circle-check', 'fa-check-circle');
+                } else {
+                    el.classList.replace('valid', 'invalid');
+                    el.querySelector('i').classList.replace('fa-check-circle', 'fa-circle-check');
+                }
+            };
+
+            updateUI('length', rules.length);
+            updateUI('upper', rules.upper);
+            updateUI('lower', rules.lower);
+            updateUI('number', rules.number);
+            updateUI('special', rules.special);
+
+            isPassValid = Object.values(rules).every(Boolean);
+            checkFormValidity();
+        });
+
+        // Kiểm tra khớp mật khẩu
+        inputs.confirm.addEventListener('input', function() {
+            if(this.value && this.value !== inputs.password.value) {
+                matchError.classList.remove('hidden');
+                this.classList.add('input-error');
+            } else {
+                matchError.classList.add('hidden');
+                this.classList.remove('input-error');
+            }
+            checkFormValidity();
+        });
+
+        // Lắng nghe mọi thay đổi để bật/tắt nút Submit
+        Object.values(inputs).forEach(input => {
+            if(input) input.addEventListener('input', checkFormValidity);
+        });
+
+        function checkFormValidity() {
+            // Validate định dạng Email chuẩn
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const isEmailValid = emailRegex.test(inputs.email.value);
+
+            // Kiểm tra tổng thể
+            const isFullnameFilled = inputs.fullname.value.trim() !== '';
+            const isPhoneFilled = inputs.phone.value.trim() !== '';
+            const isConfirmMatch = inputs.confirm.value !== '' && inputs.confirm.value === inputs.password.value;
+
+            // Nút đăng ký chỉ sáng lên khi: Điền đủ 4 trường ban đầu + Email chuẩn + Pass mạnh + Pass khớp + OTP đã verify
+            if (isFullnameFilled && isEmailValid && isPhoneFilled && isPassValid && isConfirmMatch && isOtpVerified) {
+                btnSubmit.disabled = false;
+            } else {
+                btnSubmit.disabled = true;
+            }
+        }
+
+        // LUỒNG XỬ LÝ OTP
+        btnGetOtp.addEventListener('click', function() {
+            const emailVal = inputs.email.value.trim();
+            const phoneVal = inputs.phone.value.trim();
+
+            if (!emailVal || !phoneVal) {
+                alert("Vui lòng điền Email và Số điện thoại trước khi nhận OTP!");
+                return;
+            }
+
+            // 1. Kiểm tra trùng lặp (Mock DB)
+            if (DB_MOCK.emails.includes(emailVal) || DB_MOCK.phones.includes(phoneVal)) {
+                sysError.classList.remove('hidden');
+                inputs.email.classList.add('input-error');
+                inputs.phone.classList.add('input-error');
+                return;
+            } else {
+                sysError.classList.add('hidden');
+                inputs.email.classList.remove('input-error');
+                inputs.phone.classList.remove('input-error');
+            }
+
+            // 2. Nếu hợp lệ, Bắt đầu gửi OTP
+            document.getElementById('otp-section').classList.remove('hidden');
+            inputs.phone.disabled = true; // Khóa phone để không cho sửa trong lúc đếm giờ
+            inputs.email.disabled = true;
+            
+            startOtpTimer(60); // 60 giây
+        });
+
+        function startOtpTimer(seconds) {
+            clearInterval(otpTimerInterval);
+            btnGetOtp.disabled = true;
+            let timeLeft = seconds;
+            const timerEl = document.getElementById('otp-timer');
+            inputs.otp.disabled = false;
+            inputs.otp.value = '';
+            
+            timerEl.innerText = `(${timeLeft}s)`;
+
+            otpTimerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.innerText = `(${timeLeft}s)`;
+                if (timeLeft <= 0) {
+                    clearInterval(otpTimerInterval);
+                    timerEl.innerText = "";
+                    btnGetOtp.disabled = false;
+                    btnGetOtp.innerText = "Gửi lại OTP";
+                    inputs.otp.disabled = true;
+                }
+            }, 1000);
+        }
+
+        // Kiểm tra mã OTP nhập vào
+        inputs.otp.addEventListener('input', function() {
+            if (this.value.length === 6) {
+                if (this.value === '123456') { // Mock OTP đúng là 123456
+                    clearInterval(otpTimerInterval);
+                    document.getElementById('otp-timer').innerText = " (Đã xác minh ✓)";
+                    document.getElementById('otp-timer').classList.replace('text-red-500', 'text-green-500');
+                    this.classList.add('border-green-500', 'text-green-600', 'bg-green-50');
+                    this.disabled = true;
+                    btnGetOtp.disabled = true;
+                    isOtpVerified = true;
+                    document.getElementById('otp-msg').innerText = "Xác minh OTP thành công!";
+                    document.getElementById('otp-msg').classList.replace('text-slate-500', 'text-green-600');
+                    checkFormValidity();
+                } else {
+                    otpFailCount++;
+                    if (otpFailCount >= 3) {
+                        handleOtpBlock();
+                    } else {
+                        document.getElementById('otp-msg').innerHTML = `<span class="text-red-500 font-bold">Mã OTP sai! Bạn còn ${3 - otpFailCount} lần thử.</span>`;
+                        this.classList.add('input-error');
+                    }
+                }
+            }
+        });
+
+        // Xử lý Khóa nhập OTP 15 phút
+        function handleOtpBlock() {
+            clearInterval(otpTimerInterval);
+            document.getElementById('otp-section').classList.add('hidden');
+            document.getElementById('block-section').classList.remove('hidden');
+            btnGetOtp.disabled = true;
+            inputs.phone.disabled = true;
+            inputs.email.disabled = true;
+            
+            let blockTime = 15 * 60; // 15 phút = 900 giây
+            const blockTimerEl = document.getElementById('block-timer');
+
+            blockTimerInterval = setInterval(() => {
+                blockTime--;
+                const m = Math.floor(blockTime / 60).toString().padStart(2, '0');
+                const s = (blockTime % 60).toString().padStart(2, '0');
+                blockTimerEl.innerText = `${m}:${s}`;
+
+                if (blockTime <= 0) {
+                    clearInterval(blockTimerInterval);
+                    otpFailCount = 0; // Reset số lần thử
+                    document.getElementById('block-section').classList.add('hidden');
+                    btnGetOtp.disabled = false;
+                    btnGetOtp.innerText = "Nhận OTP";
+                    inputs.phone.disabled = false;
+                    inputs.email.disabled = false;
+                }
+            }, 1000);
+        }
+
+        // Xử lý khi nhấn nút Đăng ký
+        form.addEventListener('submit', function() {
+            if(!btnSubmit.disabled) {
+                btnSubmit.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang xử lý...';
+                setTimeout(() => {
+                    alert("Đăng ký tài khoản thành công!");
+                    window.location.reload();
+                }, 1500);
+            }
+        });
+    </script>
+</body>
+</html>

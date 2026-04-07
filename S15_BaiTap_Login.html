@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập Hệ thống</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .input-field {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+            outline: none;
+            transition: all 0.2s;
+            background-color: #f9fafb;
+        }
+        .input-field:focus { 
+            border-color: #3b82f6; 
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); 
+        }
+        .input-error { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
+        
+        /* Custom checkbox */
+        .custom-checkbox {
+            width: 1.125rem;
+            height: 1.125rem;
+            border-radius: 0.25rem;
+            border: 1px solid #d1d5db;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-100 relative overflow-hidden">
+        
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-800">Chào mừng trở lại</h1>
+            <p class="text-slate-500 text-sm mt-1">Đăng nhập để tiếp tục vào hệ thống</p>
+        </div>
+
+        <div id="system-msg" class="hidden mb-6 p-4 text-sm font-semibold rounded-lg flex items-start gap-3">
+            <i id="msg-icon" class="fa-solid mt-0.5"></i>
+            <div id="msg-text" class="flex-1"></div>
+        </div>
+
+        <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();" class="space-y-5">
+            
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Email</label>
+                <input type="email" id="email" class="input-field" placeholder="Nhập địa chỉ email" required>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="block text-sm font-semibold text-slate-700">Mật khẩu</label>
+                    <a href="#" class="text-sm font-semibold text-blue-600 hover:underline">Quên mật khẩu?</a>
+                </div>
+                <div class="relative">
+                    <input type="password" id="password" class="input-field pr-10" placeholder="••••••••" required>
+                    <button type="button" onclick="togglePass('password', 'eye-icon')" class="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600">
+                        <i id="eye-icon" class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center">
+                <input type="checkbox" id="remember-me" class="custom-checkbox accent-blue-600 text-blue-600 rounded focus:ring-blue-500">
+                <label for="remember-me" class="ml-2 block text-sm text-slate-700 cursor-pointer select-none">
+                    Ghi nhớ đăng nhập
+                </label>
+            </div>
+
+            <button type="submit" id="btn-login" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/30">
+                Đăng nhập
+            </button>
+        </form>
+
+        <div class="mt-8 pt-6 border-t border-slate-100 text-xs text-slate-500">
+            <p class="font-bold text-slate-700 mb-2"><i class="fa-solid fa-database mr-1"></i> Data Test (Mật khẩu chung: 123456):</p>
+            <ul class="space-y-1 list-disc pl-4">
+                <li><strong class="text-green-600">active@test.com</strong>: Tk đang hoạt động</li>
+                <li><strong class="text-amber-500">unverified@test.com</strong>: Tk chưa kích hoạt</li>
+                <li><strong class="text-red-500">banned@test.com</strong>: Tk bị cấm (Banned)</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <script>
+        // MOCK DATABASE CHỨA TRẠNG THÁI TÀI KHOẢN
+        const DB_MOCK = {
+            'active@test.com': { password: '123456', status: 'Active' },
+            'unverified@test.com': { password: '123456', status: 'Unverified' },
+            'banned@test.com': { password: '123456', status: 'Banned' }
+        };
+
+        const MAX_FAILED_ATTEMPTS = 5;
+        const LOCK_TIME_MINUTES = 30;
+
+        // DOM Elements
+        const emailInput = document.getElementById('email');
+        const passInput = document.getElementById('password');
+        const rememberCheck = document.getElementById('remember-me');
+        const sysMsg = document.getElementById('system-msg');
+        const msgIcon = document.getElementById('msg-icon');
+        const msgText = document.getElementById('msg-text');
+        const btnLogin = document.getElementById('btn-login');
+
+        // Toggle Password Visibility
+        function togglePass(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        // Show System Message
+        function showMessage(type, text) {
+            sysMsg.className = 'mb-6 p-4 text-sm font-semibold rounded-lg flex items-start gap-3 border';
+            sysMsg.classList.remove('hidden');
+            msgText.innerHTML = text;
+
+            if (type === 'error') {
+                sysMsg.classList.add('bg-red-50', 'text-red-600', 'border-red-200');
+                msgIcon.className = 'fa-solid fa-circle-exclamation mt-0.5';
+                emailInput.classList.add('input-error');
+                passInput.classList.add('input-error');
+            } else if (type === 'warning') {
+                sysMsg.classList.add('bg-amber-50', 'text-amber-600', 'border-amber-200');
+                msgIcon.className = 'fa-solid fa-triangle-exclamation mt-0.5';
+                emailInput.classList.add('input-error');
+            } else if (type === 'success') {
+                sysMsg.classList.add('bg-green-50', 'text-green-700', 'border-green-200');
+                msgIcon.className = 'fa-solid fa-circle-check mt-0.5';
+                emailInput.classList.remove('input-error');
+                passInput.classList.remove('input-error');
+            }
+        }
+
+        function hideMessage() {
+            sysMsg.classList.add('hidden');
+            emailInput.classList.remove('input-error');
+            passInput.classList.remove('input-error');
+        }
+
+        // --- CORE LOGIN LOGIC ---
+        function handleLogin() {
+            hideMessage();
+            const email = emailInput.value.trim().toLowerCase();
+            const password = passInput.value;
+
+            // 1. Kiểm tra tài khoản có tồn tại không
+            const user = DB_MOCK[email];
+            if (!user) {
+                showMessage('error', 'Tài khoản không tồn tại trong hệ thống.');
+                return;
+            }
+
+            // 2. Kiểm tra Trạng thái tài khoản (Status Rule)
+            if (user.status === 'Banned') {
+                showMessage('error', 'Tài khoản của bạn đã bị khóa vĩnh viễn (Banned) do vi phạm chính sách.');
+                return;
+            }
+            if (user.status === 'Unverified') {
+                showMessage('warning', 'Tài khoản chưa được kích hoạt (Unverified). Vui lòng kiểm tra email để xác thực.');
+                return;
+            }
+
+            // 3. Kiểm tra tính năng Khóa tạm thời (Security Rule)
+            const lockExpiry = localStorage.getItem(`lock_${email}`);
+            if (lockExpiry && Date.now() < parseInt(lockExpiry)) {
+                // Tính toán thời gian còn lại
+                const minsLeft = Math.ceil((parseInt(lockExpiry) - Date.now()) / (1000 * 60));
+                showMessage('error', `Tài khoản đang bị khóa tạm thời do nhập sai quá nhiều lần.<br>Vui lòng thử lại sau <strong>${minsLeft} phút</strong>.`);
+                return;
+            } else {
+                // Nếu đã hết hạn khóa, xóa trạng thái khóa
+                localStorage.removeItem(`lock_${email}`);
+                if(lockExpiry) localStorage.setItem(`fails_${email}`, '0'); // Reset attempts if lock expired
+            }
+
+            // 4. Kiểm tra Mật khẩu
+            if (password !== user.password) {
+                // Tăng biến đếm số lần sai
+                let fails = parseInt(localStorage.getItem(`fails_${email}`) || '0') + 1;
+                localStorage.setItem(`fails_${email}`, fails.toString());
+
+                if (fails >= MAX_FAILED_ATTEMPTS) {
+                    // Khóa tài khoản trong 30 phút
+                    const expiryTime = Date.now() + (LOCK_TIME_MINUTES * 60 * 1000);
+                    localStorage.setItem(`lock_${email}`, expiryTime.toString());
+                    showMessage('error', `Bạn đã nhập sai 5 lần liên tiếp.<br>Tài khoản bị <strong>khóa tạm thời trong ${LOCK_TIME_MINUTES} phút</strong> để bảo mật.`);
+                } else {
+                    showMessage('error', `Sai mật khẩu. Bạn còn <strong>${MAX_FAILED_ATTEMPTS - fails}</strong> lần thử trước khi tài khoản bị khóa.`);
+                }
+                return;
+            }
+
+            // 5. ĐĂNG NHẬP THÀNH CÔNG
+            // Reset số lần sai
+            localStorage.removeItem(`fails_${email}`);
+            localStorage.removeItem(`lock_${email}`);
+
+            // Xử lý "Ghi nhớ tôi" (Session/Cookie Simulation)
+            const sessionData = JSON.stringify({ email: email, token: 'fake-jwt-token-123', loginAt: new Date().toISOString() });
+            
+            if (rememberCheck.checked) {
+                // Lưu vào LocalStorage (Giả lập Cookie sống 30 ngày)
+                localStorage.setItem('user_session', sessionData);
+                console.log("Đã lưu session vào LocalStorage (30 days)");
+            } else {
+                // Lưu vào SessionStorage (Mất khi đóng trình duyệt)
+                sessionStorage.setItem('user_session', sessionData);
+                console.log("Đã lưu session vào SessionStorage (Browser close)");
+            }
+
+            // Hiển thị UI thành công
+            btnLogin.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang đăng nhập...';
+            btnLogin.disabled = true;
+            showMessage('success', 'Đăng nhập thành công! Đang chuyển hướng...');
+
+            // Mô phỏng chuyển trang
+            setTimeout(() => {
+                alert("Đăng nhập thành công vào trang Dashboard!\n(F12 -> Application để xem dữ liệu lưu trữ Session/Local)");
+                btnLogin.innerHTML = 'Đăng nhập';
+                btnLogin.disabled = false;
+            }, 1500);
+        }
+
+        // Xóa thông báo khi người dùng bắt đầu gõ lại
+        emailInput.addEventListener('input', hideMessage);
+        passInput.addEventListener('input', hideMessage);
+    </script>
+</body>
+</html>

@@ -46,7 +46,15 @@ const COURSE_CONFIG = [
                 links: [
                     { name: "Visual Of Test Dumb", url: "S15_TestDumb.html" }
                 ]
-            }
+            },
+            {
+                sectionTitle: "Assignment",
+                links: [
+                    { name: "Register Assignment", url: "S15_BaiTap_DangKy.html" },
+                    { name: "Update Assignment", url: "S15_BaiTap_CapNhatThongTinUser.html"},
+                    { name: "Login Assignment", url: "S15_BaiTap_Login.html"}
+                ]
+            }            
         ]
     }
     /*

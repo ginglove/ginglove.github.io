@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cập nhật Hồ sơ cá nhân</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+            outline: none;
+            transition: all 0.2s;
+            background-color: #f9fafb;
+        }
+        .input-field:focus { 
+            border-color: #3b82f6; 
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); 
+        }
+        .input-error { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+        
+        <div>
+            <h1 class="text-3xl font-bold text-slate-800">Cài đặt Tài khoản</h1>
+            <p class="text-slate-500 mt-1">Quản lý thông tin cá nhân và bảo mật của bạn.</p>
+        </div>
+
+        <form id="profileForm" onsubmit="event.preventDefault(); saveProfile();">
+            
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 mb-6">
+                <h2 class="text-xl font-bold text-slate-800 mb-6 border-b pb-4">Thông tin cá nhân</h2>
+                
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="flex flex-col items-center space-y-4 md:w-1/3">
+                        <div class="relative group cursor-pointer">
+                            <img id="avatar-preview" src="https://ui-avatars.com/api/?name=User&background=eff6ff&color=3b82f6&size=200" alt="Avatar" class="w-40 h-40 rounded-full object-cover border-4 border-slate-50 shadow-md">
+                            <div class="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" onclick="document.getElementById('avatar-upload').click()">
+                                <i class="fa-solid fa-camera text-white text-2xl"></i>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button type="button" onclick="document.getElementById('avatar-upload').click()" class="text-sm font-semibold text-blue-600 bg-blue-50 px-4 py-2 rounded-lg hover:bg-blue-100 transition">
+                                Thay đổi ảnh
+                            </button>
+                            <input type="file" id="avatar-upload" class="hidden" accept=".jpg, .jpeg, .png">
+                            <p class="text-xs text-slate-400 mt-3 leading-relaxed">
+                                Định dạng: JPG, JPEG, PNG.<br>Tối đa 5MB. Tối thiểu 200x200px.
+                            </p>
+                            <p id="avatar-error" class="text-xs text-red-500 font-semibold mt-2 hidden"></p>
+                        </div>
+                    </div>
+
+                    <div class="md:w-2/3 space-y-5 flex flex-col justify-center">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Họ và tên</label>
+                            <input type="text" class="input-field" value="Nguyễn Văn A">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Ngày sinh * <span class="text-xs text-slate-400 font-normal">(Phải đủ 18 tuổi)</span></label>
+                            <input type="date" id="dob" class="input-field" required>
+                            <p id="dob-error" class="text-xs text-red-500 font-semibold mt-1 hidden">Bạn chưa đủ 18 tuổi hoặc ngày không hợp lệ.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 mb-6">
+                <h2 class="text-xl font-bold text-slate-800 mb-6 border-b pb-4">Đổi mật khẩu</h2>
+                <p class="text-sm text-slate-500 mb-6">Mật khẩu hiện tại (Mock test) là: <strong>Admin@123</strong></p>
+
+                <div class="space-y-5 max-w-lg">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Mật khẩu hiện tại *</label>
+                        <div class="relative">
+                            <input type="password" id="current-pass" class="input-field pr-10" placeholder="Nhập mật khẩu hiện tại">
+                            <button type="button" onclick="togglePass('current-pass', 'eye-1')" class="absolute right-3 top-3 text-slate-400"><i id="eye-1" class="fa-solid fa-eye"></i></button>
+                        </div>
+                        <p id="current-pass-error" class="text-xs text-red-500 font-semibold mt-1 hidden">Mật khẩu hiện tại không đúng.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Mật khẩu mới *</label>
+                        <div class="relative">
+                            <input type="password" id="new-pass" class="input-field pr-10" placeholder="Nhập mật khẩu mới">
+                            <button type="button" onclick="togglePass('new-pass', 'eye-2')" class="absolute right-3 top-3 text-slate-400"><i id="eye-2" class="fa-solid fa-eye"></i></button>
+                        </div>
+                        <p id="new-pass-error" class="text-xs text-red-500 font-semibold mt-1 hidden">Mật khẩu mới không được trùng với mật khẩu hiện tại.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Xác nhận mật khẩu mới *</label>
+                        <div class="relative">
+                            <input type="password" id="confirm-pass" class="input-field pr-10" placeholder="Nhập lại mật khẩu mới">
+                            <button type="button" onclick="togglePass('confirm-pass', 'eye-3')" class="absolute right-3 top-3 text-slate-400"><i id="eye-3" class="fa-solid fa-eye"></i></button>
+                        </div>
+                        <p id="confirm-pass-error" class="text-xs text-red-500 font-semibold mt-1 hidden">Xác nhận mật khẩu không khớp.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button type="button" class="px-6 py-3 rounded-lg font-semibold text-slate-600 bg-white border border-slate-300 hover:bg-slate-50 transition">Hủy bỏ</button>
+                <button type="submit" class="px-6 py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition shadow-lg shadow-blue-600/30">
+                    <i class="fa-solid fa-floppy-disk mr-2"></i> Lưu thay đổi
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // MOCK DATA
+        const CORRECT_CURRENT_PASSWORD = "Admin@123";
+
+        // --- 1. XỬ LÝ NGÀY SINH (ĐỦ 18 TUỔI) ---
+        const dobInput = document.getElementById('dob');
+        
+        // Thiết lập giá trị Max (Ngày lớn nhất được chọn) là ngày này của 18 năm trước.
+        // Việc này tự động chặn chọn ngày tương lai và ngày < 18 tuổi trên giao diện Lịch.
+        const today = new Date();
+        const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+        const maxDateString = maxDate.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        dobInput.max = maxDateString;
+
+        // Hàm kiểm tra lại lần nữa bằng JS đề phòng user gõ tay
+        function validateDOB() {
+            const dobError = document.getElementById('dob-error');
+            if (!dobInput.value) return false;
+            
+            const selectedDate = new Date(dobInput.value);
+            if (selectedDate > maxDate) {
+                dobInput.classList.add('input-error');
+                dobError.classList.remove('hidden');
+                return false;
+            } else {
+                dobInput.classList.remove('input-error');
+                dobError.classList.add('hidden');
+                return true;
+            }
+        }
+        dobInput.addEventListener('change', validateDOB);
+
+
+        // --- 2. XỬ LÝ UPLOAD AVATAR ---
+        const avatarUpload = document.getElementById('avatar-upload');
+        const avatarPreview = document.getElementById('avatar-preview');
+        const avatarError = document.getElementById('avatar-error');
+
+        avatarUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            avatarError.classList.add('hidden'); // Reset lỗi
+
+            // Rule 1: Định dạng file (.jpg, .jpeg, .png)
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!validTypes.includes(file.type)) {
+                showAvatarError('Chỉ chấp nhận định dạng JPG, JPEG, PNG.');
+                avatarUpload.value = ''; // Xóa file
+                return;
+            }
+
+            // Rule 2: Dung lượng <= 5MB (5 * 1024 * 1024 bytes)
+            const maxSize = 5 * 1024 * 1024; 
+            if (file.size > maxSize) {
+                showAvatarError('Dung lượng file vượt quá 5MB.');
+                avatarUpload.value = ''; 
+                return;
+            }
+
+            // Rule 3: Kích thước tối thiểu 200x200 pixels
+            const img = new Image();
+            img.onload = function() {
+                if (this.width < 200 || this.height < 200) {
+                    showAvatarError(`Ảnh quá nhỏ (${this.width}x${this.height}). Tối thiểu 200x200px.`);
+                    avatarUpload.value = '';
+                } else {
+                    // Passed tất cả -> Hiển thị ảnh
+                    avatarPreview.src = this.src;
+                }
+            };
+            img.onerror = function() {
+                showAvatarError('File không hợp lệ hoặc bị hỏng.');
+            };
+            img.src = URL.createObjectURL(file); // Load file vào image object để lấy dimensions
+        });
+
+        function showAvatarError(msg) {
+            avatarError.innerText = msg;
+            avatarError.classList.remove('hidden');
+        }
+
+
+        // --- 3. XỬ LÝ ĐỔI MẬT KHẨU ---
+        const currentPass = document.getElementById('current-pass');
+        const newPass = document.getElementById('new-pass');
+        const confirmPass = document.getElementById('confirm-pass');
+
+        // Hàm ẩn/hiện mật khẩu
+        function togglePass(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        function validatePassword() {
+            let isValid = true;
+            const currentErr = document.getElementById('current-pass-error');
+            const newErr = document.getElementById('new-pass-error');
+            const confirmErr = document.getElementById('confirm-pass-error');
+
+            // Reset UI
+            [currentPass, newPass, confirmPass].forEach(el => el.classList.remove('input-error'));
+            [currentErr, newErr, confirmErr].forEach(el => el.classList.add('hidden'));
+
+            // Nếu user để trống tất cả thì coi như không đổi mật khẩu
+            if (!currentPass.value && !newPass.value && !confirmPass.value) return true;
+
+            // Rule 1: Mật khẩu hiện tại phải đúng
+            if (currentPass.value !== CORRECT_CURRENT_PASSWORD) {
+                currentPass.classList.add('input-error');
+                currentErr.classList.remove('hidden');
+                isValid = false;
+            }
+
+            // Rule 2: Mật khẩu mới không được trùng mật khẩu cũ
+            if (newPass.value === currentPass.value && newPass.value !== '') {
+                newPass.classList.add('input-error');
+                newErr.classList.remove('hidden');
+                isValid = false;
+            } else if (newPass.value === '') {
+                // Yêu cầu nhập pass mới nếu đã nhập pass cũ
+                 newPass.classList.add('input-error');
+                 isValid = false;
+            }
+
+            // Rule 3: Xác nhận mật khẩu phải khớp
+            if (confirmPass.value !== newPass.value || confirmPass.value === '') {
+                confirmPass.classList.add('input-error');
+                confirmErr.classList.remove('hidden');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Tự động check khi user rời khỏi ô nhập liệu
+        currentPass.addEventListener('blur', validatePassword);
+        newPass.addEventListener('blur', validatePassword);
+        confirmPass.addEventListener('blur', validatePassword);
+
+
+        // --- 4. HÀM TỔNG HỢP KHI BẤM LƯU ---
+        function saveProfile() {
+            const isDobValid = validateDOB();
+            const isPassValid = validatePassword();
+
+            if (isDobValid && isPassValid) {
+                // Tạo hiệu ứng loading cho nút bấm (UX)
+                const btn = document.querySelector('button[type="submit"]');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang lưu...';
+                btn.disabled = true;
+
+                setTimeout(() => {
+                    alert("✅ Lưu thông tin thành công!");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    
+                    // Xóa trắng form mật khẩu sau khi lưu thành công
+                    currentPass.value = '';
+                    newPass.value = '';
+                    confirmPass.value = '';
+                }, 1000);
+            } else {
+                alert("❌ Vui lòng kiểm tra lại các trường báo lỗi màu đỏ.");
+            }
+        }
+    </script>
+</body>
+</html>
