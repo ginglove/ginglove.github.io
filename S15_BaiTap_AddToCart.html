@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sản phẩm & Khuyến mãi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Ẩn mũi tên tăng giảm mặc định của input type number */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-5 gap-6">
+        
+        <div class="md:col-span-3 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h2 class="text-xl font-bold text-slate-800 border-b pb-4 mb-6">Chi tiết sản phẩm</h2>
+            
+            <div class="flex gap-6">
+                <div class="w-32 h-32 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0 border border-slate-200 overflow-hidden">
+                    <img src="https://ui-avatars.com/api/?name=Item&background=e2e8f0&color=475569&size=128" alt="Product" class="w-full h-full object-cover">
+                </div>
+                
+                <div class="flex-1 flex flex-col">
+                    <h3 class="text-lg font-bold text-slate-800">Tai nghe Bluetooth Cao Cấp</h3>
+                    <p class="text-2xl font-bold text-blue-600 mt-1" id="unit-price">100.000 ₫</p>
+                    
+                    <div class="mt-auto pt-4 flex items-end justify-between">
+                        <div>
+                            <p class="text-sm text-slate-500 mb-2">Số lượng (Tồn kho: <span id="stock-display" class="font-bold text-slate-700">5</span>)</p>
+                            <div class="flex items-center gap-1 border border-slate-300 rounded-lg w-max bg-white p-1 shadow-sm">
+                                <button type="button" id="btn-minus" class="w-8 h-8 rounded hover:bg-slate-100 text-slate-600 transition disabled:opacity-30 disabled:cursor-not-allowed">
+                                    <i class="fa-solid fa-minus text-sm"></i>
+                                </button>
+                                
+                                <input type="number" id="qty-input" class="w-12 h-8 text-center font-bold text-slate-800 bg-transparent outline-none" value="1">
+                                
+                                <button type="button" id="btn-plus" class="w-8 h-8 rounded hover:bg-slate-100 text-slate-600 transition disabled:opacity-30 disabled:cursor-not-allowed">
+                                    <i class="fa-solid fa-plus text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="qty-warning" class="hidden mt-4 p-3 bg-red-50 text-red-600 text-sm font-medium rounded-lg border border-red-100 flex items-center gap-2">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="qty-warning-text"></span>
+            </div>
+        </div>
+
+        <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
+            <h2 class="text-xl font-bold text-slate-800 border-b pb-4 mb-6">Đơn hàng</h2>
+            
+            <div class="space-y-3 mb-6 flex-1">
+                <div class="flex justify-between text-slate-600">
+                    <span>Tạm tính (<span id="summary-qty">1</span> sp)</span>
+                    <span id="subtotal" class="font-semibold text-slate-800">100.000 ₫</span>
+                </div>
+                <div class="flex justify-between text-emerald-600">
+                    <span>Giảm giá</span>
+                    <span id="discount-amount" class="font-semibold">-0 ₫</span>
+                </div>
+            </div>
+
+            <div class="mb-6 pt-6 border-t border-slate-100">
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Mã khuyến mãi</label>
+                <div class="flex gap-2">
+                    <input type="text" id="promo-input" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 uppercase transition" placeholder="Ví dụ: GIAM20">
+                    <button id="btn-apply-promo" class="bg-slate-800 text-white px-4 py-2 rounded-lg font-semibold hover:bg-slate-700 transition">Áp dụng</button>
+                </div>
+                <p id="promo-msg" class="text-sm mt-2 font-medium hidden"></p>
+                
+                <div class="mt-3 p-3 bg-blue-50 rounded-lg text-xs text-blue-800 space-y-1">
+                    <p class="font-bold"><i class="fa-solid fa-tags mr-1"></i> Điều kiện mã GIAM20:</p>
+                    <ul class="list-disc pl-4 space-y-0.5">
+                        <li>Đơn từ 200K trở lên.</li>
+                        <li>Giảm 20%, tối đa 50K.</li>
+                        <li>Hạn dùng: 23:59 hôm nay.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-200 pt-4 mb-6">
+                <div class="flex justify-between items-end">
+                    <span class="font-bold text-slate-800">Tổng cộng</span>
+                    <span id="total-price" class="text-2xl font-bold text-blue-600">100.000 ₫</span>
+                </div>
+            </div>
+
+            <button class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-600/20">
+                Thanh toán
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- CẤU HÌNH DỮ LIỆU ---
+        const PRODUCT_PRICE = 100000;
+        const STOCK_QUANTITY = 5;
+        
+        // --- TRẠNG THÁI (STATE) ---
+        let currentQty = 1;
+        let isPromoApplied = false;
+
+        // --- DOM ELEMENTS ---
+        const qtyInput = document.getElementById('qty-input');
+        const btnMinus = document.getElementById('btn-minus');
+        const btnPlus = document.getElementById('btn-plus');
+        const qtyWarning = document.getElementById('qty-warning');
+        const qtyWarningText = document.getElementById('qty-warning-text');
+        
+        const summaryQty = document.getElementById('summary-qty');
+        const subtotalEl = document.getElementById('subtotal');
+        const discountAmountEl = document.getElementById('discount-amount');
+        const totalPriceEl = document.getElementById('total-price');
+        
+        const promoInput = document.getElementById('promo-input');
+        const btnApplyPromo = document.getElementById('btn-apply-promo');
+        const promoMsg = document.getElementById('promo-msg');
+
+        // Hàm Format Tiền tệ VNĐ
+        const formatVND = (num) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num);
+
+        // --- 1. LOGIC XỬ LÝ SỐ LƯỢNG (QUANTITY RULES) ---
+        function updateQuantityUI() {
+            // Cập nhật giá trị input
+            qtyInput.value = currentQty;
+            
+            // Xử lý trạng thái Nút bấm
+            btnMinus.disabled = currentQty <= 1;
+            btnPlus.disabled = currentQty >= STOCK_QUANTITY;
+
+            // Xử lý Cảnh báo
+            qtyWarning.classList.add('hidden');
+            if (currentQty >= STOCK_QUANTITY) {
+                qtyWarningText.innerText = `Chỉ còn tối đa ${STOCK_QUANTITY} sản phẩm trong kho.`;
+                qtyWarning.classList.remove('hidden');
+            }
+
+            // Gọi hàm tính lại tiền
+            calculateTotal();
+        }
+
+        // Sự kiện Click Nút [-]
+        btnMinus.addEventListener('click', () => {
+            if (currentQty > 1) {
+                currentQty--;
+                updateQuantityUI();
+            }
+        });
+
+        // Sự kiện Click Nút [+]
+        btnPlus.addEventListener('click', () => {
+            if (currentQty < STOCK_QUANTITY) {
+                currentQty++;
+                updateQuantityUI();
+            }
+        });
+
+        // Sự kiện Nhập tay (Manual Input)
+        qtyInput.addEventListener('change', (e) => {
+            let val = parseInt(e.target.value);
+            
+            // Rule: Không được <= 0, không được phải số (NaN)
+            if (isNaN(val) || val <= 0) {
+                val = 1;
+                qtyWarningText.innerText = "Số lượng phải lớn hơn 0.";
+                qtyWarning.classList.remove('hidden');
+            } 
+            // Rule: Không vượt quá tồn kho
+            else if (val > STOCK_QUANTITY) {
+                val = STOCK_QUANTITY;
+                qtyWarningText.innerText = `Chỉ còn tối đa ${STOCK_QUANTITY} sản phẩm trong kho.`;
+                qtyWarning.classList.remove('hidden');
+            }
+            else {
+                qtyWarning.classList.add('hidden');
+            }
+
+            currentQty = val;
+            updateQuantityUI();
+        });
+
+
+        // --- 2. LOGIC XỬ LÝ MÃ GIẢM GIÁ (DISCOUNT RULES) ---
+        function checkPromoValidity(subtotal) {
+            const code = promoInput.value.trim().toUpperCase();
+            
+            // Nếu input trống và bấm áp dụng -> Hủy mã
+            if (code === "") {
+                isPromoApplied = false;
+                showPromoMessage("", "");
+                return 0;
+            }
+
+            if (code !== "GIAM20") {
+                isPromoApplied = false;
+                showPromoMessage("error", "Mã giảm giá không tồn tại hoặc đã hết hạn.");
+                return 0;
+            }
+
+            // Rule: Check Hạn sử dụng (Luôn hợp lệ đến 23:59 hôm nay)
+            const now = new Date();
+            const eod = new Date();
+            eod.setHours(23, 59, 59, 999);
+            if (now > eod) {
+                isPromoApplied = false;
+                showPromoMessage("error", "Mã GIAM20 đã hết hạn.");
+                return 0;
+            }
+
+            // Rule: Check Điều kiện tổng tiền >= 200.000đ
+            if (subtotal < 200000) {
+                isPromoApplied = false;
+                showPromoMessage("error", "Mã GIAM20 chỉ áp dụng cho đơn hàng từ 200.000 ₫.");
+                return 0;
+            }
+
+            // Rule: Tính toán giảm 20% và Cáp (Max) 50.000đ
+            isPromoApplied = true;
+            let calculatedDiscount = subtotal * 0.20;
+            let finalDiscount = Math.min(calculatedDiscount, 50000);
+            
+            showPromoMessage("success", `Đã áp dụng mã GIAM20. Giảm ${formatVND(finalDiscount)}`);
+            return finalDiscount;
+        }
+
+        function showPromoMessage(type, text) {
+            promoMsg.classList.remove('hidden', 'text-red-500', 'text-green-600');
+            if (type === 'error') {
+                promoMsg.classList.add('text-red-500');
+            } else if (type === 'success') {
+                promoMsg.classList.add('text-green-600');
+            } else {
+                promoMsg.classList.add('hidden'); // type rỗng thì ẩn
+            }
+            promoMsg.innerText = text;
+        }
+
+        btnApplyPromo.addEventListener('click', () => {
+            calculateTotal(); // Tính toán lại toàn bộ
+        });
+
+
+        // --- 3. LOGIC TÍNH TỔNG TIỀN (CALCULATOR) ---
+        function calculateTotal() {
+            const subtotal = currentQty * PRODUCT_PRICE;
+            let discount = 0;
+
+            // Nếu ô input có chữ, kiểm tra xem có hợp lệ để áp dụng giảm giá không
+            if (promoInput.value.trim() !== "") {
+                discount = checkPromoValidity(subtotal);
+            } else {
+                isPromoApplied = false;
+                showPromoMessage("", "");
+            }
+
+            const total = subtotal - discount;
+
+            // Cập nhật DOM
+            summaryQty.innerText = currentQty;
+            subtotalEl.innerText = formatVND(subtotal);
+            discountAmountEl.innerText = `-${formatVND(discount)}`;
+            totalPriceEl.innerText = formatVND(total);
+        }
+
+        // Khởi tạo lần đầu
+        updateQuantityUI();
+
+    </script>
+</body>
+</html>

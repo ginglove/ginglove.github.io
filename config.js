@@ -52,7 +52,9 @@ const COURSE_CONFIG = [
                 links: [
                     { name: "Register Assignment", url: "S15_BaiTap_DangKy.html" },
                     { name: "Update Assignment", url: "S15_BaiTap_CapNhatThongTinUser.html"},
-                    { name: "Login Assignment", url: "S15_BaiTap_Login.html"}
+                    { name: "Login Assignment", url: "S15_BaiTap_Login.html"},
+                    { name: "Add To Cart Assignment", url: "S15_BaiTap_AddToCart.html"}
+
                 ]
             }            
         ]
