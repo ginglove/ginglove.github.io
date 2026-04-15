@@ -58,7 +58,26 @@ const COURSE_CONFIG = [
                 ]
             }            
         ]
-    }
+    },
+    {
+        lessonId: "lesson18",
+        lessonTitle: "Lesson 18",
+        pin: "1818", 
+        categories: [
+            {
+                sectionTitle: "UI Lesson",
+                links: [
+                    { name: "S18_DangKytaiKhoanNganHang", url: "S18_DangKyTaiKhoanNganHang.html" }
+                ]
+            },
+            {
+                sectionTitle: "UI Lesson",
+                links: [
+                    { name: "S18_AddToCart", url: "S18_AddtoCart.html" }
+                ]
+            }           
+        ]
+    }      
     /*
     {
         lessonId: "lesson15",

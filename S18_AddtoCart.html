@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết sản phẩm - Add to Cart</title>
+    <style>
+        :root {
+            --primary: #ee4d2d;
+            --border: #e0e0e0;
+            --text: #333;
+            --disabled: #f5f5f5;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f9f9f9; padding: 20px; display: flex; justify-content: center; }
+        .product-container { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 450px; position: relative; overflow: hidden; }
+        
+        /* Header & Cart Badge */
+        .header { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .cart-icon { position: relative; font-size: 24px; cursor: pointer; }
+        .cart-badge { position: absolute; top: -5px; right: -10px; background: var(--primary); color: white; border-radius: 50px; padding: 2px 6px; font-size: 12px; font-weight: bold; }
+
+        /* Price */
+        .price-section { margin-bottom: 20px; transition: opacity 0.2s; }
+        .current-price { font-size: 28px; color: var(--primary); font-weight: bold; }
+        .original-price { font-size: 16px; color: #999; text-decoration: line-through; margin-left: 10px; }
+        .flash { animation: flashPrice 0.4s ease-in-out; }
+        @keyframes flashPrice { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        /* Attributes */
+        .attr-title { font-weight: bold; margin-bottom: 10px; margin-top: 20px; display: block;}
+        
+        /* Color Swatches */
+        .color-list { display: flex; gap: 15px; }
+        .color-swatch { width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; position: relative; outline: 1px solid var(--border); outline-offset: 2px; }
+        .color-swatch.selected { outline: 2px solid var(--primary); outline-offset: 2px; }
+        .color-swatch.out-of-stock { opacity: 0.4; cursor: not-allowed; }
+        .color-swatch.out-of-stock::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top right, transparent calc(50% - 1px), #333, transparent calc(50% + 1px)); }
+
+        /* Size Buttons */
+        .size-list { display: flex; gap: 10px; }
+        .size-btn { padding: 8px 16px; border: 1px solid var(--border); background: #fff; cursor: pointer; border-radius: 4px; transition: 0.2s; }
+        .size-btn.selected { border-color: var(--primary); color: var(--primary); font-weight: bold; }
+        .size-btn.out-of-stock { background: var(--disabled); color: #aaa; text-decoration: line-through; cursor: not-allowed; pointer-events: none;}
+        
+        /* Error Shake Animation */
+        .error-shake { animation: shake 0.4s; border-color: red !important; }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
+        .error-text { color: red; font-size: 12px; display: none; margin-top: 5px; }
+
+        /* Quantity */
+        .qty-selector { display: flex; align-items: center; margin-top: 20px; }
+        .qty-btn { width: 35px; height: 35px; border: 1px solid var(--border); background: #fff; cursor: pointer; font-size: 18px; }
+        .qty-btn:disabled { background: var(--disabled); cursor: not-allowed; color: #ccc;}
+        .qty-input { width: 50px; height: 31px; text-align: center; border: 1px solid var(--border); border-left: none; border-right: none; font-size: 16px; -moz-appearance: textfield;}
+        .qty-input::-webkit-outer-spin-button, .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .stock-info { margin-left: 15px; font-size: 13px; color: #666; }
+
+        /* Action Button */
+        .btn-add-cart { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; margin-top: 25px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s;}
+        .btn-add-cart:disabled { background: #ccc; cursor: not-allowed; }
+        .spinner { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: none; margin-right: 8px;}
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Toast / Mini Cart */
+        .toast { position: fixed; top: 20px; right: 20px; background: #4caf50; color: white; padding: 15px 25px; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transform: translateX(150%); transition: transform 0.3s ease-in-out; z-index: 1000;}
+        .toast.show { transform: translateX(0); }
+        .toast.error { background: #f44336; }
+    </style>
+</head>
+<body>
+
+    <div class="product-container">
+        <div class="header">
+            <h3>Áo Thun Nam Basic</h3>
+            <div class="cart-icon">🛒 <span class="cart-badge" id="cartBadge">0</span></div>
+        </div>
+
+        <div class="price-section" id="priceSection">
+            <span class="current-price" id="currentPrice">250.000₫</span>
+            <span class="original-price" id="originalPrice">350.000₫</span>
+        </div>
+
+        <div>
+            <span class="attr-title">Màu sắc</span>
+            <div class="color-list" id="colorList">
+                </div>
+        </div>
+
+        <div style="position: relative;">
+            <span class="attr-title">Kích cỡ</span>
+            <div class="size-list" id="sizeList">
+                </div>
+            <div class="error-text" id="sizeError">Vui lòng chọn Kích cỡ</div>
+        </div>
+
+        <div>
+            <span class="attr-title">Số lượng</span>
+            <div class="qty-selector">
+                <button class="qty-btn" id="btnMinus">-</button>
+                <input type="number" class="qty-input" id="qtyInput" value="1">
+                <button class="qty-btn" id="btnPlus">+</button>
+                <span class="stock-info" id="stockInfo"></span>
+            </div>
+        </div>
+
+        <button class="btn-add-cart" id="btnAddToCart">
+            <div class="spinner" id="spinner"></div>
+            <span id="btnText">Thêm vào giỏ hàng</span>
+        </button>
+    </div>
+
+    <div class="toast" id="toastMessage">Thông báo</div>
+
+    <script>
+        // Mock Database (Mô phỏng dữ liệu tồn kho thực tế)
+        const businessLimit = 5; // Giới hạn mua tối đa của Admin
+        const productsDB = {
+            'white': { colorCode: '#ffffff', name: 'Trắng', sizes: { 'S': {price: 250000, stock: 10}, 'M': {price: 250000, stock: 2}, 'L': {price: 280000, stock: 0} } },
+            'black': { colorCode: '#222222', name: 'Đen', sizes: { 'S': {price: 250000, stock: 0}, 'M': {price: 250000, stock: 5}, 'L': {price: 280000, stock: 5} } },
+            'red':   { colorCode: '#d32f2f', name: 'Đỏ', outOfStockAll: true, sizes: { 'S': {stock: 0}, 'M': {stock: 0}, 'L': {stock: 0} } } // Hết hàng toàn bộ màu đỏ
+        };
+
+        let selectedColor = null;
+        let selectedSize = null;
+        let currentQty = 1;
+        let cartTotal = 0;
+
+        // Elements
+        const colorListEl = document.getElementById('colorList');
+        const sizeListEl = document.getElementById('sizeList');
+        const priceSection = document.getElementById('priceSection');
+        const currentPriceEl = document.getElementById('currentPrice');
+        const btnMinus = document.getElementById('btnMinus');
+        const btnPlus = document.getElementById('btnPlus');
+        const qtyInput = document.getElementById('qtyInput');
+        const stockInfo = document.getElementById('stockInfo');
+        const btnAddToCart = document.getElementById('btnAddToCart');
+        const spinner = document.getElementById('spinner');
+        const btnText = document.getElementById('btnText');
+        const sizeError = document.getElementById('sizeError');
+        const cartBadge = document.getElementById('cartBadge');
+
+        // 1. Khởi tạo Giao diện ban đầu
+        function init() {
+            renderColors();
+            // Pre-select màu trắng mặc định (Có tồn kho)
+            selectColor('white'); 
+        }
+
+        function renderColors() {
+            colorListEl.innerHTML = '';
+            for (const [colorKey, data] of Object.entries(productsDB)) {
+                const swatch = document.createElement('div');
+                swatch.className = `color-swatch ${data.outOfStockAll ? 'out-of-stock' : ''} ${selectedColor === colorKey ? 'selected' : ''}`;
+                swatch.style.backgroundColor = data.colorCode;
+                swatch.title = data.name + (data.outOfStockAll ? ' (Hết hàng)' : '');
+                
+                swatch.onclick = () => selectColor(colorKey);
+                colorListEl.appendChild(swatch);
+            }
+        }
+
+        function selectColor(colorKey) {
+            selectedColor = colorKey;
+            selectedSize = null; // Reset size khi đổi màu
+            renderColors();
+            renderSizes();
+            updateUI();
+        }
+
+        function renderSizes() {
+            sizeListEl.innerHTML = '';
+            const sizes = productsDB[selectedColor].sizes;
+            
+            for (const [sizeKey, data] of Object.entries(sizes)) {
+                const btn = document.createElement('button');
+                const isOOS = data.stock === 0;
+                btn.className = `size-btn ${isOOS ? 'out-of-stock' : ''} ${selectedSize === sizeKey ? 'selected' : ''}`;
+                btn.textContent = sizeKey;
+                if (!isOOS) {
+                    btn.onclick = () => selectSize(sizeKey);
+                }
+                sizeListEl.appendChild(btn);
+            }
+            // Xóa lỗi nếu đang có
+            sizeListEl.classList.remove('error-shake');
+            sizeError.style.display = 'none';
+        }
+
+        function selectSize(sizeKey) {
+            selectedSize = sizeKey;
+            
+            // Hiệu ứng chớp giá tiền
+            priceSection.classList.remove('flash');
+            void priceSection.offsetWidth; // trigger reflow
+            priceSection.classList.add('flash');
+
+            renderSizes();
+            updateUI();
+        }
+
+        function getMaxAvailableQty() {
+            if (!selectedSize) return 1;
+            const stock = productsDB[selectedColor].sizes[selectedSize].stock;
+            return Math.min(stock, businessLimit); // Ràng buộc giới hạn mua: Min(Inventory, Business Limit)
+        }
+
+        function updateUI() {
+            // Cập nhật giá
+            if (selectedSize) {
+                const price = productsDB[selectedColor].sizes[selectedSize].price;
+                currentPriceEl.textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+            }
+
+            const maxQty = getMaxAvailableQty();
+            
+            // Validate input số lượng
+            if (currentQty > maxQty) {
+                currentQty = maxQty > 0 ? maxQty : 1;
+            }
+
+            qtyInput.value = currentQty;
+            btnMinus.disabled = currentQty <= 1;
+            btnPlus.disabled = currentQty >= maxQty || maxQty === 0;
+
+            if (selectedSize) {
+                stockInfo.textContent = `Kho: ${productsDB[selectedColor].sizes[selectedSize].stock} | Tối đa: ${maxQty}`;
+            } else {
+                stockInfo.textContent = '';
+            }
+
+            // Nút Thêm vào giỏ
+            if (productsDB[selectedColor].outOfStockAll || (selectedSize && maxQty === 0)) {
+                btnAddToCart.disabled = true;
+                btnText.textContent = "Hết hàng";
+                btnAddToCart.style.background = "#ccc";
+            } else {
+                btnAddToCart.disabled = false;
+                btnText.textContent = "Thêm vào giỏ hàng";
+                btnAddToCart.style.background = "var(--primary)";
+            }
+        }
+
+        // --- BỘ CHỌN SỐ LƯỢNG ---
+        btnMinus.onclick = () => { if (currentQty > 1) { currentQty--; updateUI(); } };
+        btnPlus.onclick = () => { if (currentQty < getMaxAvailableQty()) { currentQty++; updateUI(); } };
+
+        qtyInput.oninput = function() {
+            this.value = this.value.replace(/[^0-9]/g, ''); // Chỉ cho nhập số
+        };
+
+        qtyInput.onblur = function() {
+            let val = parseInt(this.value);
+            const maxQty = getMaxAvailableQty();
+            
+            if (isNaN(val) || val <= 0) {
+                currentQty = 1; // Rỗng hoặc 0 thì về 1
+            } else if (val > maxQty) {
+                currentQty = maxQty;
+                showToast(`Bạn chỉ có thể mua tối đa ${maxQty} sản phẩm này.`, true);
+            } else {
+                currentQty = val;
+            }
+            updateUI();
+        };
+
+        // --- XỬ LÝ SỰ KIỆN CLICK ADD TO CART ---
+        btnAddToCart.onclick = () => {
+            // 1. Validation (Client-side)
+            if (!selectedSize) {
+                sizeListEl.classList.remove('error-shake');
+                void sizeListEl.offsetWidth;
+                sizeListEl.classList.add('error-shake');
+                sizeError.style.display = 'block';
+                return;
+            }
+
+            // 2. Submit (Trạng thái Loading)
+            btnAddToCart.disabled = true;
+            spinner.style.display = 'block';
+            btnText.textContent = 'Đang xử lý...';
+
+            // Giả lập API Call (Delay 1.5s)
+            setTimeout(() => {
+                // Giả lập xử lý ngoại lệ: Lệch tồn kho real-time
+                // Random 10% tỷ lệ báo lỗi hết hàng đột xuất
+                if (Math.random() < 0.1) {
+                    showToast("Rất tiếc, sản phẩm này vừa hết hàng. Vui lòng chọn phân loại khác.", true);
+                    productsDB[selectedColor].sizes[selectedSize].stock = 0; // Update DB client
+                } else {
+                    // Thành công
+                    cartTotal += currentQty;
+                    cartBadge.textContent = cartTotal; // Cập nhật Cart Badge (tổng số lượng)
+                    showToast(`Đã thêm Áo Thun (${selectedSize}) vào giỏ hàng!`);
+                }
+                
+                // Khôi phục nút
+                spinner.style.display = 'none';
+                updateUI();
+            }, 1500);
+        };
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toastMessage');
+            toast.textContent = msg;
+            toast.className = `toast show ${isError ? 'error' : ''}`;
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        init();
+    </script>
+</body>
+</html>
