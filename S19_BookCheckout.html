@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neumorphism Cart & Checkout - QA Training</title>
+    <style>
+        :root {
+            --bg-color: #e0e5ec; --text-color: #4a4a4a; --text-muted: #888;
+            --primary-color: #6c5ce7; --danger-color: #ff7675; --success-color: #55efc4;
+            --shadow-raised: 9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5);
+            --shadow-inset: inset 6px 6px 10px 0 rgba(163,177,198, 0.7), inset -6px -6px 10px 0 rgba(255,255,255, 0.8);
+        }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 30px 20px; user-select: none; }
+        h1, h2, h3 { color: var(--text-color); font-weight: 600; margin-top: 0; }
+        h1 { text-align: center; margin-bottom: 40px; text-shadow: 2px 2px 4px rgba(163,177,198,0.5); }
+        .container { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; max-width: 1200px; margin: 0 auto; }
+        .neumorphic-card { background-color: var(--bg-color); border-radius: 20px; box-shadow: var(--shadow-raised); padding: 30px; margin-bottom: 30px; }
+        .cart-item { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid rgba(163,177,198,0.2); }
+        .item-info { flex: 2; padding-left: 15px; }
+        .item-info strong { font-size: 1.1em; color: var(--primary-color); white-space: nowrap; } 
+        .item-info span { display: block; font-size: 0.9em; color: var(--text-muted); margin-top: 8px; }
+        .item-qty { display: flex; align-items: center; gap: 15px; }
+        .neumorphic-input { background-color: var(--bg-color); border-radius: 12px; border: none; outline: none; padding: 12px 15px; font-family: inherit; font-size: 1em; color: var(--text-color); box-shadow: var(--shadow-inset); transition: all 0.2s ease; width: 100%; box-sizing: border-box; }
+        .neumorphic-input:focus { box-shadow: inset 8px 8px 12px 0 rgba(163,177,198, 0.8), inset -8px -8px 12px 0 rgba(255,255,255, 0.9); }
+        .qty-input { width: 60px; text-align: center; padding: 10px; }
+        .neumorphic-btn { background-color: var(--bg-color); border-radius: 12px; border: none; padding: 10px 18px; font-family: inherit; font-weight: 600; color: var(--text-color); cursor: pointer; box-shadow: var(--shadow-raised); transition: all 0.2s ease-in-out; display: flex; align-items: center; justify-content: center; }
+        .neumorphic-btn:active { box-shadow: var(--shadow-inset); color: var(--primary-color); }
+        .btn-delete { color: var(--danger-color); border-radius: 50%; width: 40px; height: 40px; padding: 0; margin-left: 15px; }
+        .form-group { margin-bottom: 25px; }
+        .form-group label { display: block; margin-bottom: 10px; font-weight: 500; color: var(--text-muted); }
+        .address-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        textarea.neumorphic-input { resize: vertical; min-height: 80px; }
+        input[type="checkbox"], input[type="radio"] { appearance: none; width: 20px; height: 20px; border-radius: 5px; background-color: var(--bg-color); box-shadow: var(--shadow-inset); cursor: pointer; position: relative; display: inline-block; vertical-align: middle; margin-right: 10px; }
+        input[type="radio"] { border-radius: 50%; }
+        input[type="checkbox"]:checked::after { content: '✔'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--primary-color); font-size: 12px; }
+        input[type="radio"]:checked::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px; border-radius: 50%; background-color: var(--primary-color); }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1.05em; color: var(--text-muted); }
+        .total-row { font-size: 1.4em; font-weight: bold; color: var(--primary-color); padding-top: 20px; margin-top: 20px; border-top: 1px solid rgba(163,177,198,0.3); }
+        .btn-checkout { color: var(--primary-color); width: 100%; font-size: 1.2em; padding: 15px; margin-top: 30px; border-radius: 15px; }
+        .error-text { color: var(--danger-color); font-size: 0.85em; margin-top: 8px; display: none; padding-left: 5px; }
+        #success-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--bg-color); padding: 40px; border-radius: 20px; box-shadow: var(--shadow-raised); text-align: center; max-width: 400px; }
+    </style>
+</head>
+<body>
+
+    <h1>Mọt Sách Store - Thanh Toán</h1>
+
+    <div class="container">
+        <div class="left-col">
+            <div class="neumorphic-card">
+                <h2>Giỏ Hàng Của Bạn</h2>
+                <div id="cart-list">
+                    <div class="cart-item" id="item-1" data-id="1" data-price="80000" data-stock="5">
+                        <input type="checkbox" class="item-check" checked onchange="_0xcalc()" tabindex="5">
+                        <div class="item-info">
+                            <strong>Đắc Nhân Tâm</strong>
+                            <span>Đơn giá: 80,000đ | Tồn kho: 5</span>
+                        </div>
+                        <div class="item-qty">
+                            <button class="neumorphic-btn" onclick="_0xupd(1, -1)">-</button>
+                            <input type="text" id="qty-1" class="neumorphic-input qty-input" value="2" onchange="_0xcalc()" tabindex="1">
+                            <button class="neumorphic-btn" onclick="_0xupd(1, 1)">+</button>
+                        </div>
+                        <div class="item-total" id="total-1" style="width: 100px; text-align: right; font-weight: bold;">160,000đ</div>
+                        <button class="neumorphic-btn btn-delete" onclick="_0xdel(1)">X</button>
+                    </div>
+
+                    <div class="cart-item" id="item-2" data-id="2" data-price="250000" data-stock="2">
+                        <input type="checkbox" class="item-check" checked onchange="_0xcalc()" tabindex="6">
+                        <div class="item-info">
+                            <strong>Clean Code</strong>
+                            <span>Đơn giá: 250,000đ | Tồn kho: 2</span>
+                        </div>
+                        <div class="item-qty">
+                            <button class="neumorphic-btn" onclick="_0xupd(2, -1)">-</button>
+                            <input type="text" id="qty-2" class="neumorphic-input qty-input" value="1" onchange="_0xcalc()" tabindex="2">
+                            <button class="neumorphic-btn" onclick="_0xupd(2, 1)">+</button>
+                        </div>
+                        <div class="item-total" id="total-2" style="width: 100px; text-align: right; font-weight: bold;">250,000đ</div>
+                        <button class="neumorphic-btn btn-delete" onclick="_0xdel(2)">X</button>
+                    </div>
+
+                    <div class="cart-item" id="item-3" data-id="3" data-price="150000" data-stock="20">
+                        <input type="checkbox" class="item-check" checked onchange="_0xcalc()" tabindex="7">
+                        <div class="item-info">
+                            <strong>Tuyển tập 100 bài học cuộc sống ý nghĩa nhất thế kỷ 21</strong>
+                            <span>Đơn giá: 150,000đ | Tồn kho: 20</span>
+                        </div>
+                        <div class="item-qty">
+                            <button class="neumorphic-btn" onclick="_0xupd(3, -1)">-</button>
+                            <input type="text" id="qty-3" class="neumorphic-input qty-input" value="1" onchange="_0xcalc()" tabindex="3">
+                            <button class="neumorphic-btn" onclick="_0xupd(3, 1)">+</button>
+                        </div>
+                        <div class="item-total" id="total-3" style="width: 100px; text-align: right; font-weight: bold;">150,000đ</div>
+                        <button class="neumorphic-btn btn-delete" onclick="_0xdel(3)">X</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="neumorphic-card">
+                <h2>Thông Tin Giao Hàng</h2>
+                <div class="form-group">
+                    <label>Họ và Tên *</label>
+                    <input type="text" id="fullname" class="neumorphic-input" placeholder="Nhập họ tên">
+                    <div id="err-name" class="error-text">Vui lòng nhập họ và tên.</div>
+                </div>
+                <div class="form-group">
+                    <label>Số điện thoại *</label>
+                    <input type="text" id="phone" class="neumorphic-input" placeholder="09xxxxxxx">
+                    <div id="err-phone" class="error-text">Số điện thoại không hợp lệ.</div>
+                </div>
+                <div class="form-group">
+                    <label>Địa chỉ cụ thể *</label>
+                    <textarea id="address-detail" class="neumorphic-input" placeholder="Số nhà, tên đường..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-col">
+            <div class="neumorphic-card">
+                <h2>Mã Giảm Giá</h2>
+                <div style="display: flex; gap: 15px;">
+                    <input type="text" id="voucher-code" class="neumorphic-input" placeholder="VD: GIAM50K">
+                    <button class="neumorphic-btn" onclick="_0xvou()">ÁP DỤNG</button>
+                </div>
+                <div id="voucher-msg" class="error-text" style="color: var(--primary-color); display: none; margin-top: 15px;"></div>
+            </div>
+
+            <div class="neumorphic-card">
+                <h2>Tổng Kết</h2>
+                <div class="summary-row">
+                    <span>Tạm tính:</span>
+                    <span id="summary-subtotal" style="color: var(--text-color); font-weight: bold;">0đ</span>
+                </div>
+                <div class="summary-row">
+                    <span>Phí vận chuyển:</span>
+                    <span id="summary-shipping" style="color: var(--text-color); font-weight: bold;">0đ</span>
+                </div>
+                <div class="summary-row">
+                    <span>Giảm giá:</span>
+                    <span id="summary-discount" style="color: var(--danger-color); font-weight: bold;">0đ</span>
+                </div>
+                <div class="summary-row total-row">
+                    <span>Tổng CỘNG:</span>
+                    <span id="summary-grandtotal">0đ</span>
+                </div>
+                <button class="neumorphic-btn btn-checkout" id="btn-submit" onclick="_0xsub()">ĐẶT HÀNG NGAY</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="success-modal">
+        <div class="modal-content">
+            <h2 style="color: var(--success-color);">Thành công!</h2>
+            <p id="success-message"></p>
+            <button class="neumorphic-btn" style="margin: 20px auto 0;" onclick="_0xcls()">Đóng</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("contextmenu",function(e){e.preventDefault()});
+        document.onkeydown=function(e){if(123==e.keyCode)return!1;if(e.ctrlKey&&e.shiftKey&&(73==e.keyCode||74==e.keyCode))return!1;if(e.ctrlKey&&85==e.keyCode)return!1};
+        
+        /* [OBFUSCATED LOGIC] Chứa đầy đủ Bugs từ bản gốc */
+        var _0xdisc=0;function _0xupd(id,_0xc){var _0xi=document.getElementById("qty-"+id);var _0xv=parseInt(_0xi.value)+_0xc;_0xi.value=_0xv;_0xcalc()}function _0xdel(id){document.getElementById("item-"+id).style.display="none";_0xcalc()}function _0xcalc(){var _0xitem=document.querySelectorAll(".cart-item");var _0xsub=0;_0xitem.forEach(function(_0xitm){var _0xchk=_0xitm.querySelector(".item-check").checked;var _0xid=_0xitm.getAttribute("data-id");var _0xpr=parseInt(_0xitm.getAttribute("data-price"));var _0xq=parseInt(document.getElementById("qty-"+_0xid).value);if(_0xchk&&!isNaN(_0xq)){var _0xtot=_0xpr*_0xq;document.getElementById("total-"+_0xid).innerText=_0xtot.toLocaleString()+"\u0111";_0xsub+=_0xtot}});document.getElementById("summary-subtotal").innerText=_0xsub.toLocaleString()+"\u0111";var _0xship=0;if(_0xsub<200000){_0xship=300000}else if(_0xsub>=200000&&_0xsub<=500000){_0xship=15000}else{_0xship=15000}document.getElementById("summary-shipping").innerText=_0xship.toLocaleString()+"\u0111";var _0xgr=(_0xsub+_0xship)-_0xdisc;document.getElementById("summary-discount").innerText="-"+_0xdisc.toLocaleString()+"\u0111";document.getElementById("summary-grandtotal").innerText=_0xgr.toLocaleString()+"\u0111"}function _0xvou(){var _0xc=document.getElementById("voucher-code").value;var _0xm=document.getElementById("voucher-msg");var _0xs=parseInt(document.getElementById("summary-subtotal").innerText.replace(/,/g,"").replace("\u0111",""));_0xm.style.display="block";if(_0xc==="GIAM50K"){if(_0xs>=200000){_0xdisc+=50000;_0xm.innerText="\u00c1p d\u1ee5ng th\u00e0nh c\u00f4ng! \u0110\u00e3 tr\u1eeb "+_0xdisc.toLocaleString()+"\u0111";_0xm.style.color="var(--success-color)"}else{_0xm.innerText="\u0110\u01a1n h\u00e0ng ch\u01b0a \u0111\u1ea1t gi\u00e1 tr\u1ecb t\u1ed1i thi\u1ec3u";_0xm.style.color="var(--danger-color)"}}else{_0xm.innerText="M\u00e3 kh\u00f4ng h\u1ee3p l\u1ec7.";_0xm.style.color="var(--danger-color)"}_0xcalc()}function _0xsub(){var _0xf=document.getElementById("fullname").value;var _0xp=document.getElementById("phone").value;var _0xr=/^[0-9]{9,11}$/;if(!_0xr.test(_0xp)){document.getElementById("err-phone").style.display="block";return}else{document.getElementById("err-phone").style.display="none"}var _0xmsg="C\u1ea3m \u01a1n kh\u00e1ch h\u00e0ng <b>"+_0xf+"</b> \u0111\u00e3 \u0111\u1eb7t h\u00e0ng!";document.getElementById("success-message").innerHTML=_0xmsg;document.getElementById("success-modal").style.display="flex"}function _0xcls(){document.getElementById("success-modal").style.display="none"}_0xcalc();
+    </script>
+</body>
+</html>

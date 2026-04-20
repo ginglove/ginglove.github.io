@@ -67,13 +67,26 @@ const COURSE_CONFIG = [
             {
                 sectionTitle: "UI Lesson",
                 links: [
-                    { name: "S18_DangKytaiKhoanNganHang", url: "S18_DangKyTaiKhoanNganHang.html" }
+                    { name: "S18_AddToCart", url: "S18_AddtoCart.html" }
                 ]
-            },
+            }           
+        ]
+    },
+    {
+        lessonId: "lesson19",
+        lessonTitle: "Lesson 19",
+        pin: "1919", 
+        categories: [
             {
                 sectionTitle: "UI Lesson",
                 links: [
-                    { name: "S18_AddToCart", url: "S18_AddtoCart.html" }
+                    { name: "S19_DangKytaiKhoanNganHang", url: "S19_DangKyTaiKhoanNganHang.html" }
+                ]
+            },            
+            {
+                sectionTitle: "Bug Management Lesson",
+                links: [
+                    { name: "S19_BookCheckOut", url: "S19_BookCheckout.html" }
                 ]
             }           
         ]

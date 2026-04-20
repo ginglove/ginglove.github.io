@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mở Tài Khoản Ngân Hàng - Testing Practice</title>
+    <style>
+        :root {
+            --primary: #004b93;
+            --error: #d9534f;
+            --bg: #f5f7fa;
+            --border: #ccd1d9;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            margin: 0;
+            user-select: none; /* Chặn bôi đen text */
+        }
+        .bank-card {
+            background-color: #fff;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 550px;
+            border-top: 5px solid var(--primary);
+        }
+        h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-top: 0;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95em;
+        }
+        .required::after {
+            content: " *";
+            color: var(--error);
+        }
+        input[type="text"], input[type="date"], input[type="number"], input[type="email"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .error-message {
+            color: var(--error);
+            font-size: 0.85em;
+            margin-top: 6px;
+            display: none;
+        }
+        .input-error {
+            border-color: var(--error) !important;
+            background-color: #fdf2f2;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-top: 25px;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+            line-height: 1.4;
+            color: #555;
+        }
+        .checkbox-group input {
+            margin-top: 4px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        button:disabled {
+            background-color: #a0b4c8;
+            cursor: not-allowed;
+        }
+        button:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            display: none;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="bank-card">
+    <h2>Mở tài khoản trực tuyến</h2>
+    <form id="registrationForm">
+        <div class="form-group">
+            <label class="required" for="fullName">Họ tên khách hàng</label>
+            <input type="text" id="fullName" placeholder="VD: NGUYEN VAN A">
+            <div class="error-message" id="error-fullName">Họ tên không được để trống.</div>
+        </div>
+
+        <div class="form-group">
+            <label class="required" for="dob">Ngày sinh</label>
+            <input type="date" id="dob">
+            <div class="error-message" id="error-dob">Vui lòng chọn ngày sinh.</div>
+        </div>
+
+        <div class="form-group">
+            <label class="required" for="address">Địa chỉ</label>
+            <textarea id="address" placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."></textarea>
+            <div class="error-message" id="error-address">Vui lòng nhập địa chỉ cụ thể (tối thiểu 10 ký tự).</div>
+        </div>
+
+        <div class="form-group">
+            <label class="required" for="phone">Số điện thoại</label>
+            <input type="number" id="phone" placeholder="VD: 0912345678">
+            <div class="error-message" id="error-phone">Số điện thoại không hợp lệ.</div>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="text" id="email" placeholder="Nhập email (không bắt buộc)">
+            <div class="error-message" id="error-email">Định dạng email không chính xác.</div>
+        </div>
+
+        <div class="form-group">
+            <label class="required" for="cccd">Căn cước công dân</label>
+            <input type="text" id="cccd" placeholder="Nhập đúng 10 số CCCD">
+            <div class="error-message" id="error-cccd">CCCD phải đủ 10 số.</div>
+        </div>
+
+        <div class="form-group">
+            <label for="referrer">Người giới thiệu</label>
+            <input type="text" id="referrer" placeholder="Mã nhân viên hoặc SĐT (không bắt buộc)">
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="terms" checked>
+            <label for="terms">Tôi đã đủ 18 tuổi và là công dân cư trú tại Việt Nam.</label>
+        </div>
+
+        <button type="button" id="submitBtn">
+            <div class="spinner" id="spinner"></div>
+            <span id="btnText">ĐĂNG KÝ</span>
+        </button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener("contextmenu",function(e){e.preventDefault()});
+    document.onkeydown=function(e){if(123===e.keyCode)return!1;if(e.ctrlKey&&e.shiftKey&&(73===e.keyCode||74===e.keyCode))return!1;if(e.ctrlKey&&85===e.keyCode)return!1};
+
+    var _0xfN=document.getElementById("fullName"),_0xdB=document.getElementById("dob"),_0xad=document.getElementById("address"),_0xph=document.getElementById("phone"),_0xem=document.getElementById("email"),_0xcc=document.getElementById("cccd"),_0xtm=document.getElementById("terms"),_0xsb=document.getElementById("submitBtn");function _0xerr(e,id,s,m){var el=document.getElementById(id);if(s){e.classList.add("input-error");el.style.display="block";if(m)el.innerText=m}else{e.classList.remove("input-error");el.style.display="none"}}function _0xage(d){var b=new Date(d),t=new Date();return t.getFullYear()-b.getFullYear()}var _0xin=[_0xfN,_0xdB,_0xad,_0xph,_0xcc,_0xem,_0xtm];_0xin.forEach(function(i){i.addEventListener("input",_0xchk);i.addEventListener("change",_0xchk)});function _0xchk(){var vN=_0xfN.value.length>0,vD=_0xdB.value!=="",vA=_0xad.value.trim().length>0,vP=_0xph.value.length>0,vC=_0xcc.value.length===10,vE=_0xem.value.length>0}_0xsb.addEventListener("click",function(){if(_0xfN.value.match(/[0-9!@#\$%\^\&*\)\(+=._-]/g)){_0xerr(_0xfN,"error-fullName",!0,"H\u1ecd t\u00ean ch\u1ec9 \u0111\u01b0\u1ee3c ch\u1ee9a ch\u1eef c\u00e1i.");return}else{_0xerr(_0xfN,"error-fullName",!1)}if(_0xph.value.length!==10){_0xerr(_0xph,"error-phone",!0,"S\u1ed1 \u0111i\u1ec7n tho\u1ea1i kh\u00f4ng h\u1ee3p l\u1ec7.");return}else{_0xerr(_0xph,"error-phone",!1)}var a=_0xage(_0xdB.value);if(_0xtm.checked&&a<=18){alert("Giao d\u1ecbch t\u1eeb ch\u1ed1i: Ng\u00e0y sinh c\u1ee7a qu\u00fd kh\u00e1ch kh\u00f4ng kh\u1edbp v\u1edbi cam k\u1ebft \u0111\u00e3 \u0111\u1ee7 18 tu\u1ed5i. Vui l\u00f2ng mang gi\u1ea5y t\u1edd ra Qu\u1ea7y giao d\u1ecbch \u0111\u1ec3 \u0111\u01b0\u1ee3c h\u1ed7 tr\u1ee3 m\u1edf t\u00e0i kho\u1ea3n.");return}var sp=document.getElementById("spinner"),bt=document.getElementById("btnText");sp.style.display="block";bt.textContent="\u0110ANG X\u1eec L\u00dd...";setTimeout(function(){if(_0xcc.value==="1234567890"){_0xerr(_0xcc,"error-cccd",!0,"C\u0103n c\u01b0\u1edbc c\u00f4ng d\u00e2n n\u00e0y \u0111\u00e3 \u0111\u01b0\u1ee3c s\u1eed d\u1ee5ng. N\u1ebfu \u0111\u00e2y l\u00e0 l\u1ed7i, vui l\u00f2ng li\u00ean h\u1ec7 Hotline 1900xxxx.");sp.style.display="none";bt.textContent="\u0110\u0102NG K\u00dd";return}if(Math.random()<0.2){alert("K\u1ebft n\u1ed1i b\u1ecb gi\u00e1n \u0111o\u1ea1n. Vui l\u00f2ng ki\u1ec3m tra l\u1ea1i \u0111\u01b0\u1eddng truy\u1ec1n internet v\u00e0 th\u1eed l\u1ea1i.");sp.style.display="none";bt.textContent="\u0110\u0102NG K\u00dd";return}alert("\u0110\u0102NG K\u00dd TH\u00c0NH C\u00d4NG CHO KH\u00c1CH H\u00c0NG: "+_0xfN.value);sp.style.display="none";bt.textContent="\u0110\u0102NG K\u00dd"},1500)});
+</script>
+
+</body>
+</html>
