@@ -90,7 +90,20 @@ const COURSE_CONFIG = [
                 ]
             }           
         ]
-    }      
+    },
+    {
+        lessonId: "lesson20",
+        lessonTitle: "Lesson 20",
+        pin: "2020", 
+        categories: [
+            {
+                sectionTitle: "Test case Lesson",
+                links: [
+                    { name: "S20_CreateMasterCard", url: "S20_CreateMasterCard.html" }
+                ]
+            }          
+        ]
+    }          
     /*
     {
         lessonId: "lesson15",

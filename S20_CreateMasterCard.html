@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TPBank Mastercard FEST - Practice App</title>
+    <style>
+        :root { --bg: #1a1125; --bx: #2b1d38; --txt: #fff; --sub: #a097a8; --pri: #a145d2; --dis: #4e3564; --err: #ff5252; --wrn: #ff9800; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background: #000; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .app { width: 375px; height: 812px; background: var(--bg); position: relative; overflow: hidden; border: 1px solid #333; display: flex; flex-direction: column; }
+        .screen { display: none; height: 100%; flex-direction: column; box-sizing: border-box; overflow-y: auto; padding-bottom: 30px;}
+        .active { display: flex; }
+        header { display: flex; align-items: center; padding: 20px; position: relative; justify-content: center;}
+        .back-btn { position: absolute; left: 20px; background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+        .header-title { font-weight: bold; font-size: 16px; color: var(--txt);}
+        .hot-badge { position: absolute; top: 15px; left: 60px; background: #d78900; color: #fff; font-size: 10px; padding: 4px 8px; border-radius: 12px; font-weight: bold; z-index: 10; display: flex; align-items: center; gap: 4px;}
+        .c-img { text-align: center; margin-top: 20px; padding: 0 40px;}
+        .c-img img { width: 100%; max-width: 240px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background: linear-gradient(135deg, #00BCD4, #E91E63); padding:20px; box-sizing:border-box;}
+        .t-s1 { text-align: center; font-size: 18px; font-weight: bold; margin: 30px 0 20px; letter-spacing: 0.5px; color: var(--txt);}
+        .bens { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 20px; margin-bottom: 40px;}
+        .b-item { text-align: center; font-size: 11px; color: var(--txt); line-height: 1.4; }
+        .b-icon { font-size: 28px; margin-bottom: 8px; }
+        .btm-act { padding: 0 20px; margin-top: auto; text-align: center;}
+        .btn-p { background: var(--pri); color: white; border: none; width: 100%; padding: 16px; border-radius: 25px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-p:disabled { background: var(--dis); color: #888; cursor: not-allowed; }
+        .l-fee { color: var(--wrn); font-size: 13px; display: inline-flex; align-items: center; gap: 5px; margin-top: 20px; cursor: pointer; }
+        .banner { background: linear-gradient(90deg, #ff4081, #9c27b0); margin: 0 20px 20px; padding: 15px; border-radius: 10px; color: white; display: flex; align-items: center; }
+        .prog { display: flex; justify-content: center; align-items: center; margin-bottom: 25px; padding: 0 20px;}
+        .st { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--sub); gap: 5px;}
+        .st.act { color: var(--txt); font-weight: bold; }
+        .st-c { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--sub); display: flex; justify-content: center; align-items: center; }
+        .st.act .st-c { background: var(--pri); border-color: var(--pri); }
+        .st-l { flex: 1; height: 1px; background: var(--sub); margin: 0 10px; margin-bottom: 15px;}
+        .sec-t { font-size: 14px; font-weight: bold; margin: 15px 20px 10px; display: flex; align-items: center; gap: 5px; color: var(--txt);}
+        .f-grp { padding: 0 20px; margin-bottom: 12px; }
+        .i-wrap { background: var(--bx); border-radius: 10px; padding: 8px 15px; border: 1px solid transparent; position: relative;}
+        .i-wrap:focus-within { border-color: var(--pri); }
+        .i-lbl { font-size: 11px; color: var(--sub); margin-bottom: 2px;}
+        .i-fld { background: transparent; border: none; width: 100%; color: white; font-size: 14px; outline: none; padding: 4px 0;}
+        .i-fld::placeholder { color: #666; }
+        .icn-e { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--wrn); font-size: 14px; }
+        .e-msg { color: var(--err); font-size: 11px; margin: 4px 20px 0; display: none; }
+        .t-icn { background: var(--wrn); color: #000; width: 14px; height: 14px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; font-size: 10px; font-weight: bold; cursor: pointer; }
+        .r-wrap { text-align: center; padding: 40px 20px; flex: 1; display: flex; flex-direction: column; justify-content: center; color: var(--txt);}
+        .r-wrap h2 { font-size: 20px; margin-bottom: 10px;}
+        .r-wrap p { font-size: 14px; color: var(--sub); line-height: 1.5;}
+        .ovl { position: absolute; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: none; flex-direction: column; justify-content: flex-end; }
+        .pop { background: var(--bx); border-radius: 20px 20px 0 0; padding: 25px; transform: translateY(100%); transition: 0.3s ease-out; color: white;}
+        .p-t { font-size: 16px; font-weight: bold; margin-bottom: 15px; text-align: center;}
+        .p-cls { position: absolute; right: 20px; top: 20px; background: none; border: none; color: var(--sub); font-size: 20px; cursor: pointer;}
+        .l-itm { padding: 15px 0; border-bottom: 1px solid #444; font-size: 14px; cursor: pointer;}
+        .l-itm:last-child { border-bottom: none; }
+        #tst { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 12px 20px; border-radius: 8px; font-size: 13px; z-index: 200; display: none; width: max-content; box-shadow: 0 4px 10px rgba(0,0,0,0.5);}
+        .r-grp { display: flex; flex-direction: column; gap: 12px; margin-top: 10px;}
+        .r-lbl { display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; color: var(--txt);}
+        .c-lbl { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; margin: 20px; cursor: pointer; color: var(--txt);}
+    </style>
+</head>
+<body>
+<div class="app">
+    <div id="tst">Kết nối mạng không ổn định. Vui lòng kiểm tra lại.</div>
+    <div id="s1" class="screen active">
+        <header><button class="back-btn">←</button><div class="hot-badge">⭐ Thẻ giải trí HOT nhất!</div></header>
+        <div class="c-img"><img src="master_card_img.jpg" alt="Card"></div>
+        <div class="t-s1">TPBANK MASTERCARD FEST</div>
+        <div class="bens">
+            <div class="b-item"><div class="b-icon">🎫</div>Ưu đãi mua vé Concert</div>
+            <div class="b-item"><div class="b-icon">✈️</div>Ưu đãi vé máy bay</div>
+            <div class="b-item"><div class="b-icon">🍿</div>Ưu đãi xem phim</div>
+        </div>
+        <div class="btm-act">
+            <button class="btn-p" onclick="_n('s2')">Nhận Thẻ Ngay</button>
+            <div class="l-fee" onclick="_p('loc')">Xem biểu phí <span style="background:var(--wrn); color:black; border-radius:50%; width:16px; height:16px; display:inline-block; font-weight:bold;">?</span></div>
+            <div style="margin-top: 20px; color: #555;">● ○ ○</div>
+        </div>
+    </div>
+
+    <div id="s2" class="screen">
+        <header><button class="back-btn" onclick="_n('s1')">←</button><div class="header-title">Điền thông tin nhận Thẻ</div></header>
+        <div class="banner"><div><b style="font-size: 14px;">HOÀN TẤT MỞ THẺ</b><br><span style="font-size: 11px;">Hưởng ưu đãi chi tiêu tới 50%</span></div></div>
+        <div class="prog"><div class="st act"><div class="st-c">1</div>Thông tin cá nhân</div><div class="st-l"></div><div class="st"><div class="st-c">2</div>Thông tin khác</div></div>
+        <div class="sec-t">Thông tin liên hệ</div>
+        <div class="f-grp"><div class="i-wrap"><div class="i-lbl">Email</div><input type="email" id="em" class="i-fld" placeholder="Nhập email" onblur="_vE()" oninput="_c2()"></div><div id="e-em" class="e-msg">Email không đúng định dạng.</div></div>
+        <div class="f-grp"><div class="i-wrap" onclick="_p('loc')"><div class="i-lbl">Nơi ở hiện tại</div><input type="text" id="lc" class="i-fld" placeholder="Chọn nơi ở hiện tại" readonly style="cursor:pointer;"><span class="icn-e">✏️</span></div></div>
+        <div class="sec-t">Thông tin công việc</div>
+        <div class="f-grp"><div class="i-wrap"><div class="i-lbl">Tên công ty</div><input type="text" id="cp" class="i-fld" placeholder="Nhập tên công ty" maxlength="100" oninput="_c2()"></div></div>
+        <div class="f-grp"><div class="i-wrap"><div class="i-lbl">Địa chỉ nơi làm việc</div><input type="text" id="wa" class="i-fld" placeholder="Nhập địa chỉ nơi làm việc" maxlength="200" oninput="_c2()"></div></div>
+        <div class="sec-t">Liên lạc khẩn cấp <span class="t-icn" onclick="_p('tt')">i</span></div>
+        <div class="f-grp"><div class="i-wrap"><div class="i-lbl">Số điện thoại người thân 1 (*)</div><input type="tel" id="p1" class="i-fld" placeholder="Nhập số điện thoại" maxlength="11" oninput="this.value=this.value.replace(/\D/g,''); _c2()" onblur="_vP('p1')"></div><div id="e-p1" class="e-msg"></div></div>
+        <div class="f-grp"><div class="i-wrap"><div class="i-lbl">Số điện thoại người thân 2</div><input type="tel" id="p2" class="i-fld" placeholder="Nhập số điện thoại" maxlength="10" oninput="this.value=this.value.replace(/\D/g,''); _c2()" onblur="_vP('p2')"></div><div id="e-p2" class="e-msg"></div></div>
+        <div class="btm-act" style="margin-top: 20px;"><button id="b-n" class="btn-p" disabled onclick="_n('s3')">Tiếp tục</button></div>
+    </div>
+
+    <div id="s3" class="screen">
+        <header><button class="back-btn" onclick="_n('s1')">←</button><div class="header-title">Điền thông tin nhận Thẻ</div></header>
+        <div class="prog"><div class="st"><div class="st-c">1</div>Thông tin cá nhân</div><div class="st-l"></div><div class="st act"><div class="st-c">2</div>Thông tin khác</div></div>
+        <div class="sec-t">Thông tin tài chính</div>
+        <div class="f-grp"><div class="i-wrap"><div class="i-lbl">Thu nhập hàng tháng (*)</div><input type="text" id="ic" class="i-fld" placeholder="VD: 15,000,000 VND" oninput="_fI(this); _c3()"></div></div>
+        <div class="sec-t">Phương thức nhận thẻ (*)</div>
+        <div class="f-grp"><div class="r-grp"><label class="r-lbl"><input type="radio" name="dv" value="b" checked onchange="_tD()"> Nhận tại chi nhánh</label><label class="r-lbl"><input type="radio" name="dv" value="a" onchange="_tD()"> Nhận tại địa chỉ của tôi</label></div></div>
+        <div class="f-grp" id="g-b"><div class="i-wrap"><div class="i-lbl">Chọn Chi nhánh</div><input type="text" class="i-fld" placeholder="Hội sở chính (Mock)" readonly><span class="icn-e">▼</span></div></div>
+        <div class="f-grp" id="g-a" style="display: none;"><div class="i-wrap"><div class="i-lbl">Địa chỉ nhận thẻ</div><input type="text" id="da" class="i-fld" placeholder="Địa chỉ nhận"></div></div>
+        <label class="c-lbl"><input type="checkbox" id="ag" onchange="_c3()" style="margin-top: 3px;"><span>Tôi đồng ý với Điều khoản & Điều kiện phát hành thẻ</span></label>
+        <label class="c-lbl" style="color:var(--wrn)"><input type="checkbox" id="mk"> (Mock) Ngắt mạng Internet</label>
+        <div class="btm-act"><button id="b-d" class="btn-p" disabled onclick="_sF()">Hoàn tất</button></div>
+    </div>
+
+    <div id="s-ok" class="screen"><div class="r-wrap"><div style="font-size: 60px; margin-bottom: 20px;">🎉</div><h2>Chúc mừng!</h2><p>Hồ sơ phát hành thẻ của quý khách đã được ghi nhận. Hệ thống sẽ thẩm định và thông báo hạn mức trong vòng 24H làm việc.</p><button class="btn-p" style="margin-top: 30px;" onclick="location.reload()">Về trang chủ</button></div></div>
+    
+    <div id="ovl" class="ovl" onclick="_cl()">
+        <div id="p-tt" class="pop" onclick="event.stopPropagation()"><button class="p-cls" onclick="_cl()">✕</button><div class="p-t">Thông tin</div><p style="font-size: 14px; color: var(--sub); line-height: 1.5; margin:0;">Ngân hàng sẽ chỉ liên hệ trong trường hợp phát sinh nợ quá hạn.</p></div>
+        <div id="p-loc" class="pop" onclick="event.stopPropagation()"><button class="p-cls" onclick="_cl()">✕</button><div class="p-t">Chọn Nơi ở hiện tại</div><div class="l-itm" onclick="_sL('Hà Nội')">Hà Nội</div><div class="l-itm" onclick="_sL('TP. Hồ Chí Minh')">TP. Hồ Chí Minh</div><div class="l-itm" onclick="_sL('Đà Nẵng')">Đà Nẵng</div></div>
+        <div id="p-biz" class="pop" onclick="event.stopPropagation()"><button class="p-cls" onclick="_cl()">✕</button><div class="p-t" style="color: var(--err);">Rất tiếc</div><p style="font-size: 14px; color: var(--sub); line-height: 1.5; margin:0; text-align: center;">Thu nhập hiện tại của quý khách chưa đáp ứng điều kiện mở thẻ (Tối thiểu 5,000,000 VND/tháng). Vui lòng thử lại sau.</p><button class="btn-p" style="margin-top: 20px;" onclick="_cl()">Đóng</button></div>
+        <div id="p-fee" class="pop" onclick="event.stopPropagation()"><button class="p-cls" onclick="_cl()">✕</button><div class="p-t">Biểu phí sử dụng thẻ</div><p style="font-size: 14px; color: var(--sub); line-height: 1.5; margin:0;">- Phí thường niên: 350.000đ<br>- Lãi suất: 2.5%/tháng</p></div>
+    </div>
+</div>
+
+<script>
+    /* WARNING: STUDENT TEST SCRIPT INJECTED. OBFUSCATED FOR BLACKBOX EXERCISE. */
+    const _0x1a=['0912345679','getElementById','querySelectorAll','classList','add','remove','display','flex','none','block','transform','translateY(100%)','translateY(0)','value','innerText'];
+    const _k=_0x1a[0],_$=(i)=>document[_0x1a[1]](i),_$$=(s)=>document[_0x1a[2]](s);
+    function _n(id){_$$('.screen').forEach(s=>s[_0x1a[3]][_0x1a[5]]('active'));_$(id)[_0x1a[3]][_0x1a[4]]('active');}
+    function _p(id){_$('ovl').style[_0x1a[6]]=_0x1a[7];_$$('.pop').forEach(p=>p.style[_0x1a[6]]=_0x1a[8]);_$('p-'+id).style[_0x1a[6]]=_0x1a[9];setTimeout(()=>_$('p-'+id).style[_0x1a[10]]=_0x1a[12],10);}
+    function _cl(){_$$('.pop').forEach(p=>p.style[_0x1a[10]]=_0x1a[11]);setTimeout(()=>_$('ovl').style[_0x1a[6]]=_0x1a[8],300);}
+    function _sL(v){_$('lc')[_0x1a[13]]=v;_$('da')[_0x1a[13]]=_0x1a.udf;_cl();_c2();}
+    function _vE(){let v=_$('em')[_0x1a[13]].trim(),e=_$('e-em');if(v&&!/@/.test(v)){e.style[_0x1a[6]]=_0x1a[9];return !1;}e.style[_0x1a[6]]=_0x1a[8];return !0;}
+    function _vP(i){let v=_$(i)[_0x1a[13]].trim(),e=_$('e-'+i);if(!v){if(i==='p2'){e[_0x1a[14]]="Bắt buộc nhập";e.style[_0x1a[6]]=_0x1a[9];return !1;}return !0;}
+    if(i==='p1'&&v.length===11){e.style[_0x1a[6]]=_0x1a[8];return !0;}if(v.length!==10){e[_0x1a[14]]="Số điện thoại phải có đúng 10 chữ số.";e.style[_0x1a[6]]=_0x1a[9];return !1;}
+    if(!v.startsWith('0')){e[_0x1a[14]]="Số điện thoại không hợp lệ.";e.style[_0x1a[6]]=_0x1a[9];return !1;}if(v===_k){e[_0x1a[14]]="SĐT người thân không được trùng với SĐT đăng ký của Quý khách.";e.style[_0x1a[6]]=_0x1a[9];return !1;}
+    if(i==='p2'&&v===_$('p1')[_0x1a[13]]){e[_0x1a[14]]="SĐT người thân 2 không được trùng SĐT 1.";e.style[_0x1a[6]]=_0x1a[9];return !1;}e.style[_0x1a[6]]=_0x1a[8];return !0;}
+    function _c2(){let m=_$('em')[_0x1a[13]],l=_$('lc')[_0x1a[13]],w=_$('wa')[_0x1a[13]],p=_$('p1')[_0x1a[13]],ok=(m&&l&&w&&p&&_vE()&&_vP('p1')&&_vP('p2'));_$('b-n').disabled=!ok;}
+    function _tD(){let t=document.querySelector('input[name="dv"]:checked')[_0x1a[13]];_$('g-b').style[_0x1a[6]]=t==='b'?_0x1a[9]:_0x1a[8];_$('g-a').style[_0x1a[6]]=t==='a'?_0x1a[8]:_0x1a[8];_c3();}
+    function _fI(i){let v=i[_0x1a[13]].replace(/\D/g,"");i[_0x1a[13]]=v?parseInt(v).toLocaleString()+' VND':"";_c3();}
+    function _c3(){let i=_$('ic')[_0x1a[13]].replace(/\D/g,""),t=document.querySelector('input[name="dv"]:checked')[_0x1a[13]],ao=!0;if(t==='a'&&!_$('da')[_0x1a[13]].trim())ao=!1;_$('b-d').disabled=!(i&&ao);}
+    function _sF(){if(_$('mk').checked){_$('tst').style[_0x1a[6]]=_0x1a[9];setTimeout(()=>_$('tst').style[_0x1a[6]]=_0x1a[8],3000);}
+    let ic=parseInt(_$('ic')[_0x1a[13]].replace(/\D/g,""));if(ic<=5000000){_p('biz');return;}_n('s-ok');}
+    _c2();
+</script>
+</body>
+</html>
