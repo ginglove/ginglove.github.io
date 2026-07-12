@@ -39,7 +39,7 @@ const COURSE_CONFIG = [
     {
         lessonId: "lesson15",
         lessonTitle: "Lesson 15",
-        pin: "1515", 
+        pin: "1515",
         categories: [
             {
                 sectionTitle: "Test Dumb",
@@ -51,59 +51,72 @@ const COURSE_CONFIG = [
                 sectionTitle: "Assignment",
                 links: [
                     { name: "Register Assignment", url: "S15_BaiTap_DangKy.html" },
-                    { name: "Update Assignment", url: "S15_BaiTap_CapNhatThongTinUser.html"},
-                    { name: "Login Assignment", url: "S15_BaiTap_Login.html"},
-                    { name: "Add To Cart Assignment", url: "S15_BaiTap_AddToCart.html"}
+                    { name: "Update Assignment", url: "S15_BaiTap_CapNhatThongTinUser.html" },
+                    { name: "Login Assignment", url: "S15_BaiTap_Login.html" },
+                    { name: "Add To Cart Assignment", url: "S15_BaiTap_AddToCart.html" }
 
                 ]
-            }            
+            }
         ]
     },
     {
         lessonId: "lesson18",
         lessonTitle: "Lesson 18",
-        pin: "1818", 
+        pin: "1818",
         categories: [
             {
                 sectionTitle: "UI Lesson",
                 links: [
                     { name: "S18_AddToCart", url: "S18_AddtoCart.html" }
                 ]
-            }           
+            }
         ]
     },
     {
         lessonId: "lesson19",
         lessonTitle: "Lesson 19",
-        pin: "1919", 
+        pin: "1919",
         categories: [
             {
                 sectionTitle: "UI Lesson",
                 links: [
                     { name: "S19_DangKytaiKhoanNganHang", url: "S19_DangKyTaiKhoanNganHang.html" }
                 ]
-            },            
+            },
             {
                 sectionTitle: "Bug Management Lesson",
                 links: [
                     { name: "S19_BookCheckOut", url: "S19_BookCheckout.html" }
                 ]
-            }           
+            }
         ]
     },
     {
         lessonId: "lesson20",
         lessonTitle: "Lesson 20",
-        pin: "2020", 
+        pin: "2020",
         categories: [
             {
                 sectionTitle: "Test case Lesson",
                 links: [
                     { name: "S20_CreateMasterCard", url: "S20_CreateMasterCard.html" }
                 ]
-            }          
+            }
         ]
-    }          
+    },
+    {
+        lessonId: "privateTrainingS1",
+        lessonTitle: "Private Training S1",
+        pin: "2026",
+        categories: [
+            {
+                sectionTitle: "Private Training S1",
+                links: [
+                    { name: "private_training_s1", url: "private_training_s1.html" }
+                ]
+            }
+        ]
+    }
     /*
     {
         lessonId: "lesson15",
@@ -118,5 +131,5 @@ const COURSE_CONFIG = [
             }
         ]
     }
-    */   
+    */
 ];
