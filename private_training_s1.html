@@ -101,7 +101,7 @@
         strong { color: var(--text-main); font-weight: 600; }
 
         .slide-title {
-            font-size: 25px;
+            font-size: 24px;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -143,14 +143,24 @@
         .slide-indicator { font-family: monospace; font-size: 14px; color: var(--text-muted); user-select: none; font-weight: 600; }
         .top-bar { position: absolute; bottom: 18px; left: 40px; z-index: 100; display: flex; gap: 12px; }
 
-        /* Global Layouts */
+        /* Layouts */
         .two-column { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 30px; width: 100%; align-items: center; height: calc(100% - 40px); }
         .two-column-equal { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; width: 100%; align-items: stretch; height: calc(100% - 40px); }
-        .two-column-tech { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 25px; width: 100%; align-items: start; height: calc(100% - 40px); }
+        .two-column-tech { display: grid; grid-template-columns: 1.1fr 1.1fr; gap: 25px; width: 100%; align-items: start; height: calc(100% - 40px); }
         .stacked-boxes { display: flex; flex-direction: column; gap: 8px; justify-content: center; height: 100%; }
-        .box-item { background: var(--surface-light); padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-color); position: relative; }
+        
+        .box-item { 
+            background: var(--surface-light); 
+            padding: 12px 16px; 
+            border-radius: 10px; 
+            border: 1px solid var(--border-color); 
+            position: relative; 
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .box-item:hover { border-color: rgba(255,255,255,0.2); transform: translateX(3px); }
+        .box-item.selected { background: rgba(0,229,255,0.06); border-color: var(--accent-cyan); }
 
-        /* Visual Container for SVGs */
         .visual-container {
             width: 100%;
             height: 100%;
@@ -166,7 +176,6 @@
             box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
 
-        /* Custom Component Styling */
         .basic-list { list-style: none; padding: 0; }
         .basic-list li { position: relative; padding-left: 20px; margin-bottom: 4px; font-size: 13px; color: var(--text-muted); }
         .basic-list li i { position: absolute; left: 0; top: 3px; color: var(--accent-cyan); font-size: 11px; }
@@ -178,8 +187,8 @@
 
         .table-layout { width: 100%; background: var(--surface-light); border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); }
         .table-layout table { border-collapse: collapse; width: 100%; table-layout: fixed; }
-        .table-layout table th, .table-layout table td { border-bottom: 1px solid var(--border-color); padding: 9px 12px; text-align: left; word-wrap: break-word; overflow-wrap: break-word; font-size: 12.5px; }
-        .table-layout table th { background-color: rgba(0, 229, 255, 0.08); color: var(--accent-cyan); font-size: 13px; font-weight: 700; border-bottom: 2px solid rgba(0, 229, 255, 0.15); }
+        .table-layout table th, .table-layout table td { border-bottom: 1px solid var(--border-color); padding: 9px 12px; text-align: left; word-wrap: break-word; overflow-wrap: break-word; font-size: 11.5px; }
+        .table-layout table th { background-color: rgba(0, 229, 255, 0.08); color: var(--accent-cyan); font-size: 12px; font-weight: 700; border-bottom: 2px solid rgba(0, 229, 255, 0.15); }
         .table-layout table td { color: var(--text-main); }
         
         .code-inline { background: rgba(239,71,111,0.12); padding: 2px 6px; border-radius: 4px; font-family: monospace; color: var(--accent-red); font-size: 12px; border: 1px solid rgba(239,71,111,0.2); }
@@ -192,7 +201,6 @@
         .badge-po { background: rgba(255, 183, 3, 0.1); color: var(--accent-warning); border: 1px solid rgba(255, 183, 3, 0.3); }
 
         .template-box { background: #030712; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 11px; color: var(--accent-green); border: 1px solid rgba(255,255,255,0.05); margin-top: 5px; white-space: pre-wrap; }
-
         .pulse-text { animation: pulseGlow 2s infinite ease-in-out; }
         @keyframes pulseGlow { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; color: var(--accent-cyan); } }
 
@@ -222,9 +230,7 @@
             transform: translateY(-3px);
             box-shadow: 0 10px 25px rgba(0, 229, 255, 0.15);
         }
-        .menu-card::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent-cyan);
-        }
+        .menu-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent-cyan); }
         .menu-card:nth-child(2)::before { background: var(--accent-green); }
         .menu-card:nth-child(3)::before { background: var(--accent-warning); }
         .menu-card:nth-child(4)::before { background: var(--accent-purple); }
@@ -253,45 +259,9 @@
         .menu-info h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; color: #fff; }
         .menu-info p { font-size: 12.5px; color: var(--text-muted); line-height: 1.4; }
 
-        /* Severity Panels styling */
-        .sev-panel {
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            padding: 14px;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, rgba(239,71,111,0.06) 0%, transparent 100%);
-            border-left: 5px solid var(--accent-red);
-        }
-        .sev-panel.major {
-            background: linear-gradient(90deg, rgba(255,183,3,0.05) 0%, transparent 100%);
-            border-left-color: var(--accent-warning);
-        }
-        .sev-panel.minor {
-            background: linear-gradient(90deg, rgba(0,255,135,0.04) 0%, transparent 100%);
-            border-left-color: var(--accent-green);
-        }
-
-        /* Chart & Grid lines */
-        .chart-axis { stroke: rgba(255,255,255,0.15); stroke-width: 2; }
-        .chart-grid { stroke: rgba(255,255,255,0.04); stroke-width: 1; stroke-dasharray: 4 4; }
-        .bar-label { font-family: 'Urbanist', sans-serif; font-size: 13px; font-weight: 700; fill: #fff; }
-        .bar-value { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; fill: var(--accent-cyan); }
-        
-        /* Cert Matrix Layout */
-        .cert-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; width: 100%; height: calc(100% - 40px); margin-top: 10px; }
-        .cert-card { background: var(--surface-light); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; position: relative; }
-        .cert-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--accent-cyan); border-radius: 12px 12px 0 0; }
-        .cert-card.mid::before { background: var(--accent-green); }
-        .cert-card.senior::before { background: var(--accent-warning); }
-        .cert-card.expert::before { background: var(--accent-purple); }
-        .cert-level { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-cyan); font-weight: 700; margin-bottom: 5px; }
-        .cert-card.mid .cert-level { color: var(--accent-green); }
-        .cert-card.senior .cert-level { color: var(--accent-warning); }
-        .cert-card.expert .cert-level { color: var(--accent-purple); }
-        .cert-card h3 { font-size: 17px; font-weight: 800; margin-bottom: 8px; color: #fff; line-height: 1.3; }
-        .cert-card p { font-size: 12.5px; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px; }
-        .cert-badge-list { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
-        .cert-badge-tag { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); padding: 5px 10px; border-radius: 6px; font-size: 12px; font-family: 'Urbanist', sans-serif; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; }
+        .svg-layer-transition { transition: all 0.3s ease; }
+        .svg-highlight-glow { filter: drop-shadow(0px 0px 12px var(--accent-cyan)); opacity: 1 !important; }
+        .svg-highlight-glow-red { filter: drop-shadow(0px 0px 12px var(--accent-red)); opacity: 1 !important; }
     </style>
 </head>
 <body>
@@ -304,7 +274,7 @@
     </div>
 
     <div class="controls">
-        <span class="slide-indicator" id="slide-num">1 / 25</span>
+        <span class="slide-indicator" id="slide-num">1 / 30</span>
         <button class="btn-nav" onclick="prevSlide()"><i class="fa-solid fa-chevron-left"></i> Trước</button>
         <button class="btn-nav" onclick="nextSlide()">Sau <i class="fa-solid fa-chevron-right"></i></button>
     </div>
@@ -342,7 +312,6 @@
                         <line x1="25" y1="70" x2="50" y2="70" stroke="#00ff87" stroke-width="2" stroke-linecap="round"/>
                         <circle cx="90" cy="40" r="6" fill="#ef476f"/>
                     </g>
-                    <path d="M 120,310 L 280,310 L 200,340 Z" fill="rgba(0,229,255,0.1)" stroke="#00e5ff" stroke-width="1"/>
                 </svg>
             </div>
         </div>
@@ -407,29 +376,26 @@
             <div class="brand-text-logo">IT <span>LEARN</span></div>
         </div>
         <div class="two-column">
-            <div class="stacked-boxes">
-                <div class="box-item" style="border-left: 4px solid var(--accent-purple);">
-                    <span class="role-badge badge-qa">QA (Quality Assurance)</span><strong>- Quản lý quy trình:</strong> Đứng ở tầng thượng tầng. Thiết lập hệ thống, quy chuẩn, template và giám sát để đảm bảo toàn bộ đội ngũ dự án tuân thủ. Mục tiêu là phòng ngừa lỗi ngay từ khâu thiết kế.
+            <div class="stacked-boxes" id="s3-box-container">
+                <div class="box-item selected" style="border-left: 4px solid var(--accent-purple);" onclick="clickRoleS3('qa')">
+                    <span class="role-badge badge-qa">QA (Quality Assurance)</span><strong>- Quản lý quy trình:</strong> Đứng ở tầng thượng tầng. Thiết lập hệ thống, quy chuẩn, template và giám sát để đảm bảo toàn bộ đội ngũ dự án tuân thủ.
                 </div>
-                <div class="box-item" style="border-left: 4px solid var(--accent-cyan);">
-                    <span class="role-badge badge-qc">QC (Quality Control)</span><strong>- Kiểm soát sản phẩm:</strong> Trực tiếp đo lường chất lượng sản phẩm đầu ra của Dev. QC chạy phần mềm, đối soát tính năng để đánh giá xem sản phẩm có đạt chuẩn yêu cầu tài liệu hay không.
+                <div class="box-item" style="border-left: 4px solid var(--accent-cyan);" onclick="clickRoleS3('qc')">
+                    <span class="role-badge badge-qc">QC (Quality Control)</span><strong>- Kiểm soát sản phẩm:</strong> Trực tiếp đo lường chất lượng sản phẩm đầu ra của Dev. QC chạy phần mềm, đối soát tính năng để đánh giá xem sản phẩm có đạt chuẩn.
                 </div>
-                <div class="box-item" style="border-left: 4px solid var(--accent-green);">
-                    <span class="role-badge badge-qc">Tester</span><strong>- Kỹ sư thực thi:</strong> Là một tập con tối quan trọng của QC. Tập trung sâu nhất vào hành động thực hành lâm sàng: Thiết kế kịch bản test case, trực tiếp chạy ứng dụng, tìm bug, log bug và kiểm thử lại (Re-test).
+                <div class="box-item" style="border-left: 4px solid var(--accent-green);" onclick="clickRoleS3('tester')">
+                    <span class="role-badge" style="background:rgba(0,255,135,0.1); color:var(--accent-green);">Tester</span><strong>- Kỹ sư thực thi:</strong> Là một tập con tối quan trọng của QC. Tập trung sâu nhất vào kịch bản test case, chạy ứng dụng, tìm bug và log lỗi.
                 </div>
             </div>
-            <div class="visual-container">
-                <h4 style="margin-bottom: 10px; font-size: 15px; color: var(--accent-cyan);">MÔ HÌNH BAO PHỦ TOÀN DIỆN</h4>
+            <div class="visual-container" style="background: rgba(5,9,24,0.9);">
+                <h4 style="margin-bottom: 10px; font-size: 13px; color: var(--accent-cyan); font-family: monospace;">MÔ HÌNH PHÂN LỚP TƯƠNG TÁC (CLICK ĐỂ XEM)</h4>
                 <svg viewBox="0 0 400 350" width="100%" height="100%">
-                    <circle cx="200" cy="175" r="150" fill="rgba(175, 64, 255, 0.05)" stroke="#af40ff" stroke-width="2" stroke-dasharray="6 4"/>
-                    <text x="200" y="45" fill="#af40ff" font-family='Urbanist' font-size="14" font-weight="900" text-anchor="middle">QA: PROCESS MANAGEMENT</text>
-                    
-                    <circle cx="200" cy="190" r="105" fill="rgba(0, 229, 255, 0.05)" stroke="#00e5ff" stroke-width="2" stroke-dasharray="4 2"/>
-                    <text x="200" y="110" fill="#00e5ff" font-family='Urbanist' font-size="13" font-weight="900" text-anchor="middle">QC: PRODUCT CONTROL</text>
-                    
-                    <circle cx="200" cy="205" r="65" fill="rgba(0, 255, 135, 0.1)" stroke="#00ff87" stroke-width="3"/>
-                    <text x="200" y="205" fill="#00ff87" font-family='Urbanist' font-size="14" font-weight="900" text-anchor="middle">TESTER</text>
-                    <text x="200" y="225" fill="#fff" font-family='Inter' font-size="11" text-anchor="middle">Thực thi & Săn Bug</text>
+                    <circle id="s3-svg-qa" cx="200" cy="175" r="140" fill="rgba(175, 64, 255, 0.05)" stroke="#af40ff" stroke-width="3" class="svg-layer-transition svg-highlight-glow"/>
+                    <text x="200" y="55" fill="#af40ff" font-family='Urbanist' font-size="12" font-weight="900" text-anchor="middle">QA: PROCESS MANAGEMENT</text>
+                    <circle id="s3-svg-qc" cx="200" cy="185" r="100" fill="rgba(0, 229, 255, 0.03)" stroke="#00e5ff" stroke-width="2" class="svg-layer-transition"/>
+                    <text x="200" y="110" fill="#00e5ff" font-family='Urbanist' font-size="11" font-weight="900" text-anchor="middle">QC: PRODUCT CONTROL</text>
+                    <circle id="s3-svg-tester" cx="200" cy="200" r="60" fill="rgba(0, 255, 135, 0.03)" stroke="#00ff87" stroke-width="2" class="svg-layer-transition"/>
+                    <text x="200" y="205" fill="#00ff87" font-family='Urbanist' font-size="13" font-weight="900" text-anchor="middle">TESTER</text>
                 </svg>
             </div>
         </div>
@@ -441,44 +407,70 @@
             <h2 class="slide-title">Tầm Quan Trọng & Đặc Thù Tester Qua Các Ngành</h2>
             <div class="brand-text-logo">IT <span>LEARN</span></div>
         </div>
-        <div class="content-area">
+        <div class="two-column" style="grid-template-columns: 1.1fr 0.9fr; height: calc(100% - 40px); align-items: start;">
             <div class="table-layout" style="margin-top: 5px;">
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 15%;">Lĩnh vực (Domain)</th>
-                            <th style="width: 25%;">Hậu quả nếu lọt Bug (Rủi ro tối cao)</th>
-                            <th style="width: 35%;">Kỹ năng cốt lõi (Hard Skills cần có)</th>
-                            <th style="width: 25%;">Tập trung kiểm thử tầng nào</th>
+                            <th style="width: 18%;">Lĩnh vực (Domain)</th>
+                            <th style="width: 27%;">Hậu quả nếu lọt Bug</th>
+                            <th style="width: 35%;">Kỹ năng cốt lõi (Hard Skills)</th>
+                            <th style="width: 20%;">Trọng tâm kiểm thử</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
+                        <tr class="box-item selected" onclick="clickDomainS4('health')">
                             <td><strong>Healthcare (Y tế)</strong></td>
-                            <td style="color:var(--accent-red); font-weight:600;">Nguy hiểm tính mạng con người, sai lệch liều lượng máy xạ trị, rò rỉ bệnh án tư nhân.</td>
-                            <td>Hiểu chuẩn ISO 13485, kỹ thuật kiểm thử an toàn dữ liệu, bảo mật nghiêm ngặt (HIPAA compliance).</td>
-                            <td>Kiểm thử hộp đen luồng nghiệp vụ khép kín, bảo mật.</td>
+                            <td style="color:var(--accent-red)">Nguy hiểm tính mạng, sai lệch liều lượng dữ liệu.</td>
+                            <td>Hiểu chuẩn ISO 13485, bảo mật dữ liệu nghiêm ngặt (HIPAA).</td>
+                            <td>Hộp đen luồng nghiệp vụ khép kín.</td>
                         </tr>
-                        <tr>
+                        <tr class="box-item" onclick="clickDomainS4('auto')">
                             <td><strong>Automotive (Ô tô)</strong></td>
-                            <td style="color:var(--accent-red); font-weight:600;">Gây tai nạn diện rộng do túi khí nổ trễ, phanh tự động không nhạy, lỗi phần cơ cứng.</td>
-                            <td>Kiểm thử hệ thống nhúng, đọc hiểu ngôn ngữ C/C++, thành thạo kỹ thuật kiểm thử HIL (Hardware-in-the-Loop).</td>
-                            <td>Kiểm thử tích hợp hệ thống phần cứng và phần mềm (Integration).</td>
+                            <td style="color:var(--accent-red)">Tai nạn do túi khí nổ trễ, phanh tự động lỗi.</td>
+                            <td>Hệ thống nhúng, C/C++, kỹ thuật kiểm thử HIL (Hardware-in-the-Loop).</td>
+                            <td>Tích hợp phần cứng & phần mềm.</td>
                         </tr>
-                        <tr>
-                            <td><strong>E-commerce (TMĐT)</strong></td>
-                            <td>Thất thoát doanh thu ngày siêu sale, rớt đơn hàng của khách, sập máy chủ do quá tải.</td>
-                            <td>Kiểm thử hiệu năng (Performance Testing), thiết lập kịch bản script Automation quét UI/UX đa nền tảng Mobile/Web.</td>
-                            <td>Kiểm thử giao diện (UI/UX) và tải hệ thống (Load/Stress).</td>
+                        <tr class="box-item" onclick="clickDomainS4('ecom')">
+                            <td><strong>E-commerce</strong></td>
+                            <td>Thất thoát doanh thu ngày siêu sale, sập máy chủ do quá tải.</td>
+                            <td>Kiểm thử hiệu năng (Performance Testing), Automation UI đa nền tảng.</td>
+                            <td>Giao diện (UI/UX) và tải hệ thống.</td>
                         </tr>
-                        <tr>
-                            <td style="color: var(--accent-cyan);"><strong>Fintech / Banking</strong></td>
-                            <td style="color:var(--accent-red); font-weight:600;">Sai lệch số dư tài khoản tiền thật, lỗi luồng đối soát liên ngân hàng, hacker tấn công chiếm đoạt tiền.</td>
-                            <td>Bóc tách cấu trúc kết nối API, truy vấn cơ sở dữ liệu SQL chuyên sâu, kiểm thử cơ chế toàn vẹn ACID của DB, đọc log hệ thống.</td>
-                            <td style="color: var(--accent-cyan); font-weight: bold;">Kiểm thử API, Kiểm thử Database và Kiểm thử Bảo mật luồng tiền.</td>
+                        <tr class="box-item" style="background: rgba(0, 229, 255, 0.05)" onclick="clickDomainS4('fin')">
+                            <td style="color: var(--accent-cyan); font-weight:700;">Fintech / Banking</td>
+                            <td style="color:var(--accent-red); font-weight:700;">Sai lệch số dư tài khoản thật, lỗi luồng đối soát liên ngân hàng.</td>
+                            <td>Kết nối API, SQL nâng cao, kiểm thử toàn vẹn ACID của DB, đọc log.</td>
+                            <td style="color: var(--accent-cyan); font-weight:700;">API, Database và Luồng tiền.</td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            <div class="visual-container" style="background: rgba(11, 19, 43, 0.95);">
+                <h4 style="font-size:12px; font-family:'Urbanist'; margin-bottom: 12px; color: var(--accent-cyan); text-transform: uppercase;">Sơ đồ trọng tâm rủi ro & tỷ trọng</h4>
+                <svg viewBox="0 0 240 240" width="100%" height="100%">
+                    <g id="s4-graphics-health" class="svg-layer-transition" style="opacity:0; display:none;">
+                        <circle cx="120" cy="120" r="70" fill="none" stroke="var(--accent-red)" stroke-width="8" stroke-dasharray="4 2"/>
+                        <path d="M 100,120 L 140,120 M 120,100 L 120,140" stroke="var(--accent-red)" stroke-width="12" stroke-linecap="round"/>
+                        <text x="120" y="215" fill="var(--accent-red)" font-family="Urbanist" font-size="13" font-weight="900" text-anchor="middle">HEALTHCARE: LIFE RISK 100%</text>
+                    </g>
+                    <g id="s4-graphics-auto" class="svg-layer-transition" style="opacity:0; display:none;">
+                        <rect x="70" y="90" width="100" height="60" rx="10" fill="none" stroke="var(--accent-warning)" stroke-width="6"/>
+                        <circle cx="95" cy="150" r="15" fill="#030712" stroke="var(--accent-warning)" stroke-width="4"/>
+                        <text x="120" y="215" fill="var(--accent-warning)" font-family="Urbanist" font-size="13" font-weight="900" text-anchor="middle">AUTOMOTIVE: EMBEDDED INTEGRATION</text>
+                    </g>
+                    <g id="s4-graphics-ecom" class="svg-layer-transition" style="opacity:0; display:none;">
+                        <path d="M 60,80 L 80,80 L 100,140 L 160,140" fill="none" stroke="var(--accent-green)" stroke-width="5"/>
+                        <circle cx="110" cy="160" r="10" fill="var(--accent-green)"/>
+                        <text x="120" y="215" fill="var(--accent-green)" font-family="Urbanist" font-size="13" font-weight="900" text-anchor="middle">E-COMMERCE: LOAD & UX TRAFFIC</text>
+                    </g>
+                    <g id="s4-graphics-fin" class="svg-layer-transition" style="opacity:1; display:block;">
+                        <circle cx="120" cy="120" r="65" fill="none" stroke="#1c2541" stroke-width="12"/>
+                        <circle cx="120" cy="120" r="65" fill="none" stroke="var(--accent-cyan)" stroke-width="12" stroke-dasharray="280 408"/>
+                        <text x="120" y="115" fill="#fff" font-family="Urbanist" font-size="13" font-weight="900" text-anchor="middle">70% CORE</text>
+                        <text x="120" y="215" fill="var(--accent-cyan)" font-family="Urbanist" font-size="13" font-weight="900" text-anchor="middle">FINTECH: ACID & TRANSACTIONAL</text>
+                    </g>
+                </svg>
             </div>
         </div>
     </div>
@@ -489,253 +481,277 @@
             <h2 class="slide-title">Mổ Xẻ Hình Thái: Manual Tester vs Automation Tester</h2>
             <div class="brand-text-logo">IT <span>LEARN</span></div>
         </div>
-        <div class="two-column">
-            <div class="stacked-boxes">
-                <div class="box-item" style="border-top: 3px solid var(--accent-cyan);">
-                    <h3 style="color: var(--accent-cyan); font-size: 16px;"><i class="fa-solid fa-hand-pointer"></i> Manual Tester (Kiểm thử thủ công)</h3>
-                    <p style="font-size: 12.5px; margin-top: 3px;">• <strong>Ưu điểm:</strong> Phản xạ logic cực nhanh nhạy trước sự thay đổi của UI, cực tốt trong việc tìm lỗi tư duy con người (Exploratory Testing).<br>• <strong>Hạn chế:</strong> Tốn thời gian khi chạy lặp lại các bộ test case hồi quy khổng lồ qua nhiều phiên bản phần mềm.</p>
+        <div class="two-column" style="grid-template-columns: 1fr 1.2fr; gap:20px; height:calc(100% - 40px); margin-top:5px;">
+            <div class="stacked-boxes" style="gap:10px;">
+                <div class="box-item" style="border-left: 4px solid var(--accent-cyan); background: rgba(0, 229, 255, 0.02);">
+                    <h3 style="color: var(--accent-cyan); font-size: 15px;"><i class="fa-solid fa-hand-pointer"></i> Manual Tester (Kiểm thử thủ công)</h3>
+                    <p style="font-size: 12px; margin-top: 4px;">• Con người trực tiếp click chọn phần tử DOM, rà soát lỗi giao diện và lỗi logic luồng nghiệp vụ rắc rối (Exploratory Testing).</p>
                 </div>
-                <div class="box-item" style="border-top: 3px solid var(--accent-green);">
-                    <h3 style="color: var(--accent-green); font-size: 16px;"><i class="fa-solid fa-robot"></i> Automation Tester (Kiểm thử tự động)</h3>
-                    <p style="font-size: 12.5px; margin-top: 3px;">• <strong>Ưu điểm:</strong> Quét hàng nghìn ca kiểm thử chỉ trong vài phút, bảo vệ tính ổn định của mã nguồn khi CI/CD triển khai tự động.<br>• <strong>Hạn chế:</strong> Chi phí xây dựng framework ban đầu rất cao, không thể thay thế con người check độ mượt UI/UX.</p>
-                </div>
-                <div class="highlight-box">
-                    <p>Trong thực tế hệ thống lớn, hai kỹ năng này bổ trợ và song hành mật thiết với nhau.</p>
+                <div class="box-item" style="border-left: 4px solid var(--accent-green); background: rgba(0, 255, 135, 0.02);">
+                    <h3 style="color: var(--accent-green); font-size: 15px;"><i class="fa-solid fa-robot"></i> Automation Tester (Kiểm thử tự động)</h3>
+                    <p style="font-size: 12px; margin-top: 4px;">• Kỹ sư lập trình kịch bản code (Java, Python) ra lệnh cho hệ thống tự động quét hồi quy diện rộng liên tục trong CI/CD pipeline.</p>
                 </div>
             </div>
-            <div class="visual-container">
-                <svg viewBox="0 0 400 320" width="100%" height="100%">
-                    <line x1="200" y1="20" x2="200" y2="300" stroke="rgba(255,255,255,0.1)" stroke-width="2" stroke-dasharray="5 5"/>
-                    <g transform="translate(10, 0)">
-                        <circle cx="90" cy="120" r="50" fill="rgba(0,229,255,0.05)" stroke="#00e5ff" stroke-width="2"/>
-                        <path d="M 80,140 Q 90,100 110,110" fill="none" stroke="#00e5ff" stroke-width="3" stroke-linecap="round"/>
-                        <circle cx="110" cy="110" r="4" fill="#fff"/>
-                        <text x="90" y="210" fill="#00e5ff" font-family="Urbanist" font-size="14" font-weight="800" text-anchor="middle">MANUAL WORK</text>
-                        <text x="90" y="235" fill="#9ca3af" font-family="Inter" font-size="11" text-anchor="middle">Tư duy logic nghiệp vụ</text>
-                        <text x="90" y="250" fill="#9ca3af" font-family="Inter" font-size="11" text-anchor="middle">Khám phá hành vi khách hàng</text>
+            <div class="visual-container" style="background: rgba(5,9,24,0.95);">
+                <h4 style="font-family:'Urbanist'; font-size:12px; margin-bottom:10px; color:var(--accent-cyan);">SƠ ĐỒ KIẾN TRÚC PHÂN TÁCH HÀNH VI TƯƠNG TÁC</h4>
+                <svg viewBox="0 0 450 260" width="100%" height="100%">
+                    <g transform="translate(10, 20)">
+                        <rect x="10" y="30" width="160" height="150" rx="8" fill="none" stroke="var(--accent-cyan)" stroke-width="2" stroke-dasharray="4 4"/>
+                        <circle cx="90" cy="80" r="25" fill="rgba(0, 229, 255, 0.1)" stroke="var(--accent-cyan)" stroke-width="2"/>
+                        <text x="90" y="135" fill="#fff" font-family="Urbanist" font-size="12" font-weight="bold" text-anchor="middle">HUMAN EYE & UI</text>
                     </g>
-                    <g transform="translate(210, 0)">
-                        <circle cx="100" cy="120" r="50" fill="rgba(0,255,135,0.05)" stroke="#00ff87" stroke-width="2"/>
-                        <rect x="75" y="95" width="50" height="40" rx="4" fill="#0b132b" stroke="#00ff87" stroke-width="2"/>
-                        <circle cx="90" cy="110" r="3" fill="#00ff87"/>
-                        <circle cx="110" cy="110" r="3" fill="#00ff87"/>
-                        <line x1="85" y1="125" x2="115" y2="125" stroke="#fff" stroke-width="2"/>
-                        <text x="100" y="210" fill="#00ff87" font-family="Urbanist" font-size="14" font-weight="800" text-anchor="middle">AUTOMATION SCRIPT</text>
-                        <text x="100" y="235" fill="#9ca3af" font-family="Inter" font-size="11" text-anchor="middle">Lập trình code framework</text>
-                        <text x="100" y="250" fill="#9ca3af" font-family="Inter" font-size="11" text-anchor="middle">Tăng tốc độ kiểm thử hồi quy</text>
+                    <path d="M 190,115 L 250,115" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2" marker-end="url(#arrow-s5)"/>
+                    <g transform="translate(260, 20)">
+                        <rect x="10" y="30" width="160" height="150" rx="8" fill="none" stroke="var(--accent-green)" stroke-width="2"/>
+                        <rect x="25" y="45" width="130" height="60" rx="4" fill="#030712"/>
+                        <text x="35" y="65" fill="var(--accent-green)" font-family="monospace" font-size="9">@Test void run() {</text>
+                        <text x="35" y="80" fill="var(--accent-cyan)" font-family="monospace" font-size="9"> driver.click("#btn");</text>
+                        <text x="35" y="95" fill="var(--accent-green)" font-family="monospace" font-size="9">}</text>
+                        <text x="90" y="135" fill="#fff" font-family="Urbanist" font-size="12" font-weight="bold" text-anchor="middle">AUTOMATION CODE</text>
                     </g>
+                    <defs><marker id="arrow-s5" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0,1 L 10,5 L 0,9 z" fill="rgba(255,255,255,0.3)"/></marker></defs>
                 </svg>
             </div>
         </div>
     </div>
 
-    <!-- SLIDE 6: LỘ TRÌNH DỊCH CHUYỂN -->
+    <!-- SLIDE 6A: LỘ TRÌNH CHUYÊN SÂU MANUAL TESTER -->
     <div class="slide" id="slide6">
         <div class="slide-header-brand">
-            <h2 class="slide-title">Lộ Trình Bứt Phá: Từ Manual Chuyển Sang Automation Tester</h2>
-            <div class="brand-text-logo">IT <span>LEARN</span></div>
-        </div>
-        <div class="content-area">
-            <p style="margin-bottom: 15px; font-size: 14.5px; text-align: center; color: var(--text-muted);">Đừng vội vã học framework nâng cao ngay. Học viên cần tuân thủ nghiêm ngặt 4 bước dịch chuyển nền tảng:</p>
-            <div class="two-column-tech">
-                <ul class="tech-step-list" style="margin-top: 10px;">
-                    <li>
-                        <span class="step-title"><i class="fa-solid fa-database text-cyan"></i> Bước 1: Làm chủ ngôn ngữ truy vấn Cơ sở dữ liệu (Database SQL)</span>
-                        <span class="step-desc">Học cách viết các câu lệnh SELECT nâng cao, kết hợp bảng (JOIN), lọc điều kiện (WHERE, GROUP BY) để trực tiếp chọc sâu đối soát DB Backend.</span>
-                    </li>
-                    <li>
-                        <span class="step-title"><i class="fa-solid fa-cloud text-warning"></i> Bước 2: Kiểm thử API nâng cao bằng công cụ Postman</span>
-                        <span class="step-desc">Học cách cấu trúc bộ kiểm thử API tự động, viết mã JavaScript trong tab *Tests* của Postman để tự động hóa khâu kiểm tra mã phản hồi (Status Code), cấu trúc JSON.</span>
-                    </li>
-                    <li>
-                        <span class="step-title"><i class="fa-solid fa-terminal text-green"></i> Bước 3: Học một ngôn ngữ lập trình nền tảng (Java hoặc Python / JS)</span>
-                        <span class="step-desc">Nắm bắt thật chắc tư duy Lập trình hướng đối tượng (OOP), cấu trúc mảng dữ liệu, vòng lặp điều kiện IF-ELSE. Đây là nền móng để viết mã script sau này.</span>
-                    </li>
-                    <li>
-                        <span class="step-title"><i class="fa-solid fa-cubes text-purple"></i> Bước 4: Tự xây Framework dựa trên thư viện Selenium / Playwright</span>
-                        <span class="step-desc">Kết hợp kiến trúc mã nguồn OOP để viết script tự động điều khiển trình duyệt Web, bắt locator cấu phần UI, xử lý đa luồng chạy test song song.</span>
-                    </li>
-                </ul>
-                <div class="visual-container">
-                    <svg viewBox="0 0 350 400" width="100%" height="100%">
-                        <rect x="200" y="50" width="130" height="40" rx="6" fill="rgba(175, 64, 255, 0.2)" stroke="#af40ff" stroke-width="2"/>
-                        <text x="265" y="75" fill="#fff" font-family="Urbanist" font-size="12" font-weight="700" text-anchor="middle">4. AUTO FRAMEWORK</text>
-                        <rect x="140" y="120" width="130" height="40" rx="6" fill="rgba(0, 255, 135, 0.15)" stroke="#00ff87" stroke-width="2"/>
-                        <text x="205" y="145" fill="#fff" font-family="Urbanist" font-size="12" font-weight="700" text-anchor="middle">3. CODING (JAVA/PY)</text>
-                        <rect x="80" y="190" width="130" height="40" rx="6" fill="rgba(255, 183, 3, 0.15)" stroke="#ffb703" stroke-width="2"/>
-                        <text x="145" y="215" fill="#fff" font-family="Urbanist" font-size="12" font-weight="700" text-anchor="middle">2. API POSTMAN AUTO</text>
-                        <rect x="20" y="260" width="130" height="40" rx="6" fill="rgba(0, 229, 255, 0.15)" stroke="#00e5ff" stroke-width="2"/>
-                        <text x="85" y="285" fill="#fff" font-family="Urbanist" font-size="12" font-weight="700" text-anchor="middle">1. SQL DATABASE ADV</text>
-                        <path d="M 40,320 L 300,100" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-dasharray="5 5"/>
-                        <circle cx="300" cy="100" r="5" fill="var(--accent-cyan)"/>
-                    </svg>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SLIDE 7: 1 NGÀY JUNIOR TESTER -->
-    <div class="slide" id="slide7">
-        <div class="slide-header-brand">
-            <h2 class="slide-title">Mô phỏng 1 Ngày Làm Việc Của Junior Tester Thực Chiến</h2>
-            <div class="brand-text-logo">IT <span>LEARN</span></div>
-        </div>
-        <div class="content-area">
-            <div class="two-column">
-                <div class="stacked-boxes">
-                    <div class="box-item" style="padding: 10px 14px;">
-                        <span class="code-inline">08:45 - 09:00</span> <strong>Họp Daily Stand-up đồng bộ toàn bộ dự án:</strong> Báo cáo nhanh công việc ngày hôm qua đã hoàn tất viết bao nhiêu Test Cases luồng rút tiền, hôm nay chạy test API, báo cáo nếu bị Dev block chức năng Đăng ký.
-                    </div>
-                    <div class="box-item" style="padding: 10px 14px;">
-                        <span class="code-inline">09:00 - 11:30</span> <strong>Thiết kế kịch bản kiểm thử lâm sàng:</strong> Ngồi đọc tài liệu đặc tả User Story nghiệp vụ mở số tiết kiệm online, áp dụng kỹ thuật Phân vùng tương đương & Giá trị biên để lên danh sách kịch bản test case trên file Excel hoặc phần mềm Jira Xray.
-                    </div>
-                    <div class="box-item" style="padding: 10px 14px;">
-                        <span class="code-inline">11:30 - 12:00</span> <strong>Kiểm thử tích hợp hệ thống Backend:</strong> Mở công cụ Postman nạp tài liệu Swagger, bắn các chuỗi API liên quan đến luồng tính lãi suất, kiểm chứng cấu trúc JSON trả về của Server có chính xác.
-                    </div>
-                    <div class="box-item" style="padding: 10px 14px;">
-                        <span class="code-inline">13:30 - 16:30</span> <strong>Thực thi chạy test & Truy vết Database:</strong> Tiến hành mở bản dựng App Ngân hàng trên máy ảo để thực hiện chuyển khoản. Sau mỗi giao dịch thành công, viết lệnh SQL `SELECT` để truy cập hệ thống DB kiểm tra số dư ví có bị trừ chính xác, bản ghi bảng Log có lưu đúng.
-                    </div>
-                    <div class="box-item" style="padding: 10px 14px;">
-                        <span class="code-inline">16:30 - 17:30</span> <strong>Quản lý chu trình lỗi:</strong> Lập biên bản log các bug phát hiện được lên hệ thống Jira, gán trạng thái NEW cho Developer xử lý, đồng thời chạy kiểm thử lại (Re-test) các lỗi dev đã vá xong.
-                    </div>
-                </div>
-                <div class="visual-container">
-                    <svg viewBox="0 0 400 350" width="100%" height="100%">
-                        <circle cx="200" cy="160" r="110" fill="none" stroke="#1c2541" stroke-width="8"/>
-                        <line x1="200" y1="55" x2="200" y2="65" stroke="var(--accent-cyan)" stroke-width="4"/>
-                        <line x1="200" y1="255" x2="200" y2="265" stroke="var(--accent-cyan)" stroke-width="4"/>
-                        <line x1="95" y1="160" x2="105" y2="160" stroke="var(--accent-cyan)" stroke-width="4"/>
-                        <line x1="295" y1="160" x2="305" y2="160" stroke="var(--accent-cyan)" stroke-width="4"/>
-                        <line x1="200" y1="160" x2="250" y2="110" stroke="var(--accent-green)" stroke-width="4" stroke-linecap="round"/>
-                        <line x1="200" y1="160" x2="200" y2="90" stroke="var(--accent-cyan)" stroke-width="3" stroke-linecap="round"/>
-                        <circle cx="200" cy="160" r="6" fill="#fff"/>
-                        <text x="200" y="295" fill="#fff" font-family="Urbanist" font-size="14" font-weight="800" text-anchor="middle">CHU TRÌNH 8 TIẾNG VÀNG</text>
-                        <text x="200" y="315" fill="var(--accent-cyan)" font-family="Inter" font-size="12" font-weight="600" text-anchor="middle" class="pulse-text">Nghiệp Vụ - API - SQL Database - Jira Bug</text>
-                    </svg>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SLIDE 8: THU NHẬP CỦA TESTER -->
-    <div class="slide" id="slide8">
-        <div class="slide-header-brand">
-            <h2 class="slide-title">Thước Đo Cột Mốc Thu Nhập Thực Tế Nghề Nghiệp 2026</h2>
+            <h2 class="slide-title">3A. Định Hướng Sự Nghiệp Chuyên Sâu: Manual Tester Pathway</h2>
             <div class="brand-text-logo">IT <span>LEARN</span></div>
         </div>
         <div class="two-column">
-            <div class="stacked-boxes" style="gap: 8px;">
-                <p style="font-size: 14px; color: var(--accent-green); font-weight: 700; margin-bottom: 4px;"><i class="fa-solid fa-arrow-trend-up"></i> TĂNG TRƯỞNG THU NHẬP THEO NĂNG LỰC KỸ THUẬT:</p>
-                <div class="box-item" style="padding: 10px 14px; border-left: 4px solid var(--accent-cyan);">
-                    <strong>1. Junior Manual: 8 - 15 Triệu VND</strong> (Mới ra trường đến 1.5 năm kinh nghiệm. Phụ thuộc vào kỹ năng viết kịch bản thô).
-                </div>
-                <div class="box-item" style="padding: 10px 14px; border-left: 4px solid var(--accent-green);">
-                    <strong>2. Mid-Level (API/SQL): 15 - 28 Triệu VND</strong> (Từ 1.5 đến 4 năm. Am hiểu sâu sắc luồng dữ liệu hệ thống Ngân hàng).
-                </div>
-                <div class="box-item" style="padding: 10px 14px; border-left: 4px solid var(--accent-warning);">
-                    <strong>3. Senior Automation: 28 - 50 Triệu VND+</strong> (Từ 4 năm trở lên. Khả năng tự thiết kế mã code Framework độc lập).
-                </div>
-                <div class="box-item" style="padding: 10px 14px; border-left: 4px solid var(--accent-purple);">
-                    <strong>4. QA Manager: 50 - 90 Triệu VND++</strong> (Cấp quản lý chiến lược rủi ro, phân bổ hạ tầng và quản trị tổ chức).
-                </div>
+            <div>
+                <p style="font-size:14px; margin-bottom:12px;">Định hướng dành cho kỹ sư muốn làm chủ thượng tầng nghiệp vụ, chuyên sâu bóc tách rủi ro hệ thống thương mại rắc rối và tiến dần lên các cấp bậc quản lý tối cao.</p>
+                <ul class="tech-step-list">
+                    <li>
+                        <span class="step-title" style="color:var(--accent-cyan);"><i class="fa-solid fa-angle-right"></i> Mốc 1: Junior Manual Tester (0 - 2 Năm Kinh Nghiệm)</span>
+                        <span class="step-desc">Đọc hiểu tài liệu Spec thô, viết bộ kịch bản kiểm thử lâm sàng chức năng căn bản, log bug lên Jira, kiểm thử giao diện UI/UX.</span>
+                    </li>
+                    <li>
+                        <span class="step-title" style="color:var(--accent-cyan);"><i class="fa-solid fa-angles-right"></i> Mốc 2: Senior Manual / Test Analyst (3 - 5 Năm Kinh Nghiệm)</span>
+                        <span class="step-desc">Lập ma trận phủ sóng điều kiện logic rắc rối (Bảng quyết định, Giá trị biên nâng cao). Am hiểu Domain lõi ngân hàng, đối soát SQL Backend.</span>
+                    </li>
+                    <li>
+                        <span class="step-title" style="color:var(--accent-cyan);"><i class="fa-solid fa-crown"></i> Mốc 3: Test Leader / QA Manager (&gt; 5 Năm Kinh Nghiệm)</span>
+                        <span class="step-desc">Hoạch định toàn cục chiến lược chất lượng, viết Test Plan tổng thể, quản trị nhân sự, chịu trách nhiệm tối cao cho lịch đóng/mở cổng Release.</span>
+                    </li>
+                </ul>
             </div>
-            <div class="visual-container" style="background: rgba(5,9,20,0.85); border-color: rgba(0,229,255,0.15);">
-                <h4 style="font-family:'Urbanist'; font-size:15px; color: #fff; margin-bottom: 10px;">BIỂU ĐỒ SO SÁNH THU NHẬP (TRIỆU VND/THÁNG)</h4>
-                <svg viewBox="0 0 450 320" width="100%" height="100%">
-                    <line x1="50" y1="260" x2="420" y2="260" class="chart-axis"/>
-                    <line x1="50" y1="40" x2="50" y2="260" class="chart-axis"/>
-                    
-                    <line x1="50" y1="210" x2="420" y2="210" class="chart-grid"/><text x="40" y="214" fill="var(--text-muted)" font-size="10" text-anchor="end">20M</text>
-                    <line x1="50" y1="160" x2="420" y2="160" class="chart-grid"/><text x="40" y="164" fill="var(--text-muted)" font-size="10" text-anchor="end">40M</text>
-                    <line x1="50" y1="110" x2="420" y2="110" class="chart-grid"/><text x="40" y="114" fill="var(--text-muted)" font-size="10" text-anchor="end">60M</text>
-                    <line x1="50" y1="60" x2="420" y2="60" class="chart-grid"/><text x="40" y="64" fill="var(--text-muted)" font-size="10" text-anchor="end">80M</text>
-
-                    <!-- Bar 1: Junior -->
-                    <g>
-                        <rect x="75" y="222.5" width="40" height="37.5" fill="rgba(0, 229, 255, 0.4)" stroke="var(--accent-cyan)" stroke-width="1.5"/>
-                        <polygon points="75,222.5 90,212.5 130,212.5 115,222.5" fill="rgba(0, 229, 255, 0.6)" stroke="var(--accent-cyan)" stroke-width="1.5"/>
-                        <polygon points="115,222.5 130,212.5 130,250 115,260" fill="rgba(0, 229, 255, 0.2)" stroke="var(--accent-cyan)" stroke-width="1.5"/>
-                        <text x="95" y="205" class="bar-value" text-anchor="middle">15M</text>
-                        <text x="95" y="280" class="bar-label" text-anchor="middle">Junior</text>
-                    </g>
-
-                    <!-- Bar 2: Mid-Level -->
-                    <g>
-                        <rect x="165" y="190" width="40" height="70" fill="rgba(0, 255, 135, 0.4)" stroke="var(--accent-green)" stroke-width="1.5"/>
-                        <polygon points="165,190 180,180 220,180 205,190" fill="rgba(0, 255, 135, 0.6)" stroke="var(--accent-green)" stroke-width="1.5"/>
-                        <polygon points="205,190 220,180 220,250 205,260" fill="rgba(0, 255, 135, 0.2)" stroke="var(--accent-green)" stroke-width="1.5"/>
-                        <text x="185" y="172" class="bar-value" fill="var(--accent-green)" text-anchor="middle">28M</text>
-                        <text x="185" y="280" class="bar-label" text-anchor="middle">Mid-Tester</text>
-                    </g>
-
-                    <!-- Bar 3: Senior -->
-                    <g>
-                        <rect x="255" y="135" width="40" height="125" fill="rgba(255, 183, 3, 0.4)" stroke="var(--accent-warning)" stroke-width="1.5"/>
-                        <polygon points="255,135 270,125 310,125 295,135" fill="rgba(255, 183, 3, 0.6)" stroke="var(--accent-warning)" stroke-width="1.5"/>
-                        <polygon points="295,135 310,125 310,250 295,260" fill="rgba(255, 183, 3, 0.2)" stroke="var(--accent-warning)" stroke-width="1.5"/>
-                        <text x="275" y="118" class="bar-value" fill="var(--accent-warning)" text-anchor="middle">50M</text>
-                        <text x="275" y="280" class="bar-label" text-anchor="middle">Senior</text>
-                    </g>
-
-                    <!-- Bar 4: Manager -->
-                    <g>
-                        <rect x="345" y="65" width="40" height="195" fill="rgba(175, 64, 255, 0.4)" stroke="var(--accent-purple)" stroke-width="1.5"/>
-                        <polygon points="345,65 360,55 400,55 385,65" fill="rgba(175, 64, 255, 0.6)" stroke="var(--accent-purple)" stroke-width="1.5"/>
-                        <polygon points="385,65 400,55 400,250 385,260" fill="rgba(175, 64, 255, 0.2)" stroke="var(--accent-purple)" stroke-width="1.5"/>
-                        <text x="365" y="48" class="bar-value" fill="var(--accent-purple)" text-anchor="middle">90M</text>
-                        <text x="365" y="280" class="bar-label" text-anchor="middle">Manager</text>
-                    </g>
+            <div class="visual-container" style="background: rgba(11,19,43,0.85);">
+                <span style="font-size:11.5px; color:var(--accent-cyan); margin-bottom:10px; font-weight:700;">SƠ ĐỒ TRỤC PHÁT TRIỂN THƯƠNG MẠI NGHIỆP VỤ</span>
+                <svg viewBox="0 0 300 240" style="width:100%; height:auto;">
+                    <path d="M 50,200 L 140,110 L 230,40" fill="none" stroke="var(--accent-cyan)" stroke-width="3" stroke-dasharray="4 2"/>
+                    <circle cx="50" cy="200" r="10" fill="#030712" stroke="var(--accent-cyan)" stroke-width="3"/>
+                    <text x="65" y="204" fill="#fff" font-size="10" font-weight="bold">Junior UI/UX</text>
+                    <circle cx="140" cy="110" r="10" fill="#030712" stroke="var(--accent-cyan)" stroke-width="3"/>
+                    <text x="155" y="114" fill="var(--accent-cyan)" font-size="10" font-weight="bold">Senior Domain Expert</text>
+                    <circle cx="230" cy="40" r="12" fill="#030712" stroke="var(--accent-warning)" stroke-width="4"/>
+                    <text x="140" y="30" fill="var(--accent-warning)" font-size="11" font-weight="900">QA MANAGER</text>
                 </svg>
             </div>
         </div>
     </div>
 
-    <!-- SLIDE 9 (MỚI): CHỨNG CHỈ TƯƠNG ỨNG TỪNG LEVEL CỦA ISTQB -->
-    <div class="slide" id="slide9">
+    <!-- SLIDE 6B: LỘ TRÌNH DỊCH CHUYỂN AUTOMATION TESTER -->
+    <div class="slide" id="slide7">
         <div class="slide-header-brand">
-            <h2 class="slide-title">Hệ Thống Chứng Chỉ ISTQB Đòn Bẩy Định Định Cột Mốc Sự Nghiệp</h2>
+            <h2 class="slide-title">3B. Định Hướng Sự Nghiệp Chuyển Dịch: Automation Tester Pathway</h2>
             <div class="brand-text-logo">IT <span>LEARN</span></div>
         </div>
-        <div class="cert-grid">
-            <div class="cert-card">
-                <span class="cert-level">Level 1: Junior</span>
-                <h3>Chuẩn Hóa Thuật Ngữ Quốc Tế</h3>
-                <p>Nền tảng căn bản bắt buộc để bước vào các dự án Outsourcing quốc tế. Giúp đồng bộ ngôn ngữ và quy trình kiểm thử phần mềm.</p>
-                <div class="cert-badge-list">
-                    <div class="cert-badge-tag"><i class="fa-solid fa-certificate text-cyan"></i> ISTQB CTFL (Foundation)</div>
-                </div>
+        <div class="two-column">
+            <div>
+                <p style="font-size:14px; margin-bottom:12px;">Định hướng giải phóng sức lao động thủ công bằng kịch bản code, xây dựng hạ tầng chạy kiểm thử tự động, tích hợp quy trình phát triển DevOps CI/CD cuốn chiếu.</p>
+                <ul class="tech-step-list">
+                    <li>
+                        <span class="step-title" style="color:var(--accent-green);"><i class="fa-solid fa-code"></i> Bước 1: Lập trình OOP Cơ bản & Tư duy Script</span>
+                        <span class="step-desc">Làm chủ tư duy hướng đối tượng (Java/Python), cấu trúc dữ liệu mảng, chuỗi logic, giải quyết bài toán chọc lọc phần tử DOM Xpath/Css Selector.</span>
+                    </li>
+                    <li>
+                        <span class="step-title" style="color:var(--accent-green);"><i class="fa-solid fa-cubes"></i> Bước 2: Thiết kế Kiến trúc Framework Pattern</span>
+                        <span class="step-desc">Sử dụng thư viện điều khiển (Playwright/Selenium), tổ chức mã nguồn chuẩn cấu trúc thiết kế Page Object Model (POM), tách biệt tầng Data Test.</span>
+                    </li>
+                    <li>
+                        <span class="step-title" style="color:var(--accent-green);"><i class="fa-solid fa-server"></i> Bước 3: Đưa Lên Mây Hạ Tầng Tích Hợp CI/CD</span>
+                        <span class="step-desc">Cấu hình kịch bản chạy tự động kích hoạt mỗi khi Dev commit code mới thông qua Jenkins Webhook hoặc GitHub Actions Pipeline Workflow.</span>
+                    </li>
+                </ul>
             </div>
-            <div class="cert-card mid">
-                <span class="cert-level">Level 2: Mid-Level</span>
-                <h3>Lâm Sàng Nghiệp Vụ & Mobile</h3>
-                <p>Đào sâu tư duy phân tích hộp đen nâng cao và kiểm thử ứng dụng di động - phân hệ huyết mạch cốt lõi của ngân hàng số.</p>
-                <div class="cert-badge-list">
-                    <div class="cert-badge-tag"><i class="fa-solid fa-user-check text-green"></i> ISTQB Advanced (TA)</div>
-                    <div class="cert-badge-tag"><i class="fa-solid fa-mobile-screen text-green"></i> ISTQB Mobile Tester</div>
-                </div>
+            <div class="visual-container" style="background: rgba(11,19,43,0.85);">
+                <span style="font-size:11.5px; color:var(--accent-green); margin-bottom:10px; font-weight:700;">Hạ tầng khung Automation Architecture Loop</span>
+                <svg viewBox="0 0 300 220" style="width:100%; height:auto;">
+                    <rect x="20" y="80" width="70" height="40" rx="6" fill="#1c2541" stroke="var(--accent-green)"/>
+                    <text x="55" y="104" fill="#fff" font-size="9" text-anchor="middle">Manual Rules</text>
+                    <path d="M 90,100 L 140,100" fill="none" stroke="#fff" stroke-width="1.5" marker-end="url(#arr-s6b)"/>
+                    <rect x="140" y="80" width="140" height="40" rx="6" fill="rgba(0,255,135,0.05)" stroke="var(--accent-green)" stroke-width="2"/>
+                    <text x="210" y="104" fill="var(--accent-green)" font-family="monospace" font-size="10" font-weight="bold" text-anchor="middle">PLAYWRIGHT ENGINE</text>
+                    <path d="M 210,120 L 210,170 L 55,170 L 55,120" fill="none" stroke="var(--accent-cyan)" stroke-dasharray="3 3" stroke-width="1.5" marker-end="url(#arr-s6b)"/>
+                    <text x="130" y="165" fill="var(--accent-cyan)" font-size="8.5" text-anchor="middle">Automated CI/CD Trigger</text>
+                    <defs><marker id="arr-s6b" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0,1 L 10,5 L 0,9 z" fill="#fff"/></marker></defs>
+                </svg>
             </div>
-            <div class="cert-card senior">
-                <span class="cert-level">Level 3: Senior</span>
-                <h3>Framework Tự Động Kỹ Thuật</h3>
-                <p>Chứng minh năng lực kiến trúc mã nguồn tự động, quản trị kịch bản hồi quy và cấu hình kiểm thử bảo mật tải hệ thống.</p>
-                <div class="cert-badge-list">
-                    <div class="cert-badge-tag"><i class="fa-solid fa-robot text-warning"></i> ISTQB Advanced (TAE)</div>
-                    <div class="cert-badge-tag"><i class="fa-solid fa-shield text-warning"></i> Security / Perf Tester</div>
-                </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 6C: LỘ TRÌNH PERFORMANCE TESTER & FULLSTACK QA -->
+    <div class="slide" id="slide8">
+        <div class="slide-header-brand">
+            <h2 class="slide-title">3C. Định Hướng Sự Nghiệp Bứt Phá: Performance & Fullstack QA</h2>
+            <div class="brand-text-logo">IT <span>LEARN</span></div>
+        </div>
+        <div class="two-column">
+            <div>
+                <p style="font-size:14px; margin-bottom:12px;">Nhánh đỉnh cao dành cho kỹ sư muốn kiểm soát các chỉ số phi chức năng, giả lập hệ thống chịu tải diện rộng và bóc tách các điểm nghẽn hạ tầng thắt nút cổ chai (Bottleneck).</p>
+                <ul class="tech-step-list">
+                    <li>
+                        <span class="step-title" style="color:var(--accent-purple);"><i class="fa-solid fa-gauge"></i> Khâu 1: Thiết kế Kịch bản Tải & Giả lập CCU</span>
+                        <span class="step-desc">Xác định các chỉ số SLA (Thời gian phản hồi &lt; 2s), viết script tạo ma trận hàng chục vạn người dùng đồng thời (Concurrent Users) bắn phá hệ thống API Gateway.</span>
+                    </li>
+                    <li>
+                        <span class="step-title" style="color:var(--accent-purple);"><i class="fa-solid fa-heart-pulse"></i> Khâu 2: Giám sát Chỉ số Sức khỏe Máy chủ (Resource Auditing)</span>
+                        <span class="step-desc">Đo lường tỷ lệ ngốn CPU, rò rỉ bộ nhớ RAM (Memory Leak), nghẽn luồng kết nối IO Database và tốc độ đọc/ghi ổ cứng hạ tầng mạng.</span>
+                    </li>
+                    <li>
+                        <span class="step-title" style="color:var(--accent-purple);"><i class="fa-solid fa-magnifying-glass-chart"></i> Khâu 3: Đọc biểu đồ & Tìm điểm nghẽn Bottleneck</span>
+                        <span class="step-desc">Phối hợp cùng đội DevOps phân tích biểu đồ Grafana Labs, tìm ra nguyên nhân Core sập do lỗi tràn hàng đợi Queue Kafka hay thiết lập sai Connection Pool SQL.</span>
+                    </li>
+                </ul>
             </div>
-            <div class="cert-card expert">
-                <span class="cert-level">Level 4: Manager</span>
-                <h3>Chi Chiến Lược Thượng Tầng</h3>
-                <p>Chứng chỉ tối cao định hình kiến trúc chất lượng cho toàn bộ tập đoàn, quản trị rủi ro thương mại doanh nghiệp.</p>
-                <div class="cert-badge-list">
-                    <div class="cert-badge-tag"><i class="fa-solid fa-crown text-purple"></i> ISTQB Expert Level</div>
-                </div>
+            <div class="visual-container" style="background: rgba(3,7,18,0.92); border-color:var(--accent-purple);">
+                <span style="font-size:11px; color:var(--accent-purple); font-weight:700; margin-bottom:12px;">MÔ PHỎNG BIỂU ĐỒ SẬP TẢI HỆ THỐNG (STRESS TEST POINT)</span>
+                <svg viewBox="0 0 280 180" style="width:100%; height:auto;">
+                    <line x1="30" y1="150" x2="260" y2="150" stroke="#9ca3af" stroke-width="2"/>
+                    <line x1="30" y1="20" x2="30" y2="150" stroke="#9ca3af" stroke-width="2"/>
+                    <text x="260" y="165" fill="#9ca3af" font-size="8" text-anchor="middle">Traffic Load (CCU)</text>
+                    <text x="20" y="15" fill="#9ca3af" font-size="8" transform="rotate(-90 20 15)" text-anchor="middle">Response Time</text>
+                    <path d="M 30,140 Q 120,130 180,90 T 230,30" fill="none" stroke="var(--accent-red)" stroke-width="3"/>
+                    <circle cx="180" cy="90" r="6" fill="var(--accent-warning)" class="pulse-text"/>
+                    <text x="180" y="110" fill="var(--accent-warning)" font-size="9" font-weight="bold" text-anchor="middle">System Bottleneck Point!</text>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 7: JUNIOR TESTER JOURNAL -->
+    <div class="slide" id="slide9">
+        <div class="slide-header-brand">
+            <h2 class="slide-title">Nhật Ký 8 Tiếng Vàng Làm Việc Của Kỹ Sư Junior Tester</h2>
+            <div class="brand-text-logo">IT <span>LEARN</span></div>
+        </div>
+        <div class="two-column">
+            <div class="stacked-boxes">
+                <div class="box-item"><span class="code-inline">08:45 - 09:00</span> <strong>Họp Daily Stand-up đồng bộ:</strong> Báo cáo nhanh công việc ngày hôm qua đã hoàn tất viết bao nhiêu Test Cases luồng rút tiền, hôm nay chạy test API, báo cáo nếu bị Dev block chức năng Đăng ký.</div>
+                <div class="box-item"><span class="code-inline">09:00 - 11:30</span> <strong>Thiết kế kịch bản kiểm thử lâm sàng:</strong> Ngồi đọc tài liệu đặc tả User Story nghiệp vụ mở số tiết kiệm online, áp dụng kỹ thuật Phân vùng tương đương & Giá trị biên để lên danh sách kịch bản test case trên file Excel hoặc phần mềm Jira Xray.</div>
+                <div class="box-item"><span class="code-inline">11:30 - 12:00</span> <strong>Kiểm thử tích hợp hệ thống Backend:</strong> Mở công cụ Postman nạp tài liệu Swagger, bắn các chuỗi API liên quan đến luồng tính lãi suất, kiểm chứng cấu trúc JSON trả về của Server có chính xác.</div>
+                <div class="box-item"><span class="code-inline">13:30 - 16:30</span> <strong>Thực thi chạy test & Truy vết Database:</strong> Tiến hành mở bản dựng App Ngân hàng trên máy ảo để thực hiện chuyển khoản. Sau mỗi giao dịch thành công, viết lệnh SQL `SELECT` để truy cập hệ thống DB kiểm tra số dư ví có bị trừ chính xác, bản ghi bảng Log có lưu đúng.</div>
+                <div class="box-item"><span class="code-inline">16:30 - 17:30</span> <strong>Quản lý chu kỳ lỗi:</strong> Lập biên bản log các bug phát hiện được lên hệ thống Jira, gán trạng thái NEW cho Developer xử lý, đồng thời chạy kiểm thử lại (Re-test) các lỗi dev đã vá xong.</div>
+            </div>
+            <div class="visual-container">
+                <svg viewBox="0 0 400 350" width="100%" height="100%">
+                    <circle cx="200" cy="160" r="110" fill="none" stroke="#1c2541" stroke-width="8"/>
+                    <line x1="200" y1="160" x2="250" y2="110" stroke="var(--accent-green)" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="200" y1="160" x2="200" y2="90" stroke="var(--accent-cyan)" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="200" cy="160" r="6" fill="#fff"/>
+                    <text x="200" y="295" fill="#fff" font-family="Urbanist" font-size="14" font-weight="800" text-anchor="middle">CHU TRÌNH 8 TIẾNG VÀNG</text>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 8: MA TRẬN ROLE -->
+    <div class="slide" id="slide10">
+        <div class="slide-header-brand">
+            <h2 class="slide-title">Ma Trận Phân Định Vai Trò & Role Kiểm Thử Thực Tế</h2>
+            <div class="brand-text-logo">IT <span>LEARN</span></div>
+        </div>
+        <div class="content-area" style="height: calc(100% - 40px); margin-top: 10px;">
+            <div class="table-layout">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">Vai trò chuyên môn (Role)</th>
+                            <th style="width: 45%;">Hành động & Trách nhiệm thực tế tại dự án</th>
+                            <th style="width: 35%;">Bộ công cụ (Tools) sử dụng cốt lõi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="color: var(--accent-cyan); font-weight:700;">Manual Tester</td>
+                            <td>Phân tích User Story nghiệp vụ, thiết kế bộ kịch bản kịch bản chi tiết, trực tiếp thực thi ứng dụng thủ công để check giao diện UI/UX và tìm bug logic.</td>
+                            <td>Excel, Jira Software, Xray Test Management, Zephyr</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--accent-green); font-weight:700;">Automation Tester</td>
+                            <td>Thiết kế cấu trúc framework kiểm thử tự động, viết mã kịch bản script để quét tự động các luồng kiểm thử hồi quy (Regression Testing) diện rộng.</td>
+                            <td>Java/Python, Selenium, Playwright, TestNG, Jenkins</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--accent-warning); font-weight:700;">Fullstack QA Engineer</td>
+                            <td>Mẫu hình lai cao cấp. Vừa làm chủ quy trình rà soát nghiệp vụ sâu sắc của Manual, vừa có năng lực code script tự động hóa cho cả tầng UI lẫn API Backend.</td>
+                            <td>Postman, Playwright, SQL, Docker, GitHub Actions Pipeline</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--accent-red); font-weight:700;">Performance Tester</td>
+                            <td>Chuyên sâu phi chức năng. Lập kịch bản kịch bản giả lập hàng vạn người dùng cùng lúc tương tác hệ thống để đo chỉ số phản hồi, tìm điểm nghẽn hạ tầng.</td>
+                            <td>Apache JMeter, Locust, K6, Dynatrace, Grafana Labs</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 9: ISTQB MAPPING -->
+    <div class="slide" id="slide11">
+        <div class="slide-header-brand">
+            <h2 class="slide-title">Bảng Tổng Hợp Mapping Chứng Chỉ ISTQB Theo Từng Cấp Độ</h2>
+            <div class="brand-text-logo">IT <span>LEARN</span></div>
+        </div>
+        <div class="content-area" style="height: calc(100% - 40px); margin-top: 10px;">
+            <div class="table-layout">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Cấp độ nhân sự</th>
+                            <th style="width: 30%;">Chứng chỉ ISTQB tương ứng</th>
+                            <th style="width: 35%;">Giá trị cốt lõi khẳng định năng lực</th>
+                            <th style="width: 20%;">Chi phí lệ phí thi dự kiến</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Junior Level</strong></td>
+                            <td style="color: var(--accent-cyan); font-weight:600;">ISTQB CTFL (Foundation Level)</td>
+                            <td>Chuẩn hóa 100% hệ thống thuật ngữ quốc tế, nắm chắc quy trình và kỹ thuật thiết kế Black-box căn bản.</td>
+                            <td>~ 4,500,000 VND</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Mid Level</strong></td>
+                            <td style="color: var(--accent-green); font-weight:600;">ISTQB CTAL-TA (Advanced Test Analyst)</td>
+                            <td>Đào sâu tư duy phân tích hộp đen nâng cao, quản lý kịch bản kiểm thử lâm sàng cho các hệ thống tài chính rắc rối.</td>
+                            <td>~ 6,000,000 VND</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Senior Level</strong></td>
+                            <td style="color: var(--accent-warning); font-weight:600;">ISTQB CTAL-TAE (Advanced Test Automation Engineer)</td>
+                            <td>Chứng minh năng lực kiến trúc mã nguồn tự động hóa, thiết kế framework tối ưu và vận hành hạ tầng CI/CD.</td>
+                            <td>~ 6,000,000 VND</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Manager Level</strong></td>
+                            <td style="color: var(--accent-purple); font-weight:600;">ISTQB Expert Level (Test Management)</td>
+                            <td>Quản trị chiến lược chất lượng thượng tầng thương mại, đánh giá rủi ro và điều hành tổ chức QA tập đoàn lớn.</td>
+                            <td>~ 8,500,000 VND</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <!-- SLIDE 10: TẠI SAO CHỌN TÀI CHÍNH -->
-    <div class="slide" id="slide10">
+    <div class="slide" id="slide12">
         <div class="slide-header-brand">
             <h2 class="slide-title">Tại Sao Nên Ưu Tiên Lĩnh Vực Tài Chính - Ngân Hàng Số?</h2>
             <div class="brand-text-logo">IT <span>LEARN</span></div>
@@ -765,8 +781,8 @@
         </div>
     </div>
 
-    <!-- SLIDE 11: CHU TRÌNH STLC (PHASE 1-3) -->
-    <div class="slide" id="slide11">
+    <!-- SLIDE 11: STLC 1-3 -->
+    <div class="slide" id="slide13">
         <div class="slide-header-brand">
             <h2 class="slide-title">Chu Trình STLC Chuyên Sâu - Khâu Chuẩn Bị Toàn Diện (Phase 1-3)</h2>
             <div class="brand-text-logo">IT <span>LEARN</span></div>
@@ -784,19 +800,19 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><strong>1. Requirement Analysis (Phân tích yêu cầu)</strong></td>
+                            <td><strong>1. Requirement Analysis</strong></td>
                             <td>Đọc hiểu User Story luồng chuyển khoản ngân hàng số, bóc tách các điểm hạn mức, điều kiện ràng buộc. Nghiên cứu tài liệu Swagger API xem các trường đầu vào.</td>
-                            <td><span class="role-badge badge-qa">QA</span> Hướng dẫn biểu mẫu. <span class="role-badge badge-po">Product Owner (PO)</span> Giải thích chi tiết spec logic nghiệp vụ kinh doanh. <span class="role-badge badge-dev">Dev Leader</span> Giải thích kiến trúc kỹ thuật.</td>
+                            <td><span class="role-badge badge-qa">QA</span> Hướng dẫn biểu mẫu. <span class="role-badge badge-po">PO</span> Giải thích chi tiết spec logic nghiệp vụ kinh doanh. <span class="role-badge badge-dev">Dev Leader</span> Giải thích kiến trúc kỹ thuật.</td>
                             <td>Tài liệu **RTM (Requirement Traceability Matrix)** - Ma trận truy vết yêu cầu phần mềm để không bỏ sót tính năng.</td>
                         </tr>
                         <tr>
-                            <td><strong>2. Test Planning (Lập kế hoạch chiến lược)</strong></td>
+                            <td><strong>2. Test Planning</strong></td>
                             <td>Hoạch định phạm vi kiểm thử (In-scope/Out-of-scope), phân định tài nguyên con người, tính toán thời gian chạy test dự phòng rủi ro, thiết lập môi trường test.</td>
                             <td><span class="role-badge badge-qa">QA Lead / Manager</span> Đứng ra chủ trì lập kế hoạch tổng quan, phê duyệt phân bổ tài nguyên. <span class="role-badge badge-po">PO</span> Đồng bộ lịch release dự án.</td>
                             <td>Tài liệu văn bản **Test Plan (Kế hoạch kiểm thử)** hoàn chỉnh có chữ ký phê duyệt của các cấp quản lý dự án.</td>
                         </tr>
                         <tr>
-                            <td><strong>3. Test Case Development (Thiết kế kịch bản)</strong></td>
+                            <td><strong>3. Test Case Development</strong></td>
                             <td>Chuyển hóa tài liệu thô thành bộ ca kiểm thử chi tiết. Áp dụng kỹ thuật ISTQB: Phân vùng tương đương, biên, bảng quyết định để viết các kịch bản Positive & Negative.</td>
                             <td><span class="role-badge badge-qc">Senior Tester</span> Thực hiện rà soát chéo (Review) chất lượng các dòng Test Case của Junior viết nhằm đảm bảo không sót luồng tiền rủi ro.</td>
                             <td>Tập hợp bộ **Test Cases Data**, bộ **Test Data dữ liệu giả lập** sẵn sàng nạp vào DB để chuẩn bị thực chạy.</td>
@@ -807,8 +823,8 @@
         </div>
     </div>
 
-    <!-- SLIDE 12: CHU TRÌNH STLC (PHASE 4-6) -->
-    <div class="slide" id="slide12">
+    <!-- SLIDE 12: STLC 4-6 -->
+    <div class="slide" id="slide14">
         <div class="slide-header-brand">
             <h2 class="slide-title">Chu Trình STLC Chuyên Sâu - Khâu Thực Thi & Đóng Gói (Phase 4-6)</h2>
             <div class="brand-text-logo">IT <span>LEARN</span></div>
@@ -826,19 +842,19 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><strong>4. Test Execution (Thực thi kiểm thử)</strong></td>
-                            <td>Tiến hành mở App thực chạy từng kịch bản, nạp dữ liệu test data, gọi API, kiểm tra câu lệnh DB SQL, so sánh kết quả thực tế (Actual) với kết quả mong đợi (Expected).</td>
+                            <td><strong>4. Test Execution</strong></td>
+                            <td>Tiến hành mở App thực chạy từng kịch bản, nạp dữ liệu test data, gọi API, kiểm tra câu lệnh DB SQL, so sánh kết quả thực tế (Actual) with kết quả mong đợi (Expected).</td>
                             <td><span class="role-badge badge-dev">Developer</span> Sẵn sàng ứng trực hỗ trợ xử lý lỗi sập môi trường UAT đột xuất, cấu hình lại tham số máy chủ nếu bị lỗi kết nối mạng nghẽn hệ thống.</td>
                             <td>Báo cáo kết quả **Test Log**, danh sách các màn hình bằng chứng lỗi **(Screenshots/Logs)** thu thập được.</td>
                         </tr>
                         <tr>
-                            <td><strong>5. Defect Reporting & Re-test (Quản lý lỗi)</strong></td>
+                            <td><strong>5. Defect Reporting & Re-test</strong></td>
                             <td>Phát hiện kết quả Actual sai lệch Expected → Tiến hành mở Jira viết phiếu báo cáo lỗi (Bug Report). Theo dõi Dev sửa lỗi. Khi Dev sửa xong, Tester nhảy vào thực hiện ca kiểm thử lại (Re-test).</td>
                             <td><span class="role-badge badge-dev">Developer</span> Trực tiếp tiếp nhận thông tin bug, thảo luận cùng Tester nếu không tái hiện được lỗi ở máy cục bộ. <span class="role-badge badge-po">PO</span> Phân định mức độ ưu tiên xử lý.</td>
                             <td>Phiếu **Bug Report tickets** lưu trữ trên Jira với đầy đủ thông tin mô tả chi tiết khuyết tật phần mềm.</td>
                         </tr>
                         <tr>
-                            <td><strong>6. Test Closure (Đóng chu kỳ & Nghiệm thu)</strong></td>
+                            <td><strong>6. Test Closure</strong></td>
                             <td>Đo lường tỷ lệ bao phủ test case, đếm số bug còn tồn đọng xem có thỏa mãn điều kiện ký biên bản đóng chu kỳ test hay không. Họp rút kinh nghiệm cải tiến quy trình.</td>
                             <td><span class="role-badge badge-qa">QA Lead</span> Đánh giá rủi ro tổng thể. <span class="role-badge badge-po">PO & Stakeholders</span> Thảo luận đưa ra quyết định cuối cùng xem phần mềm có đủ điều kiện Go-Live hay không.</td>
                             <td>Báo cáo tổng kết chất lượng **Test Summary Report (TSR)** - văn bản pháp lý tối cao chứng minh chất lượng sản phẩm.</td>
@@ -850,49 +866,41 @@
     </div>
 
     <!-- SLIDE 13: SEVERITY -->
-    <div class="slide" id="slide13">
+    <div class="slide" id="slide15">
         <div class="slide-header-brand">
             <h2 class="slide-title">Phân Tích Sâu Kỹ Thuật: Severity (Mức Độ Phá Hủy Hệ Thống)</h2>
             <div class="brand-text-logo">IT <span>LEARN</span></div>
         </div>
         <div class="two-column">
-            <div style="display: flex; flex-direction: column; justify-content: center;">
-                <p style="font-size: 14.5px; margin-bottom: 15px; color: var(--text-muted);">**Severity** là thước đo bản thể thể hiện mức độ hư hại, phá vỡ cấu trúc lập trình phần mềm nội bộ, hoặc làm ngắt quãng hạ tầng. **Tester là người nắm giữ quyền quyết định thuộc tính này.**</p>
-                
-                <div class="sev-panel">
+            <div class="stacked-boxes" id="s13-sev-container">
+                <div class="box-item selected" onclick="clickSevS13(1)">
                     <h4 style="color: var(--accent-red); font-size:15px; margin-bottom:4px;"><i class="fa-solid fa-skull"></i> S1 - Blocker / Critical (Tối Cao)</h4>
                     <p style="font-size:13px; color:#fff;">Lỗi làm chết luồng chạy thử. Ví dụ: Máy chủ API của ngân hàng trả về lỗi 500 nổ chuỗi vỡ logic khi người dùng nhấn nút chuyển khoản, hoặc rò rỉ trắng toàn bộ Database khách hàng.</p>
                 </div>
-                <div class="sev-panel major">
+                <div class="box-item" onclick="clickSevS13(2)">
                     <h4 style="color: var(--accent-warning); font-size:15px; margin-bottom:4px;"><i class="fa-solid fa-triangle-exclamation"></i> S2 - Major Error (Mức Độ Cao)</h4>
                     <p style="font-size:13px; color:#fff;">Sai sót nghiêm trọng trong công thức thuật toán kinh doanh. Ví dụ: Chức năng gửi tiết kiệm online tính nhầm biên lãi suất từ 7.5% xuống còn 5.2%, trực tiếp làm thiệt hại tiền thật của khách.</p>
                 </div>
-                <div class="sev-panel minor">
+                <div class="box-item" onclick="clickSevS13(3)">
                     <h4 style="color: var(--accent-green); font-size:15px; margin-bottom:4px;"><i class="fa-solid fa-palette"></i> S3 - Minor / Cosmetic UI (Mức Độ Thấp)</h4>
                     <p style="font-size:13px; color:#fff;">Lỗi không phá hoại chức năng tính toán. Ví dụ: Nút "Xác Nhận OTP" bị lệch sang trái 10px trên iPhone 15, hoặc sai phông chữ văn bản ở phụ lục điều khoản.</p>
                 </div>
             </div>
-            <div class="visual-container" style="background: rgba(3,7,18,0.85); border-color: rgba(239,71,111,0.2);">
+            <div class="visual-container" style="background: rgba(3,7,18,0.95); border: 1px solid rgba(239,71,111,0.25);">
                 <svg viewBox="0 0 350 350" width="100%" height="100%">
-                    <polygon points="175,30 310,300 40,300" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
-                    <polygon points="175,30 215,120 135,120" fill="rgba(239, 71, 111, 0.25)" stroke="var(--accent-red)" stroke-width="2"/>
-                    <text x="175" y="85" fill="#fff" font-family="Urbanist" font-size="12" font-weight="900" text-anchor="middle">S1: BLOCKER</text>
-                    <text x="175" y="100" fill="var(--accent-red)" font-family="Inter" font-size="9" text-anchor="middle">Hệ thống sập sụp hoàn toàn</text>
-
-                    <polygon points="135,120 215,120 255,210 95,210" fill="rgba(255, 183, 3, 0.15)" stroke="var(--accent-warning)" stroke-width="2"/>
-                    <text x="175" y="165" fill="#fff" font-family="Urbanist" font-size="12" font-weight="900" text-anchor="middle">S2: MAJOR</text>
-                    <text x="175" y="180" fill="var(--accent-warning)" font-family="Inter" font-size="9" text-anchor="middle">Sai logic / Thất thoát tiền</text>
-
-                    <polygon points="95,210 255,210 295,300 55,300" fill="rgba(0, 255, 135, 0.08)" stroke="var(--accent-green)" stroke-width="2"/>
-                    <text x="175" y="250" fill="#fff" font-family="Urbanist" font-size="12" font-weight="900" text-anchor="middle">S3: MINOR</text>
-                    <text x="175" y="265" fill="var(--accent-green)" font-family="Inter" font-size="9" text-anchor="middle">Lệch giao diện UI/UX</text>
+                    <polygon id="s13-svg-tier1" points="175,30 225,125 125,125" fill="rgba(239, 71, 111, 0.4)" stroke="var(--accent-red)" stroke-width="2.5" class="svg-layer-transition svg-highlight-glow-red"/>
+                    <text x="175" y="85" fill="#fff" font-family="Urbanist" font-size="14" font-weight="900" text-anchor="middle">S1: BLOCKER</text>
+                    <polygon id="s13-svg-tier2" points="125,125 225,125 270,215 80,215" fill="rgba(255, 183, 3, 0.1)" stroke="var(--accent-warning)" stroke-width="2" class="svg-layer-transition"/>
+                    <text x="175" y="175" fill="#fff" font-family="Urbanist" font-size="14" font-weight="900" text-anchor="middle">S2: MAJOR</text>
+                    <polygon id="s13-svg-tier3" points="80,215 270,215 315,310 35,310" fill="rgba(0, 255, 135, 0.05)" stroke="var(--accent-green)" stroke-width="1.5" class="svg-layer-transition"/>
+                    <text x="175" y="265" fill="#fff" font-family="Urbanist" font-size="14" font-weight="900" text-anchor="middle">S3: MINOR</text>
                 </svg>
             </div>
         </div>
     </div>
 
     <!-- SLIDE 14: PRIORITY -->
-    <div class="slide" id="slide14">
+    <div class="slide" id="slide16">
         <div class="slide-header-brand">
             <h2 class="slide-title">Phân Tích Chi Tiết Kinh Doanh: Priority (Độ Ưu Tiên Xử Lý)</h2>
             <div class="brand-text-logo">IT <span>LEARN</span></div>
@@ -925,7 +933,7 @@
     </div>
 
     <!-- SLIDE 15: SEVERITY VS PRIORITY -->
-    <div class="slide" id="slide15">
+    <div class="slide" id="slide17">
         <div class="slide-header-brand">
             <h2 class="slide-title">Ma Trận Phối Hợp Thực Chiến: Severity vs Priority</h2>
             <div class="brand-text-logo">IT <span>LEARN</span></div>
@@ -968,88 +976,80 @@
         </div>
     </div>
 
-    <!-- SLIDE 16: VÒNG ĐỜI BUG PHỐI HỢP -->
-    <div class="slide" id="slide16">
+    <!-- SLIDE 16: VÒNG ĐỜI BUG -->
+    <div class="slide" id="slide18">
         <div class="slide-header-brand">
-            <h2 class="slide-title">Quy Trình Vòng Đời Bug & Luồng Điều Hướng Re-Open</h2>
+            <h2 class="slide-title">Quy Trình Vòng Đời Bug & Luồng Điều Hướng Re-Open Từ Hộp Closed</h2>
             <div class="brand-text-logo">IT <span>LEARN</span></div>
         </div>
         <div class="two-column">
-            <div class="table-layout" style="margin-top: 0; font-size:12px;">
+            <div class="table-layout" style="margin-top: 0; font-size:11.5px;" id="s16-status-container">
                 <table>
                     <thead>
                         <tr>
-                            <th style="width:20%;">Trạng thái</th>
-                            <th style="width:40%;">Trách nhiệm / Hành động chính</th>
+                            <th style="width:18%;">Trạng thái</th>
+                            <th style="width:42%;">Trách nhiệm / Hành động chính</th>
                             <th style="width:40%;">Tài liệu / Minh chứng đi kèm</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
+                        <tr class="box-item selected" onclick="clickStatusS16('new')">
                             <td><span class="role-badge" style="background:rgba(255,255,255,0.05); color:#fff;">NEW</span></td>
-                            <td><span class="role-badge badge-qc">Tester</span> phát hiện, nhập liệu ticket mô tả lỗi thô bạo trên hệ thống Jira.</td>
-                            <td>Các bước tái hiện luồng tiền, API Log Response.</td>
+                            <td><span class="role-badge badge-qc">Tester</span> phát hiện, nhập mô tả lỗi lên Jira.</td>
+                            <td>Các bước tái hiện luồng tiền, API Response Log.</td>
                         </tr>
-                        <tr>
+                        <tr class="box-item" onclick="clickStatusS16('assigned')">
                             <td><span class="role-badge" style="background:rgba(255,183,3,0.15); color:var(--accent-warning);">ASSIGNED</span></td>
-                            <td><span class="role-badge badge-dev">Dev Lead</span> chỉ định trực tiếp mã lỗi cho Lập trình viên phụ trách cấu phần code đứng ra sửa.</td>
-                            <td>Gán trường thông tin `Assignee` người vá code rõ ràng.</td>
+                            <td><span class="role-badge badge-dev">Dev Lead</span> giao ticket cho lập trình viên sửa code.</td>
+                            <td>Gán trường thông tin `Assignee` vá code rõ ràng.</td>
                         </tr>
-                        <tr>
+                        <tr class="box-item" onclick="clickStatusS16('fixed')">
                             <td><span class="role-badge" style="background:rgba(0,255,135,0.15); color:var(--accent-green);">FIXED</span></td>
-                            <td><span class="role-badge badge-dev">Dev</span> sửa xong mã lỗi, triển khai đưa bản vá hoàn thiện lên server UAT.</td>
+                            <td><span class="role-badge badge-dev">Dev</span> sửa xong mã lỗi, đẩy bản vá hoàn thiện lên server UAT.</td>
                             <td>Mã commit Git, tài liệu Release Note nội bộ.</td>
                         </tr>
-                        <tr>
+                        <tr class="box-item" onclick="clickStatusS16('reopen')">
                             <td><span class="role-badge" style="background:rgba(239,71,111,0.15); color:var(--accent-red);">RE-OPEN</span></td>
-                            <td><span class="role-badge badge-qc">Tester</span> chạy Re-test phát hiện lỗi cũ vẫn hiên ngang tồn tại, bắn trả lại gán về cho Dev tiếp tục vá.</td>
-                            <td><span style="color: var(--accent-red); font-weight:700;">Bằng chứng log sập mới trên bản vá lỗi.</span></td>
+                            <td><span class="role-badge badge-qc">Tester</span> chạy Re-test phát hiện lỗi cũ chưa chết, bắn trả lại gán về cho Dev tiếp tục vá.</td>
+                            <td><span style="color: var(--accent-red); font-weight:700;">Bằng chứng log sập mới trên bản vá.</span></td>
                         </tr>
-                        <tr>
+                        <tr class="box-item" onclick="clickStatusS16('closed')">
                             <td><span class="role-badge" style="background:rgba(0,229,255,0.1); color:var(--accent-cyan);">CLOSED</span></td>
-                            <td><span class="role-badge badge-qc">Tester</span> kiểm chứng lỗi cũ đã biến mất sạch sẽ, xác nhận đóng ticket an toàn.</td>
+                            <td><span class="role-badge badge-qc">Tester</span> xác nhận lỗi cũ đã sạch bóng → Đóng ticket an toàn.</td>
                             <td>Bản ghi Database khớp luồng, API trả kết quả 200 OK.</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <div class="visual-container" style="background: rgba(3,7,18,0.9); border-color: rgba(0,229,255,0.15);">
-                <h4 style="font-family:'Urbanist'; font-size:14px; margin-bottom:8px; color:var(--accent-cyan);">BUG LIFE CYCLE INTERACTIVE FLOWMAP</h4>
+            <div class="visual-container" style="background: rgba(3,7,18,0.92); border: 1px solid rgba(0,229,255,0.15);">
+                <h4 style="font-family:'Urbanist'; font-size:12px; margin-bottom:5px; color:var(--accent-cyan); text-transform:uppercase;">SƠ ĐỒ CHU KỲ VÀ LUỒNG ĐÁNH THƯƠNG TỪ CLOSED NỔ LẠI</h4>
                 <svg viewBox="0 0 400 320" width="100%" height="100%">
-                    <rect x="30" y="30" width="90" height="35" rx="6" fill="#1c2541" stroke="#fff" stroke-width="1.5"/>
+                    <rect id="s16-svg-new" x="30" y="30" width="90" height="35" rx="6" fill="#1c2541" stroke="#fff" stroke-width="2.5" class="svg-layer-transition svg-highlight-glow"/>
                     <text x="75" y="52" fill="#fff" font-family="Urbanist" font-size="11" font-weight="900" text-anchor="middle">1. NEW</text>
-                    
-                    <rect x="260" y="30" width="90" height="35" rx="6" fill="#1c2541" stroke="var(--accent-warning)" stroke-width="1.5"/>
+                    <rect id="s16-svg-assigned" x="260" y="30" width="90" height="35" rx="6" fill="#1c2541" stroke="var(--accent-warning)" stroke-width="1.5" class="svg-layer-transition"/>
                     <text x="305" y="52" fill="var(--accent-warning)" font-family="Urbanist" font-size="11" font-weight="900" text-anchor="middle">2. ASSIGNED</text>
-                    
-                    <rect x="260" y="140" width="90" height="35" rx="6" fill="#1c2541" stroke="var(--accent-green)" stroke-width="1.5"/>
-                    <text x="305" y="162" fill="var(--accent-green)" font-family="Urbanist" font-size="11" font-weight="900" text-anchor="middle">3. FIXED</text>
+                    <rect id="s16-svg-fixed" x="260" y="120" width="90" height="35" rx="6" fill="#1c2541" stroke="var(--accent-green)" stroke-width="1.5" class="svg-layer-transition"/>
+                    <text x="305" y="142" fill="var(--accent-green)" font-family="Urbanist" font-size="11" font-weight="900" text-anchor="middle">3. FIXED</text>
+                    <rect id="s16-svg-reopen" x="145" y="220" width="90" height="35" rx="6" fill="rgba(239,71,111,0.1)" stroke="var(--accent-red)" stroke-width="1.5" class="svg-layer-transition"/>
+                    <text x="190" y="242" fill="var(--accent-red)" font-family="Urbanist" font-size="11" font-weight="900" text-anchor="middle">★ RE-OPEN</text>
+                    <rect id="s16-svg-closed" x="30" y="120" width="90" height="35" rx="6" fill="#1c2541" stroke="var(--accent-cyan)" stroke-width="1.5" class="svg-layer-transition"/>
+                    <text x="75" y="142" fill="var(--accent-cyan)" font-family="Urbanist" font-size="11" font-weight="900" text-anchor="middle">4. CLOSED</text>
 
-                    <rect x="145" y="240" width="90" height="35" rx="6" fill="rgba(239,71,111,0.1)" stroke="var(--accent-red)" stroke-width="2"/>
-                    <text x="190" y="262" fill="var(--accent-red)" font-family="Urbanist" font-size="11" font-weight="900" text-anchor="middle">★ RE-OPEN</text>
-                    
-                    <rect x="30" y="140" width="90" height="35" rx="6" fill="#1c2541" stroke="var(--accent-cyan)" stroke-width="1.5"/>
-                    <text x="75" y="162" fill="var(--accent-cyan)" font-family="Urbanist" font-size="11" font-weight="900" text-anchor="middle">4. CLOSED</text>
-
-                    <path d="M 120,47.5 L 260,47.5" fill="none" stroke="#fff" stroke-width="1.5" marker-end="url(#arrow)"/>
-                    <path d="M 305,65 L 305,140" fill="none" stroke="#fff" stroke-width="1.5"/>
-                    <path d="M 260,157.5 L 120,157.5" fill="none" stroke="#fff" stroke-width="1.5"/>
-                    
-                    <path d="M 305,175 L 305,257.5 L 235,257.5" fill="none" stroke="var(--accent-red)" stroke-width="1.5" stroke-dasharray="3 3"/>
-                    <path d="M 190,240 L 190,95 L 260,60" fill="none" stroke="var(--accent-red)" stroke-width="1.5" stroke-dasharray="3 3"/>
-                    
-                    <defs>
-                        <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                            <path d="M 0,1 L 10,5 L 0,9 z" fill="#fff"/>
-                        </marker>
-                    </defs>
+                    <path d="M 120,47.5 L 250,47.5" fill="none" stroke="#fff" stroke-width="1.5" marker-end="url(#s16-arrow)"/>
+                    <path d="M 305,65 L 305,110" fill="none" stroke="#fff" stroke-width="1.5" marker-end="url(#s16-arrow)"/>
+                    <path d="M 260,137.5 L 130,137.5" fill="none" stroke="#fff" stroke-width="1.5" marker-end="url(#s16-arrow)"/>
+                    <path d="M 305,155 L 305,237.5 L 245,237.5" fill="none" stroke="var(--accent-red)" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#s16-arrow)"/>
+                    <path d="M 190,220 L 190,95 L 250,60" fill="none" stroke="var(--accent-red)" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#s16-arrow)"/>
+                    <path d="M 75,155 C 75,237.5 120,237.5 135,237.5" fill="none" stroke="var(--accent-purple)" stroke-width="2" stroke-dasharray="4 2" marker-end="url(#s16-arrow)"/>
+                    <text x="90" y="195" fill="var(--accent-purple)" font-size="8" font-weight="bold">Prod Regression</text>
+                    <defs><marker id="s16-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0,1 L 10,5 L 0,9 z" fill="#fff"/></marker></defs>
                 </svg>
             </div>
         </div>
     </div>
 
     <!-- SLIDE 17: BUG REPORT TEMPLATE -->
-    <div class="slide" id="slide17">
+    <div class="slide" id="slide19">
         <div class="slide-header-brand">
             <h2 class="slide-title">Biểu Mẫu Phiếu Báo Cáo Lỗi (Bug Report Template) Chuẩn Quốc Tế</h2>
             <div class="brand-text-logo">IT <span>LEARN</span></div>
@@ -1094,7 +1094,7 @@
     </div>
 
     <!-- SLIDE 18: MA TRẬN KỸ THUẬT KINH ĐIỂN -->
-    <div class="slide" id="slide18">
+    <div class="slide" id="slide20">
         <div class="slide-header-brand">
             <h2 class="slide-title">Tổng Hợp Ma Trận Các Kỹ Thuật Thiết Kế Test Case Kinh Điển ISTQB</h2>
             <div class="brand-text-logo">IT <span>LEARN</span></div>
@@ -1113,7 +1113,7 @@
                     <tbody>
                         <tr>
                             <td style="color: var(--accent-cyan); font-weight:700;"><i class="fa-solid fa-table-list"></i> 1. Bảng Quyết Định (Decision Table)</td>
-                            <td>Khi tính năng phần mềm bị chi phối chặt chẽ bởi **nhiều điều kiện ràng buộc logic đan xen nhau**. Giúp loại bỏ hoàn toàn việc bỏ sót luồng code `IF-ELSE` phức tạp của Dev.</td>
+                            <td>Khi tính năng phần mềm bị chi phối chặt chẽ bởi **mấy điều kiện ràng buộc logic đan xen nhau**. Giúp loại bỏ hoàn toàn việc bỏ sót luồng code `IF-ELSE` phức tạp của Dev.</td>
                             <td>Các phân hệ xét duyệt điều kiện mở thẻ tín dụng, luồng phân duyệt hồ sơ vay vốn tự động.</td>
                         </tr>
                         <tr>
@@ -1142,49 +1142,271 @@
         </div>
     </div>
 
-    <!-- SLIDE 19: KỸ THUẬT 1 ADVANCED DEEP-DIVE -->
-    <div class="slide" id="slide19">
+    <!-- SLIDE 19: DEEP-DIVE BẢNG QUYẾT ĐỊNH -->
+    <div class="slide" id="slide21">
         <div class="slide-header-brand">
             <h2 class="slide-title">1. Kỹ Thuật Bảng Quyết Định Chuyên Sâu (ISTQB Decision Table)</h2>
             <div class="brand-text-logo">IT <span>LEARN</span></div>
         </div>
         <div class="content-area">
-            <div class="two-column-tech">
-                <div>
-                    <h4 style="color: var(--accent-cyan); font-size:14px; margin-bottom:4px;">Phương Pháp Luận & Nguyên Lý Kỹ Thuật Lâm Sàng</h4>
-                    <p style="font-size:12px; line-height:1.45; margin-bottom:10px;">Áp dụng tối cao khi nghiệp vụ có sự ràng buộc đa biến đan xen nhau phức tạp. Kỹ thuật này giúp Tester mô hình hóa toàn bộ ma trận logic dưới dạng bảng để ép Dev clear spec, tránh bỏ sót luồng code `IF-ELSE` lồng nhau.</p>
-                    
-                    <ul class="tech-step-list">
-                        <li>
-                            <span class="step-title"><i class="fa-solid fa-math text-cyan"></i> Cấu trúc Toán Học & Nguyên lý rút gọn (Collapsing Table)</span>
-                            <span class="step-desc">Số lượng Rules đầy đủ trên lý thuyết = $2^N$ (với N là số biến điều kiện). ISTQB Advanced hướng dẫn kỹ thuật **Rút gọn bảng quyết định** bằng cách sử dụng trạng thái không ảnh hưởng (**Indifferent State - Ký hiệu '-'**). Nếu hai rules có các điều kiện giống nhau và chỉ khác nhau ở một điều kiện duy nhất nhưng trả về chung một Action đầu ra, điều kiện khác biệt đó sẽ bị gộp thành `-`, giúp giảm số kịch bản test thực tế từ 16 xuống còn 5.</span>
-                        </li>
-                        <li>
-                            <span class="step-title"><i class="fa-solid fa-flask text-green"></i> Case Study Banking số: Xét duyệt cấp hạn mức Thẻ tín dụng tự động</span>
-                            <span class="step-desc">Điều kiện thẩm định: C1: Điểm tín dụng CIC tốt? | C2: Thu nhập sao kê qua app &gt; 15 triệu? | C3: Không có lịch sử nợ xấu nhóm 2? Hệ thống xử lý Backend: Nếu C1=F hoặc C3=F, hệ thống lập tức **Từ chối thẳng** mà không cần quan tâm đến điều kiện Thu nhập (C2 trở thành `-`).</span>
-                        </li>
-                        <li>
-                            <span class="step-title"><i class="fa-solid fa-shuffle text-warning"></i> Ma Trận Kết Hợp Thực Chiến Chống Sót Lọt Lỗi</span>
-                            <span class="step-desc"><strong>Decision Table + BVA (Giá Trị Biên):</strong> Khi một dòng luật định hình điều kiện "Thu nhập &gt; 15 triệu = True", ta lập tức lấy data test của kỹ thuật BVA nạp vào trường dữ liệu này (Ví dụ: 14,999,999đ và 15,000,000đ) để đánh gục toàn diện luồng logic kỹ thuật.</span>
-                        </li>
-                    </ul>
+            <div class="two-column-tech" style="grid-template-columns: 1fr 1.2fr; gap:15px; height:100%;">
+                <div style="font-size:12px;">
+                    <h4 style="color: var(--accent-cyan); font-size:14px; margin-bottom:4px;">Lý Thuyết Tổ Hợp Logic & Quy Tắc Thu Gọn Bảng</h4>
+                    <p style="color:var(--text-muted); line-height:1.45; margin-bottom:6px;">Khi hệ thống có N điều kiện Boolean độc lập đầu vào, số cột quy tắc (Rules) đầy đủ trên lý thuyết toán học sẽ đạt ngưỡng 2^N.</p>
+                    <p style="color:var(--text-muted); line-height:1.45; margin-bottom:8px;">**Nguyên lý rút gọn (Collapsing Table):** Nếu 2 hoặc nhiều quy tắc dẫn đến cùng 1 kết quả đầu ra (Action) và chỉ khác nhau ở một điều kiện đầu vào duy nhất, điều kiện đó được gộp lại thành giá trị không ảnh hưởng (*Indifferent State* `-`). Kỹ thuật này giúp loại bỏ kịch bản thừa, tối ưu hóa 40% - 60% năng suất chạy test.</p>
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); padding:10px; border-radius:8px;">
+                        <span style="font-weight:700; color:var(--accent-warning); display:block; margin-bottom:2px;">Case Study Hồ Sơ Thẩm Định Thẻ Tín Dụng:</span>
+                        <p style="color:var(--text-muted); line-height:1.4;">• C1: Lịch sử CIC sạch nợ xấu? (T/F)<br>• C2: Thu nhập sao kê qua ngân hàng &gt; 15M? (T/F)<br>→ **Quy tắc gộp tối cao:** Chỉ cần khách hàng dính nợ xấu nhóm 3 (C1 = F), hệ thống Core lập tức nổ lệnh **Từ chối (Reject)** thẳng mà không cần tốn hiệu năng quét qua biến Thu nhập (C2 trở thành `-`).</p>
+                    </div>
                 </div>
-                <div class="table-layout" style="margin-top: 0;">
-                    <table class="decision-table">
+                <div style="display:flex; flex-direction:column; gap:10px; height:100%;">
+                    <div class="table-layout" style="font-size:11px;">
+                        <table style="text-align:center;">
+                            <thead><tr style="background:rgba(0,229,255,0.06);"><th style="width:50%; text-align:left;">Conditions / Actions</th><th>R1 (Pass)</th><th>R2 (Fail)</th><th>R3 (Gộp)</th></tr></thead>
+                            <tbody>
+                                <tr><td style="text-align:left;">C1: Lịch sử tín dụng CIC Tốt?</td><td style="color:var(--accent-green); font-weight:bold;">T</td><td style="color:var(--accent-green); font-weight:bold;">T</td><td style="color:var(--accent-red); font-weight:bold;">F</td></tr>
+                                <tr><td style="text-align:left;">C2: Thu nhập sao kê &gt; 15 Triệu?</td><td style="color:var(--accent-green); font-weight:bold;">T</td><td style="color:var(--accent-red); font-weight:bold;">F</td><td style="color:var(--accent-warning); font-weight:bold;">-</td></tr>
+                                <tr style="background:rgba(255,255,255,0.03);"><td style="text-align:left; color:var(--accent-green);">A1: Duyệt cấp thẻ + SMS thông báo</td><td style="color:var(--accent-green); font-weight:bold;"><i class="fa-solid fa-circle-check"></i></td><td></td><td></td></tr>
+                                <tr><td style="text-align:left; color:var(--accent-red);">A2: Đánh rớt hồ sơ thẳng</td><td></td><td style="color:var(--accent-red); font-weight:bold;"><i class="fa-solid fa-circle-xmark"></i></td><td style="color:var(--accent-red); font-weight:bold;"><i class="fa-solid fa-circle-xmark"></i></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-color); border-radius:10px; padding:5px; flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                        <span style="font-size:10.5px; font-weight:700; color:var(--accent-cyan); margin-bottom:5px;">SƠ ĐỒ PHÂN NHÁNH QUYẾT ĐỊNH LOGIC (CAUSE-EFFECT NODE)</span>
+                        <svg viewBox="0 0 260 90" style="width:100%; height:auto;">
+                            <rect x="10" y="30" width="50" height="25" rx="4" fill="#1c2541" stroke="var(--accent-cyan)"/>
+                            <text x="35" y="46" fill="#fff" font-size="9" text-anchor="middle">CIC = F</text>
+                            <path d="M 60,42.5 L 180,42.5" fill="none" stroke="var(--accent-red)" stroke-width="2" marker-end="url(#arrow-s19)"/>
+                            <rect x="180" y="30" width="70" height="25" rx="4" fill="rgba(239,71,111,0.2)" stroke="var(--accent-red)"/>
+                            <text x="215" y="46" fill="var(--accent-red)" font-size="9" font-weight="bold" text-anchor="middle">ACTION: REJECT</text>
+                            <text x="120" y="35" fill="var(--accent-warning)" font-size="8" text-anchor="middle">Bỏ qua biến Thu Nhập (-)</text>
+                            <defs><marker id="arrow-s19" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0,1 L 10,5 L 0,9 z" fill="var(--accent-red)"/></marker></defs>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 20: KỸ THUẬT PHÂN VÙNG TƯƠNG ĐƯƠNG CHUYÊN SÂU -->
+    <div class="slide" id="slide22">
+        <div class="slide-header-brand">
+            <h2 class="slide-title">2. Kỹ Thuật Phân Vùng Tương Đương Chuyên Sâu (ISTQB EP)</h2>
+            <div class="brand-text-logo">IT <span>LEARN</span></div>
+        </div>
+        <div class="content-area" style="height: calc(100% - 40px); margin-top: 5px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="background: rgba(255, 255, 255, 0.02); padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 10px;">
+                <h4 style="color: var(--accent-green); font-size: 14px; margin-bottom: 4px;"><i class="fa-solid fa-graduation-cap"></i> Cơ sở lý thuyết nâng cao chống lọt lỗi tích hợp</h4>
+                <p style="font-size: 12.5px; line-height: 1.5; color: var(--text-muted);">
+                    Hành động phân vùng (EP) là việc phân rã tập hợp dữ liệu đầu vào thành các miền đại diện đối xứng. Nguyên lý cơ bản: Nếu một giá trị trong phân vùng kích hoạt lỗi hoặc chạy thành công, hệ thống coi như toàn bộ các giá trị khác trong cùng phân vùng đó đều cho ra kết quả tương đương.
+                    <strong style="color: var(--accent-red);">Quy tắc vàng chống lỗi che khuất (Bug Masking):</strong> Khi thiết kế kịch bản cho các phân vùng <strong>Invalid (Không hợp lệ)</strong>, chỉ được phép điền duy nhất 1 giá trị sai của 1 trường dữ liệu đơn lẻ. Các trường dữ liệu cấu phần khác bắt buộc phải giữ ở trạng thái Valid. Nếu nạp nhiều biến Invalid cùng lúc trên một API Request, lõi Backend sẽ xử lý ngắt luồng sớm (Early Return), khiến lỗi của trường phía sau bị che giấu hoàn toàn, gây lọt bug nghiêm trọng khi Go-Live.
+                </p>
+            </div>
+            
+            <div class="table-layout" style="flex: 1;">
+                <h4 style="padding: 10px; color: var(--accent-cyan); font-size: 13px; font-weight: 700; background: rgba(0, 229, 255, 0.05); border-bottom: 1px solid var(--border-color);">
+                    CASE STUDY THỰC TẾ: THIẾT KẾ PHÂN VÙNG CHO TÍNH NĂNG "ĐĂNG KÝ MỞ SỔ TIẾT KIỆM SỐ ONLINE" (Hạn mức từ 1M đến 500M)
+                </h4>
+                <table>
+                    <thead>
+                        <tr style="background: rgba(0, 255, 135, 0.05);">
+                            <th style="width: 15%;">Mã phân vùng</th>
+                            <th style="width: 25%;">Phạm vi dải giá trị nghiệp vụ</th>
+                            <th style="width: 20%;">Phân loại tính chất</th>
+                            <th style="width: 20%;">Dữ liệu nhập mẫu (Data Test)</th>
+                            <th style="width: 20%;">Kỳ vọng Backend (Expected)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>EP_VALID_01</strong></td>
+                            <td>Từ 1,000,000đ đến 500,000,000đ</td>
+                            <td style="color: var(--accent-green); font-weight: bold;">Valid (Hợp lệ)</td>
+                            <td><span class="code-inline valid">50,000,000</span></td>
+                            <td>Mã phản hồi HTTP 200 OK, tạo sổ thành công.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>EP_INVALID_01</strong></td>
+                            <td>Nhỏ hơn hạn mức tối thiểu (&lt; 1,000,000đ)</td>
+                            <td style="color: var(--accent-red); font-weight: bold;">Invalid (Dưới biên)</td>
+                            <td><span class="code-inline">500,000</span></td>
+                            <td>Mã lỗi 400 Bad Request: "Số tiền tối thiểu là 1M".</td>
+                        </tr>
+                        <tr>
+                            <td><strong>EP_INVALID_02</strong></td>
+                            <td>Vượt quá hạn mức tối đa (&gt; 500,000,000đ)</td>
+                            <td style="color: var(--accent-red); font-weight: bold;">Invalid (Vượt biên)</td>
+                            <td><span class="code-inline">550,000,000</span></td>
+                            <td>Mã lỗi 400 Bad Request: "Vượt hạn mức cho phép".</td>
+                        </tr>
+                        <tr>
+                            <td><strong>EP_INVALID_03</strong></td>
+                            <td>Định dạng sai cấu trúc dữ liệu (Ký tự chữ, bỏ trống)</td>
+                            <td style="color: var(--accent-red); font-weight: bold;">Invalid (Sai Format)</td>
+                            <td><span class="code-inline">"Một Triệu Đồng"</span></td>
+                            <td>Mã lỗi 422 Unprocessable: "Sai kiểu dữ liệu".</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 21: GIÁ TRỊ BIÊN CHUYÊN SÂU -->
+    <div class="slide" id="slide23">
+        <div class="slide-header-brand">
+            <h2 class="slide-title">3. Kỹ Thuật Phân Tích Giá Trị Biên Chuyên Sâu (ISTQB BVA)</h2>
+            <div class="brand-text-logo">IT <span>LEARN</span></div>
+        </div>
+        <div class="content-area" style="height: calc(100% - 40px); margin-top: 5px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="background: rgba(255, 255, 255, 0.02); padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 10px;">
+                <h4 style="color: var(--accent-warning); font-size: 14px; margin-bottom: 4px;"><i class="fa-solid fa-compress"></i> Chiến lược tối ưu hóa: Khi nào áp dụng kịch bản 2-Point vs 3-Point BVA?</h4>
+                <p style="font-size: 12.5px; line-height: 1.5; color: var(--text-muted);">
+                    • <strong>2-Point BVA (Biên 2 điểm):</strong> Chỉ thực hiện kiểm tra tại điểm ranh giới ranh giới (Boundary - On) và điểm sát ngoài miền hợp lệ (Out-of-boundary - Off). Kỹ thuật này giảm thiểu số lượng ca kiểm thử, phù hợp cho các dự án Agile chạy nhanh.<br>
+                    • <strong>3-Point BVA (Biên 3 điểm):</strong> Đợi hỏi quét đủ bộ ba liên hoàn gối đầu nhau: <strong>Sát dưới biên (In-bound), Ngay biên (On-bound), và Sát trên biên (Out-bound)</strong>. Trong lập trình logic core hệ thống ngân hàng, lập trình viên thường mắc lỗi logic tại các cấu trúc toán tử điều kiện so sánh như nhập nhầm dấu `<` thành `<=`. Do đó, <strong>bắt buộc phải chạy kịch bản 3-Point BVA</strong> để đánh chặn rò rỉ tiền tệ.
+                </p>
+            </div>
+
+            <div class="table-layout" style="flex: 1;">
+                <h4 style="padding: 10px; color: var(--accent-cyan); font-size: 13px; font-weight: 700; background: rgba(255, 183, 3, 0.05); border-bottom: 1px solid var(--border-color);">
+                    CASE STUDY CHI TIẾT: THIẾT LẬP 3-POINT BVA CHO BIÊN DƯỚI HẠN MỨC "CHUYỂN KHOẢN LIÊN NGÂN HÀNG 24/7" (Tối thiểu N = 10,000 VND một lần giao dịch)
+                </h4>
+                <table>
+                    <thead>
+                        <tr style="background: rgba(255, 183, 3, 0.08);">
+                            <th style="width: 20%;">Vị trí điểm biên</th>
+                            <th style="width: 20%;">Giá trị toán học thực tế</th>
+                            <th style="width: 20%;">Tính chất phân vùng dữ liệu</th>
+                            <th style="width: 20%;">Kỳ vọng xử lý của hệ thống (Expected)</th>
+                            <th style="width: 20%;">Mã phản hồi API (Response Code)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Sát dưới biên (N - 1)</strong></td>
+                            <td style="color: var(--accent-red); font-weight: bold;">9,999 VND</td>
+                            <td>Thuộc dải Invalid (Lỗi)</td>
+                            <td>Chặn giao dịch, nổ câu cảnh báo lỗi lên màn hình UI.</td>
+                            <td><span class="code-inline">400 Bad Request</span></td>
+                        </tr>
+                        <tr style="background: rgba(0, 255, 135, 0.03);">
+                            <td><strong>Ngay điểm Biên (N)</strong></td>
+                            <td style="color: var(--accent-green); font-weight: bold;">10,000 VND</td>
+                            <td>Thuộc dải Valid (Hợp lệ)</td>
+                            <td>Hệ thống thông luồng thành công, tạo màn hình nhập OTP.</td>
+                            <td><span class="code-inline valid">200 OK</span></td>
+                        </tr>
+                        <tr style="background: rgba(0, 255, 135, 0.03);">
+                            <td><strong>Sát trên biên (N + 1)</strong></td>
+                            <td style="color: var(--accent-green); font-weight: bold;">10,001 VND</td>
+                            <td>Thuộc dải Valid (Hợp lệ)</td>
+                            <td>Hệ thống thông luồng thành công, tạo màn hình nhập OTP.</td>
+                            <td><span class="code-inline valid">200 OK</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 22: STATE TRANSITION -->
+    <div class="slide" id="slide24">
+        <div class="slide-header-brand">
+            <h2 class="slide-title">4. Kỹ Thuật Chuyển Đổi Trạng Thái & Sơ Đồ Thực Chiến Vòng Đời</h2>
+            <div class="brand-text-logo">IT <span>LEARN</span></div>
+        </div>
+        <div class="content-area">
+            <div class="two-column-tech" style="grid-template-columns: 1fr 1.2fr; gap:25px; height: 100%;">
+                <div style="font-size:12.5px;">
+                    <h4 style="color: var(--accent-purple); font-size:14px; margin-bottom:6px;"><i class="fa-solid fa-network-wired"></i> Quản trị trạng thái giao dịch liên hệ thống ngân hàng số</h4>
+                    <p style="color:var(--text-muted); line-height:1.45; margin-bottom:8px;">
+                        Kỹ thuật State Transition theo sát biến động trường thông tin `Status` lưu trong Database sau mỗi sự kiện tác động. 
+                        Quy chuẩn ISTQB phân tầng rõ rệt: **0-Switch Coverage** (Quét qua một bước dịch chuyển đơn lẻ) và **1-Switch Coverage** (Kiểm thử chuỗi chu kỳ liên tiếp gồm 2 bước gối đầu nhau) nhằm đánh chặn triệt để lỗi bất đồng bộ dòng tiền.
+                    </p>
+                    <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); padding:10px; border-radius:8px;">
+                        <span style="font-weight:700; color:var(--accent-purple); display:block; margin-bottom:4px;">Phân tích ví dụ luồng tiền liên ngân hàng khép kín:</span>
+                        <p style="color:var(--text-muted); line-height:1.4; font-size:12px;">
+                            • Bước 1: Khách hàng click nút chuyển tiền $\rightarrow$ Bản ghi DB khởi tạo trạng thái <strong>INITIATED</strong>.<br>
+                            • Bước 2: Hệ thống sinh mã OTP và bắt đầu chờ khách nhập $\rightarrow$ Chuyển dịch sang trạng thái <strong>PENDING_OTP</strong>.<br>
+                            • Bước 3 (Rẽ nhánh lỗi): Khách hàng nhập sai mã OTP quá 3 lần $\rightarrow$ Hệ thống kích hoạt sự kiện ngắt kết nối, bản ghi DB nhảy sang trạng thái kết thúc lỗi <strong>FAILED</strong> để khóa luồng tiền an toàn.
+                        </p>
+                    </div>
+                </div>
+                <div class="visual-container" style="background: rgba(5,9,24,0.95); border: 1px solid rgba(175, 64, 255, 0.25); padding:10px;">
+                    <h4 style="font-size:12px; color:var(--accent-purple); margin-bottom:12px; text-transform:uppercase; font-family:'Urbanist';">Mô hình sơ đồ dịch chuyển dữ liệu Core-Bank Lifecycle</h4>
+                    <svg viewBox="0 0 440 280" style="width:100%; height:auto; display:block;">
+                        <rect x="15" y="115" width="90" height="38" rx="6" fill="#1c2541" stroke="#fff" stroke-width="1.5"/>
+                        <text x="60" y="138" fill="#fff" font-family="monospace" font-size="10" font-weight="bold" text-anchor="middle">INITIATED</text>
+                        <rect x="165" y="45" width="110" height="38" rx="6" fill="#1c2541" stroke="var(--accent-warning)" stroke-width="1.5"/>
+                        <text x="220" y="68" fill="var(--accent-warning)" font-family="monospace" font-size="10" font-weight="bold" text-anchor="middle">PENDING_OTP</text>
+                        <rect x="335" y="115" width="90" height="38" rx="6" fill="rgba(0,255,135,0.1)" stroke="var(--accent-green)" stroke-width="1.5"/>
+                        <text x="380" y="138" fill="var(--accent-green)" font-family="monospace" font-size="10" font-weight="bold" text-anchor="middle">SUCCESS</text>
+                        <rect x="175" y="195" width="90" height="38" rx="6" fill="rgba(239,71,111,0.1)" stroke="var(--accent-red)" stroke-width="1.5"/>
+                        <text x="220" y="218" fill="var(--accent-red)" font-family="monospace" font-size="10" font-weight="bold" text-anchor="middle">FAILED</text>
+
+                        <path d="M 85,115 L 165,75" fill="none" stroke="var(--accent-warning)" stroke-width="1.5" marker-end="url(#arrow-s22-fixed)"/>
+                        <path d="M 275,68 L 345,115" fill="none" stroke="var(--accent-green)" stroke-width="1.5" marker-end="url(#arrow-s22-fixed)"/>
+                        <path d="M 220,83 L 220,195" fill="none" stroke="var(--accent-red)" stroke-width="1.5" marker-end="url(#arrow-s22-fixed)"/>
+                        <defs><marker id="arrow-s22-fixed" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0,1 L 10,5 L 0,9 z" fill="#fff"/></marker></defs>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 23: PAIRWISE TESTING -->
+    <div class="slide" id="slide25">
+        <div class="slide-header-brand">
+            <h2 class="slide-title">5. Kỹ Thuật Kiểm Thử Bắt Cặp (ISTQB Pairwise Testing)</h2>
+            <div class="brand-text-logo">IT <span>LEARN</span></div>
+        </div>
+        <div class="content-area">
+            <div class="two-column-tech" style="grid-template-columns: 1fr 1.2fr; gap:20px; height:100%;">
+                <div style="font-size:12.5px;">
+                    <h4 style="color: #ffffff; font-size:14px; margin-bottom:4px;"><i class="fa-solid fa-bolt"></i> Giải pháp triệt tiêu sự bùng nổ tổ hợp đa cấu hình đa môi trường</h4>
+                    <p style="color:var(--text-muted); line-height:1.45; margin-bottom:8px;">
+                        Trong thực tế triển khai các ứng dụng Tài chính số, phần mềm bắt buộc phải hoạt động trơn tru trên ma trận các cấu hình đa dạng. Nếu chọn phương pháp kiểm thử vét cạn (Full Combinatorial), số lượng kịch bản sẽ tăng đột biến theo cấp số nhân lũy thừa, làm kiệt quệ tài nguyên nhân lực dự án.
+                    </p>
+                    <p style="color:var(--text-muted); line-height:1.45; margin-bottom:10px;">
+                        **Nguyên lý khoa học thực tế (2-way coverage):** Bản chất thuật toán của Pairwise chứng minh phần lớn lỗi hệ thống được kích hoạt do sự xung đột chéo giữa 2 tham số bất kỳ đi kèm nhau. Kỹ thuật này cam đoan mọi cặp đôi giá trị xuất hiện đồng hành tối thiểu một lần, giúp cắt giảm 70% số lượng kịch bản thừa mà vẫn đảm bảo độ phủ an toàn diện rộng.
+                    </p>
+                </div>
+                <div class="table-layout" style="font-size:11px;">
+                    <h4 style="padding:8px; color:var(--accent-green); font-size:12px; font-weight: 700; background:rgba(0,255,135,0.05); text-transform:uppercase;"><i class="fa-solid fa-table"></i> MA TRẬN PHÂN PHỐI BẮT CẶP RÚT GỌN TIÊU CHUẨN ĐÃ FIX LỖI TEXT</h4>
+                    <table style="text-align:center; width:100%;">
                         <thead>
-                            <tr>
-                                <th style="width:42%;">Ma Trận Điều Kiện (Conditions)</th>
-                                <th>R1</th>
-                                <th>R2</th>
-                                <th>R3 (Gộp)</th>
+                            <tr style="background:rgba(0,255,135,0.08);">
+                                <th style="color:var(--accent-green); width:20%;">Mã Ca Kiểm Thử</th>
+                                <th>Hệ điều hành thiết bị</th>
+                                <th>Cổng thanh toán liên kết</th>
+                                <th>Phương thức xác thực bảo mật</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td>C1: Điểm tín dụng CIC Tốt?</td><td style="color:var(--accent-green); font-weight:bold;">T</td><td style="color:var(--accent-green); font-weight:bold;">T</td><td style="color:var(--accent-red); font-weight:bold;">F</td></tr>
-                            <tr><td>C2: Thu nhập sao kê &gt; 15M?</td><td style="color:var(--accent-green); font-weight:bold;">T</td><td style="color:var(--accent-red); font-weight:bold;">F</td><td style="font-weight:bold; color:var(--accent-warning); text-align:center;">-</td></tr>
-                            <tr><td>C3: Không dính nợ xấu nhóm 2?</td><td style="color:var(--accent-green); font-weight:bold;">T</td><td style="color:var(--accent-green); font-weight:bold;">T</td><td style="font-weight:bold; color:var(--accent-warning); text-align:center;">-</td></tr>
-                            <tr style="background:rgba(255,255,255,0.04)"><td>A1: Phê duyệt cấp thẻ tự động</td><td style="color:var(--accent-green); font-weight:bold;"><i class="fa-solid fa-check"></i></td><td></td><td></td></tr>
-                            <tr><td>A2: Từ chối, gửi SMS thông báo</td><td></td><td style="color:var(--accent-red); font-weight:bold;"><i class="fa-solid fa-xmark"></i></td><td style="color:var(--accent-red); font-weight:bold;"><i class="fa-solid fa-xmark"></i></td></tr>
+                            <tr>
+                                <td><strong>TC_PAIR_01</strong></td>
+                                <td style="color:#fff; font-weight:600;">iOS</td>
+                                <td style="color:var(--accent-cyan); font-weight:600;">NAPAS</td>
+                                <td style="color:var(--accent-warning); font-weight:600;">Biometric</td>
+                            </tr>
+                            <tr>
+                                <td><strong>TC_PAIR_02</strong></td>
+                                <td style="color:#fff; font-weight:600;">iOS</td>
+                                <td style="color:var(--accent-purple); font-weight:600;">VISA</td>
+                                <td style="color:var(--accent-green); font-weight:600;">SMS-OTP</td>
+                            </tr>
+                            <tr>
+                                <td><strong>TC_PAIR_03</strong></td>
+                                <td style="color:#fff; font-weight:600;">Android</td>
+                                <td style="color:var(--accent-cyan); font-weight:600;">NAPAS</td>
+                                <td style="color:var(--accent-green); font-weight:600;">SMS-OTP</td>
+                            </tr>
+                            <tr>
+                                <td><strong>TC_PAIR_04</strong></td>
+                                <td style="color:#fff; font-weight:600;">Android</td>
+                                <td style="color:var(--accent-purple); font-weight:600;">VISA</td>
+                                <td style="color:var(--accent-warning); font-weight:600;">Biometric</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -1192,232 +1414,202 @@
         </div>
     </div>
 
-    <!-- SLIDE 20: KỸ THUẬT 2 ADVANCED DEEP-DIVE -->
-    <div class="slide" id="slide20">
+    <!-- SLIDE 24: MA TRẬN ĐỐI CHIẾU THƯỢNG TẦNG -->
+    <div class="slide" id="slide26">
         <div class="slide-header-brand">
-            <h2 class="slide-title">2. Kỹ Thuật Phân Vùng Tương Đương Chuyên Sâu (ISTQB Equivalence Partitioning)</h2>
+            <h2 class="slide-title">Ma Trận Đối Chiếu Chiến Lược Các Kỹ Thuật Hộp Đen</h2>
             <div class="brand-text-logo">IT <span>LEARN</span></div>
         </div>
-        <div class="content-area">
-            <div class="two-column-tech">
-                <div>
-                    <h4 style="color: var(--accent-green); font-size:14px; margin-bottom:4px;">Phương Pháp Luận & Nguyên Lý Kỹ Thuật Lâm Sàng</h4>
-                    <p style="font-size:12px; line-height:1.45; margin-bottom:10px;">Áp dụng khi ô nhập liệu Input chấp nhận một dải giá trị dữ liệu vô tận. Bản chất là chia dải số/chữ này thành các "hộp" phân vùng đối xứng. Quy ước ISTQB tối cao: Hệ thống xử lý đúng/sai với 1 phần tử đại diện thì sẽ đúng/sai với toàn bộ phân tử trong vùng đó.</p>
-                    
-                    <ul class="tech-step-list">
-                        <li>
-                            <span class="step-title"><i class="fa-solid fa-shield-halved text-green"></i> Phân biệt Vùng Hợp Lệ (Valid) và Vùng Không Hợp Lệ (Invalid)</span>
-                            <span class="step-desc">Tester phải chia rõ cả **Valid Partitions** (hệ thống chấp nhận xử lý thành công) và **Invalid Partitions** (hệ thống bắt buộc phải từ chối hoặc trả ra câu cảnh báo lỗi UI).</span>
-                        </li>
-                        <li>
-                            <span class="step-title"><i class="fa-solid fa-triangle-exclamation text-red"></i> Nguyên lý ISTQB: Tránh hiện tượng Che Lấp Lỗi (Bug Masking)</span>
-                            <span class="step-desc"><strong>Quy tắc xương sống:</strong> Khi thiết kế kịch bản kiểm thử cho Vùng Không Hợp Lệ, **chỉ được phép chọn duy nhất 1 giá trị sai của 1 biến đơn lẻ**, các biến còn lại trên form phải giữ ở trạng thái hợp lệ. Nếu nạp nhiều giá trị sai cùng lúc, lỗi của trường này sẽ che khuất lỗi của trường kia, dẫn đến lọt bug Backend nguy hiểm.</span>
-                        </li>
-                        <li>
-                            <span class="step-title"><i class="fa-solid fa-flask text-green"></i> Case Study Banking số: Ô nhập số tiền gửi tiết kiệm Online tại App</span>
-                            <span class="step-desc">Spec quy định số tiền gửi hợp lệ từ 1 Triệu đến 500 Triệu. <br>
-                            • Phân vùng 1 (Invalid): Số tiền &lt; 1,000,000đ $ightarrow$ Chọn test data đại diện: <code class="code-inline">500,000đ</code><br>
-                            • Phân vùng 2 (Valid): 1,000,000đ $\le$ Số tiền $\le$ 500,000,000đ $ightarrow$ Chọn test data: <code class="code-inline valid">100,000,000đ</code><br>
-                            • Phân vùng 3 (Invalid): Số tiền &gt; 500,000,000đ $ightarrow$ Chọn test data đại diện: <code class="code-inline">650,000,000đ</code></span>
-                        </li>
-                    </ul>
+        <div class="content-area" style="margin-top: 5px;">
+            <div class="table-layout">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Kỹ Thuật</th>
+                            <th style="width: 25%;">Mục tiêu cốt lõi</th>
+                            <th style="width: 30%;">Điểm khác biệt bản chất bản thể</th>
+                            <th style="width: 30%;">Tình huống áp dụng thực tế lâm sàng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="color: var(--accent-green); font-weight:700;">EP (Phân Vùng)</td>
+                            <td>Thu dọn dải dữ liệu vô tận về tập hữu hạn diện hẹp đại diện.</td>
+                            <td>Xử lý phân tách thu gọn giá trị trên <strong>1 trường dữ liệu đơn lẻ</strong>.</td>
+                            <td>Các ô nhập form: ô nhập số tiền nạp ví, dải tuổi mở tài khoản.</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--accent-warning); font-weight:700;">BVA (Phân Tích Biên)</td>
+                            <td>Đánh chặn sai sót toán tử lập trình so sánh ranh giới vùng dữ liệu.</td>
+                            <td>Tập trung xoáy sâu vào các điểm nhạy cảm nhấp nhô của <strong>1 trường dữ liệu đơn lẻ</strong>.</td>
+                            <td>Kiểm tra hạn mức rút tiền tối thiểu 10k, tối đa giao dịch lẻ ngày 20M.</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--accent-cyan); font-weight:700;">DT (Bảng Quyết Định)</td>
+                            <td>Bao phủ logic rẽ nhánh có ràng buộc phụ thuộc nhân quả.</td>
+                            <td>Mô hình hóa ma trận logic kết hợp đan xen giữa <strong>nhiều trường điều kiện độc lập</strong>.</td>
+                            <td>Luồng thuật toán xét duyệt tự động hồ sơ mở thẻ tín dụng, cho vay tín chấp.</td>
+                        </tr>
+                        <tr style="background: rgba(175, 64, 255, 0.05);">
+                            <td style="color: var(--accent-purple); font-weight:700;">Pairwise (Bắt Cặp)</td>
+                            <td>Khử hiện tượng bùng nổ tổ hợp đa cấu hình đa tham số môi trường.</td>
+                            <td>Tập trung bao phủ <strong>sự tương tác xung đột cặp đôi giữa 2 yếu tố bất kỳ</strong>.</td>
+                            <td>Quét ma trận môi trường tích hợp tích hợp (Hệ điều hành máy x Cổng thanh toán x Loại mạng kết nối).</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 25A: CASE STUDY VÍ ĐIỆN TỬ - TẦNG API NETWORK -->
+    <div class="slide" id="slide27">
+        <div class="slide-header-brand">
+            <h2 class="slide-title">Case Study Thực Chiến - Nghiệp Vụ Ví Điện Tử (Tầng API Network)</h2>
+            <div class="brand-text-logo">IT <span>LEARN</span></div>
+        </div>
+        <div class="two-column-tech" style="grid-template-columns: 1fr 1.2fr; gap:20px; height:calc(100% - 40px); margin-top:5px;">
+            <div style="font-size:12px; display:flex; flex-direction:column; gap:8px;">
+                <div class="box-item" style="border-left:4px solid var(--accent-cyan); padding:10px;">
+                    <strong style="color:var(--accent-cyan);">Endpoint Đặc Tả:</strong> <span class="code-inline">POST /api/v1/wallet/transfer</span>
                 </div>
-                <div class="visual-container">
-                    <svg viewBox="0 0 320 220" width="100%" height="100%">
-                        <rect x="10" y="40" width="90" height="70" rx="8" fill="rgba(239,71,111,0.1)" stroke="var(--accent-red)" stroke-width="2"/>
-                        <text x="55" y="75" fill="var(--accent-red)" font-family="Urbanist" font-size="11" font-weight="900" text-anchor="middle">INVALID REGION</text>
-                        <text x="55" y="95" fill="var(--accent-red)" font-family="Urbanist" font-size="10" font-weight="700" text-anchor="middle">&lt; 1 TRIỆU</text>
-                        <text x="55" y="145" fill="#9ca3af" font-size="11" text-anchor="middle">Data: 500k</text>
-                        
-                        <rect x="115" y="40" width="90" height="70" rx="8" fill="rgba(0,255,135,0.1)" stroke="var(--accent-green)" stroke-width="2"/>
-                        <text x="160" y="75" fill="var(--accent-green)" font-family="Urbanist" font-size="11" font-weight="900" text-anchor="middle">VALID REGION</text>
-                        <text x="160" y="95" fill="var(--accent-green)" font-family="Urbanist" font-size="10" font-weight="700" text-anchor="middle">1M - 500M</text>
-                        <text x="160" y="145" fill="#fff" font-size="11" text-anchor="middle">Data: 100M</text>
-                        
-                        <rect x="220" y="40" width="90" height="70" rx="8" fill="rgba(239,71,111,0.1)" stroke="var(--accent-red)" stroke-width="2"/>
-                        <text x="265" y="75" fill="var(--accent-red)" font-family="Urbanist" font-size="11" font-weight="900" text-anchor="middle">INVALID REGION</text>
-                        <text x="265" y="95" fill="var(--accent-red)" font-family="Urbanist" font-size="10" font-weight="700" text-anchor="middle">&gt; 500 TRIỆU</text>
-                        <text x="265" y="145" fill="#9ca3af" font-size="11" text-anchor="middle">Data: 650M</text>
-                    </svg>
+                <div class="box-item" style="border-left:4px solid var(--accent-warning); padding:10px;">
+                    <strong style="color:var(--accent-warning);">Nghiệp vụ cốt lõi:</strong> Hạn mức chặn dưới cố định từ **10,000 VND** đến hạn mức chặn trên tối đa ngày là **20,000,000 VND**. Toàn bộ luồng đi qua API Gateway bắt buộc mang kèm Header Token định danh Bearer bảo mật JWT hợp lệ.
+                </div>
+                <div class="box-item" style="border-left:4px solid var(--accent-red); padding:10px;">
+                    <strong style="color:var(--accent-red);">Các Case Rẽ Nhánh Lỗi Backend (HTTP Error Code):</strong>
+                    <br>• `400 Bad Request`: Trả về khi payload dính chữ, âm tiền, hoặc vượt ngưỡng 20M.
+                    <br>• `401 Unauthorized`: Token JWT hết hạn hoặc mã hóa chữ ký Base64 sai quy chuẩn.
+                </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px; height:100%;">
+                <div class="box-item" style="background:#030712; flex:1; font-family:monospace; font-size:10.5px; overflow-y:auto; border-color:var(--accent-green);">
+                    <span style="color:var(--accent-green); font-weight:700;">// MẪU REQUEST PAYLOAD JSON CHUẨN ĐỐI SOÁT:</span>
+                    <pre style="color:#fff; margin-top:4px;">{
+  "sourceWalletId": "WAL-98241",
+  "destinationWalletId": "WAL-01234",
+  "amount": 15000000,
+  "currency": "VND",
+  "authMethod": "BIOMETRIC"
+}</pre>
+                </div>
+                <div class="box-item" style="background:#030712; flex:1; font-family:monospace; font-size:10.5px; overflow-y:auto; border-color:var(--accent-red);">
+                    <span style="color:var(--accent-red); font-weight:700;">// MẪU RESPONSE ERROR PAYLOAD (VALIDATION FAILED):</span>
+                    <pre style="color:#fff; margin-top:4px;">{
+  "timestamp": "2026-07-13T10:48:22Z",
+  "httpStatus": 400,
+  "errorCode": "ERR_LIMIT_EXCEEDED",
+  "errorMessage": "Số tiền giao dịch vượt quá hạn mức đơn lẻ ngày (Max: 20,000,000 VND)"
+}</pre>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- SLIDE 21: KỸ THUẬT 3 ADVANCED DEEP-DIVE -->
-    <div class="slide" id="slide21">
+    <!-- SLIDE 25B: CASE STUDY VÍ ĐIỆN TỬ - TẦNG DATABASE BACKEND -->
+    <div class="slide" id="slide28">
         <div class="slide-header-brand">
-            <h2 class="slide-title">3. Kỹ Thuật Phân Tích Giá Trị Biên Chuyên Sâu (ISTQB Boundary Value Analysis)</h2>
+            <h2 class="slide-title">Case Study Thực Chiến - Nghiệp Vụ Ví Điện Tử (Tầng Database Audit)</h2>
             <div class="brand-text-logo">IT <span>LEARN</span></div>
         </div>
-        <div class="content-area">
-            <div class="two-column-tech">
-                <div>
-                    <h4 style="color: var(--accent-warning); font-size:14px; margin-bottom:4px;">Phương Pháp Luận & Kịch Bản Đánh Chặn Điểm Ranh Giới</h4>
-                    <p style="font-size:12px; line-height:1.45; margin-bottom:8px;">Mật độ lỗi xuất hiện tại các điểm biên ranh giới rẽ vùng chiếm tới 80% trong thực tế dự án do sai sót viết toán tử lập trình của Dev. Kỹ thuật này bắt buộc phải ký sinh đồng hành cùng kỹ thuật Phân vùng tương đương (EP).</p>
-                    
-                    <ul class="tech-step-list">
-                        <li>
-                            <span class="step-title"><i class="fa-solid fa-arrows-split-up-and-left text-warning"></i> Phân biệt Kỹ thuật Biên 2-Point BVA và 3-Point BVA chuẩn ISTQB</span>
-                            <span class="step-desc">
-                                • **2-Point BVA (Kiểm thử biên 2 điểm):** Chỉ chọn giá trị ngay Biên (**Boundary**) và giá trị sát ngoài biên (**Out-of-boundary**). Thường áp dụng trong các dự án Agile chạy nước rút cuốn chiếu để tối ưu thời gian.<br>
-                                • **3-Point BVA (Kiểm thử biên 3 điểm):** Bắt buộc lấy đủ 3 điểm nhạy cảm: Giá trị ngay biên (**Boundary**), Sát dưới biên (**In-boundary**) và Sát trên biên (**Out-of-boundary**). Dự án Tài chính/Ngân hàng/Y tế bắt buộc phải dùng 3-Point để chống lọt lỗi số dư ví tiền tệ tuyệt đối.
-                            </span>
-                        </li>
-                        <li>
-                            <span class="step-title"><i class="fa-solid fa-flask text-green"></i> Case Study Banking số: Hạn mức rút khoản tiền tối đa tại cây ATM giao dịch</span>
-                            <span class="step-desc">Tài liệu đặc tả hệ thống: "Hạn mức rút tiền tối đa một lần của thẻ Gold trong két giao dịch tự động là 5,000,000 VND". Áp dụng công thức **3-Point BVA** lâm sàng tại biên chốt thượng tầng 5 Triệu ($N = 5,000,000$):<br>
-                            1. **Sát dưới biên (N-1):** Nhập <code class="code-inline valid">4,999,999đ</code> $ightarrow$ Giao dịch thành công hệ thống (Pass).<br>
-                            2. **Ngay biên chốt (N):** Nhập <code class="code-inline valid">5,000,000đ</code> $ightarrow$ Giao dịch thành công hệ thống (Pass).<br>
-                            3. **Sát trên biên (N+1):** Nhập <code class="code-inline">5,000,001đ</code> $ightarrow$ <strong style="color:var(--accent-red)">Backend Core-Bank lập tức từ chối giao dịch</strong>, trả lỗi mã trạng thái HTTP 400 Bad Request lên màn hình UI.</span>
-                        </li>
-                    </ul>
+        <div class="content-area" style="height: calc(100% - 40px); margin-top: 10px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="background: rgba(175, 64, 255, 0.05); border: 1px solid rgba(175, 64, 255, 0.2); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
+                <h4 style="color: var(--accent-purple); font-size: 14px; margin-bottom: 4px;"><i class="fa-solid fa-database"></i> Quy trình đối soát cơ sở dữ liệu chuyên sâu (Database ACID Audit)</h4>
+                <p style="font-size: 12.5px; line-height: 1.45; color: var(--text-muted);">
+                    Frontend báo giao dịch thành công nhưng tài khoản Database nguồn không bị trừ tiền, hoặc tài khoản ví đích không nhận được tiền là lỗi kinh điển của hệ thống tài chính. Kỹ sư Tester bắt buộc phải mở các cửa sổ console SQL để chạy các câu lệnh truy vết.
+                </p>
+            </div>
+            
+            <div class="table-layout" style="flex: 1; margin-bottom: 5px;">
+                <table>
+                    <thead>
+                        <tr style="background: rgba(175, 64, 255, 0.08);">
+                            <th style="width: 25%;">Tên bảng dữ liệu DB</th>
+                            <th style="width: 45%;">Hành động thực hiện câu lệnh truy vấn SQL đối soát</th>
+                            <th style="width: 30%;">Tiêu chuẩn kiểm chứng dữ liệu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Bảng `USERS_BALANCE`</strong></td>
+                            <td><span class="code-inline">SELECT balance FROM users_balance WHERE wallet_id = 'WAL-98241';</span></td>
+                            <td style="color: var(--accent-red); font-weight:600;">Số dư mới = Số dư cũ - Số tiền chuyển</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Bảng `WALLETS_DEST`</strong></td>
+                            <td><span class="code-inline">SELECT balance FROM wallets_dest WHERE wallet_id = 'WAL-01234';</span></td>
+                            <td style="color: var(--accent-green); font-weight:600;">Số dư mới = Số dư cũ + Số tiền nhận</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Bảng `TRANSACTION_LOGS`</strong></td>
+                            <td><span class="code-inline">SELECT status, fee FROM transaction_logs WHERE tx_id = 'TX982415';</span></td>
+                            <td>Trạng thái: **'SUCCESS'** | Phí: **0**</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p style="font-size:11.5px; color: var(--accent-warning); font-style: italic; line-height:1.25;"><i class="fa-solid fa-triangle-exclamation"></i> **Lưu ý thực chiến:** Phải kiểm tra cơ chế cô lập giao dịch (Transaction Isolation Level). Đảm bảo nếu một trong ba câu lệnh ghi nhận trên bị đổ vỡ nửa chừng, toàn bộ tiến trình dòng tiền buộc phải ROLLBACK về trạng thái nguyên bản.</p>
+        </div>
+    </div>
+
+    <!-- SLIDE 26A: ĐỀ BÀI CHI TIẾT BÀI TẬP 1 -->
+    <div class="slide" id="slide29">
+        <div class="slide-header-brand">
+            <h2 class="slide-title">Bài Tập Thực Hành 1: Thiết Kế Ma Trận Bộ 20 Ca Kiểm Thử</h2>
+            <div class="brand-text-logo">IT <span>LEARN</span></div>
+        </div>
+        <div class="content-area" style="height: calc(100% - 40px); margin-top: 10px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div class="box-item" style="border-left: 4px solid var(--accent-cyan); padding: 12px 16px; margin-bottom: 8px;">
+                <h3 style="color: var(--accent-cyan); font-size: 15px;"><i class="fa-solid fa-pencil"></i> YÊU CẦU ĐỀ BÀI CHI TIẾT (Nộp file Excel trước Buổi số 2)</h3>
+                <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-top: 4px;">
+                    Dựa trên đặc tả tài liệu API luồng chuyển khoản ví điện tử ở Slide 27, học viên hãy xây dựng bộ <strong>20 ca kiểm thử (Test Cases)</strong> chuyên nghiệp hoàn chỉnh trên file Excel theo chuẩn biểu mẫu quốc tế (gồm: TestID, Summary, Pre-conditions, Steps, Input Data, Expected Result).
+                </p>
+                <div class="table-layout" style="margin-top:8px; font-size:11px;">
+                    <table style="width:100%; text-align:center;">
+                        <tr style="background:rgba(0,229,255,0.06);"><th>Biên cần quét</th><th>Giá trị dữ liệu nạp vào (Input Data)</th><th>Tính chất kịch bản</th><th>Kỳ vọng kết quả (Expected Result)</th></tr>
+                        <tr><td>Biên dưới hạn mức (10k)</td><td>**9,999 VND** | **10,000 VND** | **10,001 VND**</td><td>3-Point BVA</td><td>Chặn lỗi 400 | Thông luồng 200 | Thông luồng 200</td></tr>
+                        <tr><td>Biên trên hạn mức (20M)</td><td>**19,999,999 VND** | **20,000,000 VND** | **20,000,001 VND**</td><td>3-Point BVA</td><td>Thông luồng 200 | Thông luồng 200 | Chặn lỗi 400</td></tr>
+                    </table>
                 </div>
-                <div class="visual-container">
-                    <h4 style="font-size:13px; font-family:'Urbanist'; margin-bottom:12px; color:var(--accent-cyan);">MÔ HÌNH TOÁN HỌC 3-POINT BVA MẢNG BANKING</h4>
-                    <svg viewBox="0 0 300 160" width="100%" height="100%">
-                        <line x1="20" y1="80" x2="280" y2="80" stroke="#fff" stroke-width="3"/>
-                        <line x1="180" y1="50" x2="180" y2="110" stroke="var(--accent-cyan)" stroke-width="4"/>
-                        <text x="180" y="35" fill="var(--accent-cyan)" font-family="Urbanist" font-size="11" font-weight="900" text-anchor="middle">BIÊN GIỚI CHỐT KHÓA N = 5M</text>
-                        
-                        <circle cx="110" cy="80" r="7" fill="var(--accent-green)"/>
-                        <text x="110" y="105" fill="var(--accent-green)" font-size="10.5" font-weight="700" text-anchor="middle">4,999,999 (N-1)</text>
-                        
-                        <circle cx="180" cy="80" r="7" fill="#fff"/>
-                        <text x="180" y="130" fill="#fff" font-size="10.5" font-weight="700" text-anchor="middle">5,000,000 (N)</text>
-                        
-                        <circle cx="250" cy="80" r="7" fill="var(--accent-red)"/>
-                        <text x="250" y="105" fill="var(--accent-red)" font-size="10.5" font-weight="700" text-anchor="middle">5,000,001 (N+1)</text>
-                    </svg>
-                </div>
+            </div>
+
+            <div class="box-item" style="border-left: 4px solid var(--accent-green); padding: 12px 16px;">
+                <h3 style="color:var(--accent-green); font-size:14px;"><i class="fa-solid fa-graduation-cap"></i> TIÊU CHUẨN ĐÁNH GIÁ CHẤM ĐIỂM (ACCEPTANCE CRITERIA)</h3>
+                <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.45; margin-top: 2px;">
+                    • **Đạt Yêu Cầu (Pass):** Phủ sóng toàn vẹn 6 điểm chặn dữ liệu toán học gối đầu nhau của bộ ba liên hoàn lâm sàng. Thiết kế tối thiểu 4 ca kiểm thử **Negative lỗi dữ liệu** phá form đầu vào (bỏ trống số tiền, nhập chữ cái).
+                    <br style="margin-bottom:2px;">• **Xuất Sắc (Excellent):** Bổ sung thêm 2 ca kiểm thử check bảo mật **Security Header Validation**: Gọi chuỗi API nạp chuỗi Token mã hóa sai cấu trúc Base64 hoặc thiếu Header Bearer để đánh chặn lỗi `401 Unauthorized`.
+                </p>
             </div>
         </div>
     </div>
 
-    <!-- SLIDE 22: KỸ THUẬT 4 ADVANCED DEEP-DIVE -->
-    <div class="slide" id="slide22">
+    <!-- SLIDE 26B: ĐỀ BÀI CHI TIẾT BÀI TẬP 2 -->
+    <div class="slide" id="slide30">
         <div class="slide-header-brand">
-            <h2 class="slide-title">4. Kỹ Thuật Chuyển Đổi Trạng Thái Nâng Cao (ISTQB State Transition)</h2>
+            <h2 class="slide-title">Bài Tập Thực Hành 2: Thiết Kế Sơ Đồ Biến Đổi Trạng Thái DB</h2>
             <div class="brand-text-logo">IT <span>LEARN</span></div>
         </div>
-        <div class="content-area">
-            <div class="two-column-tech">
-                <div>
-                    <h4 style="color: var(--accent-purple); font-size:14px; margin-bottom:4px;">Phương Pháp Luận & Kịch Bản Đối Soát Thực Thể Database</h4>
-                    <p style="font-size:12px; line-height:1.45; margin-bottom:10px;">Không tập trung vào ô dữ liệu thô đầu vào form, kỹ thuật này giám sát chặt chẽ **Trạng thái (Status)** lưu trữ nội bộ của thực thể trong Cơ sở dữ liệu dưới sự tác động kích hoạt tuần tự của hành vi sự kiện.</p>
-                    
-                    <ul class="tech-step-list">
-                        <li>
-                            <span class="step-title"><i class="fa-solid fa-table text-purple"></i> Khái niệm State Table (Bảng Trạng Thái) đánh chặn luồng lỗi ẩn</span>
-                            <span class="step-desc">ISTQB Advanced hướng dẫn Tester thiết lập **State Table** (Ma trận dòng trạng thái x cột sự kiện) để quét sạch các trường hợp chuyển dịch không hợp lệ (**Negative Transitions**). Ví dụ: Khi tài khoản đang ở trạng thái `LOCKED`, sự kiện khách bấm nút "Rút Tiền Ví" bắt buộc hệ thống phải giữ nguyên trạng thái cũ và nổ thông báo từ chối, ngăn chặn triệt để Dev code thiếu hàm check quyền.</span>
-                        </li>
-                        <li>
-                            <span class="step-title"><i class="fa-solid fa-layer-group text-cyan"></i> Độ bao phủ tiêu chuẩn: Phân biệt 0-Switch Coverage và 1-Switch Coverage</span>
-                            <span class="step-desc">
-                                • **0-Switch Coverage (Độ bao phủ bậc 0):** Chỉ kiểm thử 1 sự kiện đơn lẻ tác động chuyển đổi trạng thái một lần độc lập (Ví dụ: Đang `ACTIVE` $ightarrow$ Nhập sai PIN $ightarrow$ Khóa).<br>
-                                • **1-Switch Coverage (Độ bao phủ bậc 1):** Kiểm thử chuỗi liên tiếp liên hoàn 2 sự kiện gối đầu nhau để truy vết dữ liệu sâu hơn (Ví dụ: Đang `PENDING` $ightarrow$ Sự kiện hệ thống Timeout $ightarrow$ Chuyển dịch sang `REVERSAL` $ightarrow$ Sự kiện Auto-Refund thành công $ightarrow$ Quay về `ACTIVE` ví an toàn).
-                            </span>
-                        </li>
-                    </ul>
-                </div>
-                <div class="visual-container">
-                    <h4 style="font-size:13px; color:var(--accent-purple); margin-bottom:12px; font-family:'Urbanist';">SƠ ĐỒ 1-SWITCH CHUỖI GIAO DỊCH LỖI MẠNG LÕI</h4>
-                    <div class="state-flow">
-                        <div class="state-item"><div class="state-badge">1. INITIATED</div><p>Khách hàng quét QR bấm chuyển tiền ví $ightarrow$ Tạo bản ghi giữ tiền (Hold số dư).</p></div>
-                        <div class="state-item pending"><div class="state-badge">2. PENDING</div><p>Hệ thống gọi sang cổng Napas đối tác. Xuất hiện sự cố nghẽn mạng $ightarrow$ <span class="code-inline">TIMEOUT ERROR</span>.</p></div>
-                        <div class="state-item fail"><div class="state-badge">3. REVERSAL</div><p>Kích hoạt lệnh Hoàn tiền tự động liên hoàn Backend $ightarrow$ Giải phóng số dư, đưa tiền trả ví an toàn.</p></div>
-                    </div>
+        <div class="content-area" style="height: calc(100% - 40px); margin-top: 10px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div class="box-item" style="border-left: 4px solid var(--accent-purple); padding: 12px 16px; margin-bottom: 8px;">
+                <h3 style="color: var(--accent-purple); font-size: 15px;"><i class="fa-solid fa-draw-polygon"></i> YÊU CẦU ĐỀ BÀI CHI TIẾT (Nộp ảnh sơ đồ vẽ trước Buổi số 2)</h3>
+                <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-top: 4px;">
+                    Học viên sử dụng công cụ thiết kế sơ đồ (Draw.io, Miro) hoặc tự tay vẽ ra giấy chụp ảnh mô tả chính xác vòng đời biến đổi của trường thông tin trạng thái dữ liệu lưu trong Database sau chuỗi hành vi của người dùng tác động.
+                </p>
+                <div style="background:rgba(175,64,255,0.04); border:1px solid rgba(175,64,255,0.2); padding:10px; border-radius:6px; margin-top:6px; font-family:monospace; font-size:11.5px; color:#fff;">
+                    <strong style="color:var(--accent-purple);">Mô phỏng chuỗi kịch bản rẽ nhánh nâng cao yêu cầu bắt buộc:</strong>
+                    <br>1. Người dùng click nút chuyển khoản $\rightarrow$ Bản ghi DB khởi tạo tình trạng **`INITIATED`**.
+                    <br>2. Hệ thống sinh mã xác thực OTP $\rightarrow$ Dịch chuyển sang hộp trạng thái **`PENDING_OTP`**.
+                    <br>3. Khách nhập OTP chính xác $\rightarrow$ **`SUCCESS`** | Nhập sai OTP quá 3 lần $\rightarrow$ **`FAILED`**.
+                    <br>4. <strong style="color:var(--accent-red);">Luồng lỗi thảm họa mất tín hiệu (API Timeout):</strong> Cổng Napas mất kết nối không phản hồi, lõi tự động kích hoạt lệnh dịch chuyển qua hộp trung gian **`AUTO_REVERSAL_PENDING`** và hoàn trả tiền an toàn toàn vẹn tại hộp **`REFUNDED`**.
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- SLIDE 23: KỸ THUẬT 5 ADVANCED DEEP-DIVE -->
-    <div class="slide" id="slide23">
-        <div class="slide-header-brand">
-            <h2 class="slide-title">5. Kỹ Thuật Kiểm Thử Bắt Cặp Toàn Diện (ISTQB Pairwise Testing)</h2>
-            <div class="brand-text-logo">IT <span>LEARN</span></div>
-        </div>
-        <div class="content-area">
-            <div class="two-column-tech">
-                <div>
-                    <h4 style="color: #ffffff; font-size:14px; margin-bottom:4px;">Phương Pháp Luận Toán Học & Hiệu Quả Tối Ưu Cấu Hình</h4>
-                    <p style="font-size:12px; line-height:1.45; margin-bottom:10px;">Ngăn chặn hiện tượng bùng nổ tổ hợp kịch bản khi hệ thống chạy tích hợp đa phân hệ. Kỹ thuật dựa trên nghiên cứu thực tế: 80% lỗi không sinh ra ở tham số đơn lẻ, mà sinh ra do sự xung đột tương tác khi kết hợp giữa cặp đôi 2 yếu tố bất kỳ.</p>
-                    
-                    <ul class="tech-step-list">
-                        <li>
-                            <span class="step-title"><i class="fa-solid fa-calculator text-cyan"></i> Bản chất toán học: Mảng trực giao (Orthogonal Arrays) và độ bao phủ t-way</span>
-                            <span class="step-desc">Pairwise sử dụng mô hình toán học **Mảng trực giao** để sàng lọc bộ dữ liệu đầu vào. Độ bao phủ tiêu chuẩn là **2-way coverage**, đảm bảo trong danh sách kịch bản test case cuối cùng xuất ra file Excel, mọi cặp đôi giá trị của hai biến bất kỳ đều được xuất hiện đi chung với nhau ít nhất một lần duy nhất.</span>
-                        </li>
-                        <li>
-                            <span class="step-title"><i class="fa-solid fa-flask text-green"></i> Case Study Banking: Ma trận kiểm thử tích hợp luồng Mobile-Banking kết hợp</span>
-                            <span class="step-desc">Yêu cầu cấu hình: 3 Hệ điều hành (iOS, Android, HuaweiOS) x 3 Phương thức cổng thanh toán (Thẻ Visa quốc tế, Ví QR liên kết, Trả góp qua ví tín dụng) x 3 Loại kết nối mạng (Wifi băng thông rộng, 4G sóng yếu, Mạng dây LAN nội bộ). <br>
-                            • Nếu chạy test vét cạn tổ hợp lý thuyết = $3 	imes 3 	imes 3 = 27$ ca kiểm thử, gây quá tải kiệt sức nhân sự.<br>
-                            • Áp dụng thuật toán bắt cặp toán học: Bộ ca kiểm thử tự động tinh giản **chỉ còn đúng 9 Test Cases duy nhất** nhưng vẫn bao phủ an toàn tuyệt đối 100% các xung đột lỗi cặp đôi đa biến.</span>
-                        </li>
-                    </ul>
-                </div>
-                <div class="visual-container">
-                    <i class="fa-solid fa-cubes" style="font-size: 70px; color: var(--accent-cyan); margin-bottom: 10px;"></i>
-                    <h4 style="font-size:13px; color:#fff;">PAIRWISE COMBINATORICS OPTIMIZER</h4>
-                    <p style="font-size:11.5px; text-align:center; color:var(--text-muted); margin-top:4px; padding: 0 5px;">Giải pháp tối ưu hóa tối thượng cắt giảm 70% thời gian thực thi chạy test case hồi quy cho dự án Agile ngân hàng số.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SLIDE 24: CASE STUDY SYSTEM -->
-    <div class="slide" id="slide24">
-        <div class="slide-header-brand">
-            <h2 class="slide-title">Case Study Thực Chiến Nghiệp Vụ Chuyển Tiền Ví</h2>
-            <div class="brand-text-logo">IT <span>LEARN</span></div>
-        </div>
-        <div class="content-area">
-            <div class="two-column-equal">
-                <div class="box-item" style="border-top: 3px solid var(--accent-cyan); display: flex; flex-direction: column; justify-content: center;">
-                    <h4 style="color: var(--accent-cyan); font-size: 16px; margin-bottom: 8px;"><i class="fa-solid fa-file-contract"></i> Tài Liệu Đặc Tả (Specification)</h4>
-                    <p style="font-size: 13.5px;">Chức năng: Khách hàng Chuyển khoản ví điện tử nội bộ từ tài khoản nguồn sang tài khoản đích.</p>
-                    <ul class="basic-list" style="font-size: 12.5px;">
-                        <li><i class="fa-solid fa-circle-minus"></i> Hạn mức tối thiểu/giao dịch: **10,000 VND**</li>
-                        <li><i class="fa-solid fa-circle-plus"></i> Hạn mức tối đa/giao dịch: **20,000,000 VND**</li>
-                        <li><i class="fa-solid fa-percent"></i> Phí giao dịch: **0 VND** (Miễn phí toàn bộ)</li>
-                        <li><i class="fa-solid fa-shield-halved"></i> Bảo mật: Xác thực mã Pin hoặc OTP trước khi hoàn tất lệnh trừ tiền Backend.</li>
-                    </ul>
-                </div>
-                <div class="box-item" style="border-top: 3px solid var(--accent-green); display: flex; flex-direction: column; justify-content: center;">
-                    <h4 style="color: var(--accent-green); font-size: 16px; margin-bottom: 8px;"><i class="fa-solid fa-database"></i> Phân Tích Kiến Trúc Kỹ Thuật (Data Flow)</h4>
-                    <p style="font-size: 13.5px;">Tester cần thực hiện đối soát dữ liệu trên 2 tầng phân lớp hệ thống:</p>
-                    <ul class="basic-list" style="font-size: 12.5px;">
-                        <li><i class="fa-solid fa-code"></i> **API JSON Response:** Kiểm tra mã trạng thái `statusCode: "00"` đại diện giao dịch thành công.</li>
-                        <li><i class="fa-solid fa-database"></i> **Database SQL Verification:** Viết lệnh query kiểm tra: `SELECT Balance FROM Users WHERE UserID = 'A';` xem số dư tài khoản có bị trừ chính xác số tiền chuyển hay không.</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SLIDE 25: BÀI TẬP VỀ NHÀ -->
-    <div class="slide" id="slide25">
-        <div class="slide-header-brand">
-            <h2 class="slide-title">Tổng Kết & Bài Tập Thực Hành Tại Nhà</h2>
-            <div class="brand-text-logo">IT <span>LEARN</span></div>
-        </div>
-        <div class="content-area">
-            <div class="two-column">
-                <div class="stacked-boxes">
-                    <div class="box-item" style="border-top: 3px solid var(--accent-warning); padding: 16px 20px;">
-                        <h4 style="color: var(--accent-warning); font-size: 15px; margin-bottom: 6px;"><i class="fa-solid fa-list-check"></i> Yêu cầu nộp bài bắt buộc trước buổi học tiếp theo:</h4>
-                        <ul class="basic-list" style="font-size: 13px; margin-bottom: 0;">
-                            <li><i class="fa-solid fa-pen-to-square"></i> <strong>Bài tập 1:</strong> Thiết kế 20 Test Cases chi tiết trên file Excel bao phủ tính năng chuyển tiền ví ở slide trước. Tạo cột phân định rõ ràng ca nào dùng kỹ thuật EP, ca nào dùng BVA kèm giá trị data thực tế cụ thể.</li>
-                            <li><i class="fa-solid fa-diagram-project"></i> <strong>Bài tập 2:</strong> Vẽ sơ đồ Chuyển đổi trạng thái (State Transition Diagram), xử lý chi tiết nhánh kịch bản dính lỗi kết nối mạng (Timeout) và cơ chế Reversal (Hoàn tiền) dòng tiền hệ thống.</li>
-                            <li><i class="fa-solid fa-book"></i> Nghiên cứu trước tài liệu cấu trúc tích hợp Swagger API mẫu chuẩn bị hành trang cho buổi học số 2 chuyên sâu về API Testing với công cụ Postman.</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="visual-container">
-                    <i class="fa-solid fa-user-graduate" style="font-size: 100px; color: var(--accent-green); margin-bottom: 15px;"></i>
-                    <h4>PRACTICE MAKES PERFECT</h4>
-                </div>
+            <div class="box-item" style="border-left: 4px solid var(--accent-warning); padding: 12px 16px;">
+                <h3 style="color:var(--accent-warning); font-size:14px;"><i class="fa-solid fa-circle-check"></i> TIÊU CHUẨN ĐÁNH GIÁ CHẤM ĐIỂM (ACCEPTANCE CRITERIA)</h3>
+                <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.45; margin-top: 2px;">
+                    • **Đạt Yêu Cầu (Pass):** Vẽ đúng, tường minh mũi tên liên kết logic, thể hiện rõ tên Sự Kiện kích hoạt trên thân các đường mũi tên luân chuyển trạng thái.
+                    <br>• **Xuất Sắc (Excellent):** Nhận diện và bổ sung thêm sự kiện chuyển dịch từ hộp `FAILED` quay ngược trở lại tái sử dụng cho lượt giao dịch mới mà không làm nổ cấu trúc bản ghi DB cũ.
+                </p>
             </div>
         </div>
     </div>
@@ -1426,7 +1618,7 @@
 
 <script>
     let currentSlide = 1;
-    const totalSlides = 25;
+    const totalSlides = 30;
 
     function showSlide(n) {
         document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
@@ -1449,12 +1641,62 @@
     function toggleFullscreen() {
         const elem = document.getElementById('presentation');
         if (!document.fullscreenElement) {
-            elem.requestFullscreen().catch(err => {
-                alert(`Không thể kích hoạt chế độ toàn màn hình: ${err.message}`);
-            });
+            elem.requestFullscreen().catch(err => { alert(`Lỗi toàn màn hình: ${err.message}`); });
         } else {
             document.exitFullscreen();
         }
+    }
+
+    function clickRoleS3(role) {
+        document.querySelectorAll('#s3-box-container .box-item').forEach(b => b.classList.remove('selected'));
+        event.currentTarget.classList.add('selected');
+        ['qa', 'qc', 'tester'].forEach(r => {
+            const el = document.getElementById('s3-svg-' + r);
+            if(el) el.classList.remove('svg-highlight-glow');
+        });
+        const targetSvg = document.getElementById('s3-svg-' + role);
+        if(targetSvg) targetSvg.classList.add('svg-highlight-glow');
+    }
+
+    function clickDomainS4(domainKey) {
+        document.querySelectorAll('#slide4 .table-layout tbody tr').forEach(r => r.classList.remove('selected'));
+        event.currentTarget.classList.add('selected');
+        const keys = ['health', 'auto', 'ecom', 'fin'];
+        keys.forEach(k => {
+            const el = document.getElementById('s4-graphics-' + k);
+            if(el) { el.style.opacity = '0'; el.style.display = 'none'; }
+        });
+        const targetEl = document.getElementById('s4-graphics-' + domainKey);
+        if(targetEl) {
+            targetEl.style.display = 'block';
+            setTimeout(() => { targetEl.style.opacity = '1'; }, 20);
+        }
+    }
+
+    function clickSevS13(tierNum) {
+        document.querySelectorAll('#s13-sev-container .box-item').forEach(b => b.classList.remove('selected'));
+        event.currentTarget.classList.add('selected');
+        for(let i=1; i<=3; i++) {
+            const el = document.getElementById('s13-svg-tier' + i);
+            if(el) { el.classList.remove('svg-highlight-glow'); el.classList.remove('svg-highlight-glow-red'); }
+        }
+        const activeSvg = document.getElementById('s13-svg-tier' + tierNum);
+        if(activeSvg) {
+            if(tierNum === 1) activeSvg.classList.add('svg-highlight-glow-red');
+            else activeSvg.classList.add('svg-highlight-glow');
+        }
+    }
+
+    function clickStatusS16(statusKey) {
+        document.querySelectorAll('#s16-status-container tbody tr').forEach(b => b.classList.remove('selected'));
+        event.currentTarget.classList.add('selected');
+        const keys = ['new', 'assigned', 'fixed', 'reopen', 'closed'];
+        keys.forEach(k => {
+            const el = document.getElementById('s16-svg-' + k);
+            if(el) el.classList.remove('svg-highlight-glow');
+        });
+        const targetSvg = document.getElementById('s16-svg-' + statusKey);
+        if(targetSvg) targetSvg.classList.add('svg-highlight-glow');
     }
 </script>
 
