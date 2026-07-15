@@ -114,7 +114,13 @@ const COURSE_CONFIG = [
                 links: [
                     { name: "private_training_s1", url: "private_training_s1.html" }
                 ]
-            }
+            },
+            {
+                sectionTitle: "Private Training S2",
+                links: [
+                    { name: "private_training_s2", url: "private_training_s2.html" }
+                ]
+            }          
         ]
     }
     /*
