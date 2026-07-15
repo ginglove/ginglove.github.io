@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUỔI 2: NỀN TẢNG API TESTING & CẤU TRÚC HỆ THỐNG NÂNG CAO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* CORE RESET & VIEWPORT SETUP */
+        * { box-sizing: border-box; }
+        body { 
+            background-color: #020617; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            height: 100vh; 
+            overflow: hidden; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+
+        .presentation-viewport { 
+            width: 1280px; 
+            height: 720px; 
+            position: relative; 
+            perspective: 1500px; 
+            background-color: #020617;
+        }
+
+        /* PREMIUM SLIDE CONTAINER */
+        .slide-container {
+            background-color: #070f24;
+            color: #f3f4f6;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            display: none; 
+            flex-direction: column;
+            padding: 40px 50px 85px 50px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .slide-container.active { 
+            display: flex; 
+            animation: slideIn 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-container::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px;
+            background: linear-gradient(90deg, #00f2fe 0%, #3b82f6 50%, #7c3aed 100%); z-index: 20;
+            border-radius: 24px 24px 0 0;
+        }
+
+        .itlearn-header {
+            position: absolute; top: 25px; right: 50px; font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700; font-size: 24px; color: #00f2fe; letter-spacing: 3px; text-shadow: 0 0 12px rgba(0,242,254,0.4); z-index: 30;
+        }
+
+        .nav-dock {
+            position: absolute; bottom: 20px; left: 50px; right: 50px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 40; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px;
+        }
+        .btn-dock { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); padding: 10px 24px; border-radius: 8px; color: #9ca3af; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 1px; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-dock:hover { background: rgba(0,242,254,0.05); border-color: #00f2fe; color: #00f2fe; box-shadow: 0 0 12px rgba(0,242,254,0.15); }
+
+        /* TYPOGRAPHY */
+        h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; margin: 0; letter-spacing: -0.5px; }
+        h1 { font-size: 60px; line-height: 1.1; font-weight: 700; color: #ffffff; }
+        .slide-title { font-size: 28px; margin-bottom: 12px; color: #ffffff; display: flex; align-items: center; gap: 15px; font-weight: 700; }
+        .slide-title::before { content: '//'; color: #00f2fe; text-shadow: 0 0 8px rgba(0,242,254,0.6); }
+        h3 { font-size: 17px; color: #00f2fe; margin-bottom: 6px; font-weight: 700; }
+        p, li { font-size: 13.5px; line-height: 1.5; color: #94a3b8; }
+        strong { color: #ffffff; }
+
+        .content-area { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; width: 100%; position: relative; z-index: 5; overflow: hidden; }
+        .two-column { display: grid; grid-template-columns: 310px 1fr; gap: 25px; width: 100%; align-items: center; }
+
+        .btn-nav { background: transparent; border: 1px solid #00f2fe; color: #00f2fe; padding: 12px 28px; border-radius: 8px; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; gap: 12px; }
+        .btn-nav:hover { background: #00f2fe; color: #030712; box-shadow: 0 0 25px rgba(0, 242, 254, 0.35); transform: translateY(-1px); }
+        .btn-success-prime { border-color: #10b981; color: #10b981; }
+        .btn-success-prime:hover { background: #10b981; color: #ffffff; box-shadow: 0 0 25px rgba(16, 185, 129, 0.35); }
+
+        /* DIAGNOSTIC QUIZ CARDS */
+        .cyber-card { background: rgba(11, 22, 49, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 25px 40px; max-width: 950px; margin: 0 auto; width: 100%; }
+        .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .option-btn { background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.07); padding: 12px 18px; border-radius: 10px; color: #cbd5e1; font-size: 14px; cursor: pointer; transition: all 0.2s; font-family: 'Plus Jakarta Sans', sans-serif; display: flex; align-items: center; gap: 12px; width: 100%; line-height: 1.4; text-align: left; }
+        .option-btn:hover { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.2); color: #ffffff; }
+        .option-btn.correct { background: rgba(16,185,129,0.08) !important; border-color: #10b981 !important; color: #10b981 !important; font-weight: 600; }
+        .option-btn.wrong { background: rgba(239,68,68,0.08) !important; border-color: #ef4444 !important; color: #ef4444 !important; }
+        .quiz-feedback { margin-top: 10px; min-height: 25px; font-size: 16px; font-weight: 600; font-family: 'Space Grotesk', sans-serif; display: flex; align-items: center; justify-content: center; gap: 10px; opacity: 0; }
+        .action-box { display: flex; justify-content: center; margin-top: 10px; display: none; }
+
+        /* ARCHITECTURE SƠ ĐỒ */
+        .architecture-grid-deep { display: grid; grid-template-columns: 95px 105px 130px 175px 125px; gap: 12px; width: 100%; background: #030817; border: 1px solid rgba(255,255,255,0.03); border-radius: 16px; padding: 20px 12px; position: relative; align-items: center; justify-content: center; overflow: hidden; height: 410px; }
+        .arch-layer-deep { display: flex; flex-direction: column; gap: 12px; z-index: 10; width: 100%; height: 100%; justify-content: center; }
+        .arch-layer-deep.top-align { justify-content: flex-start; padding-top: 25px; }
+        .arch-title-deep { font-family: 'Space Grotesk', sans-serif; font-size: 10px; color: #475569; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; font-weight: 700; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 4px; }
+        .node-deep { background: #0b1532; border: 1px solid rgba(255,255,255,0.05); padding: 8px 4px; border-radius: 8px; text-align: center; font-size: 11px; font-weight: 600; color: #e2e8f0; position: relative; word-wrap: break-word; overflow-wrap: break-word; width: 100%; flex-shrink: 0; min-height: 52px; display: flex; flex-direction: column; justify-content: center; align-items: center; line-height: 1.3; }
+        .node-deep i { font-size: 14px; margin-bottom: 3px; color: #94a3b8; }
+        .node-lb { border-color: #a855f7; background: rgba(168,85,247,0.03); color: #a855f7; }
+        .node-lb i { color: #a855f7; }
+        .node-gate-deep { border-color: #00f2fe; background: rgba(0,242,254,0.03); color: #00f2fe; min-height: 75px; font-weight: 700; }
+        .node-gate-deep i { color: #00f2fe; font-size: 16px; }
+        .node-sec-deep { border-color: #ef4444; background: rgba(239,68,68,0.03); color: #ef4444; font-size: 10px; min-height: 65px; }
+        .node-sec-deep i { color: #ef4444; }
+        .node-svc-deep { border-color: #3b82f6; background: rgba(59,130,246,0.03); }
+        .node-svc-deep i { color: #3b82f6; }
+        .node-db-deep { border-color: #10b981; background: rgba(16,185,129,0.03); font-family: monospace; font-size: 10px; }
+        .node-db-deep i { color: #10b981; }
+        .node-mq-deep { border-color: #f59e0b; background: rgba(245,158,11,0.03); color: #f59e0b; font-size: 10px; }
+        .node-mq-deep i { color: #f59e0b; }
+
+        .svg-pipe-deep { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        .pipe-line-deep { stroke: rgba(255, 255, 255, 0.02); stroke-width: 1.5; fill: none; }
+        .pulse-line-deep { stroke: #3b82f6; stroke-width: 1.5; fill: none; stroke-dasharray: 6, 20; animation: streamDeep 1.2s linear infinite; }
+        .pulse-line-deep.purple { stroke: #a855f7; }
+        .pulse-line-deep.cyan { stroke: #00f2fe; }
+        .pulse-line-deep.red { stroke: #ef4444; stroke-dasharray: 4, 15; }
+        .pulse-line-deep.amber { stroke: #f59e0b; }
+        @keyframes streamDeep { to { stroke-dashoffset: -26; } }
+
+        /* DASHBOARDS */
+        .matrix-dashboard { display: grid; grid-template-columns: 260px 1fr; gap: 20px; width: 100%; height: 480px; margin-top: 5px; overflow: hidden; }
+        .matrix-menu { display: flex; flex-direction: column; gap: 8px; justify-content: center; }
+        .matrix-tab-btn { background: #0b1532; border: 1px solid rgba(255,255,255,0.04); border-left: 4px solid #475569; padding: 12px; border-radius: 8px; text-align: left; cursor: pointer; transition: all 0.25s ease; }
+        .matrix-tab-btn h4 { font-family: 'Space Grotesk', sans-serif; font-size: 14px; color: #94a3b8; margin: 0; font-weight: 700; }
+        .matrix-tab-btn p { font-size: 11px; margin: 3px 0 0 0; color: #475569; }
+        .matrix-tab-btn:hover { background: rgba(255,255,255,0.02); border-left-color: #64748b; }
+        .matrix-tab-btn.active { background: rgba(0, 242, 254, 0.03); border-color: rgba(0, 242, 254, 0.15); border-left-color: #00f2fe; }
+        .matrix-tab-btn.active h4 { color: #00f2fe; }
+
+        .matrix-display-panel { background: #030817; border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 22px; position: relative; overflow-y: auto; height: 100%; }
+        .matrix-display-panel::-webkit-scrollbar { width: 5px; }
+        .matrix-display-panel::-webkit-scrollbar-thumb { background: rgba(0,242,254,0.15); border-radius: 3px; }
+        .matrix-pane-content { display: none; }
+        .matrix-pane-content.active { display: block; animation: paneReveal 0.25s ease-out forwards; }
+
+        /* 8 BLOCKS EXPANDED PANEL (SLIDE 9_2) */
+        .matrix-dashboard-expanded { display: grid; grid-template-columns: 280px 1fr; gap: 15px; width: 100%; height: 500px; margin-top: 2px; overflow: hidden; }
+        .matrix-menu-expanded { display: flex; flex-direction: column; gap: 5px; overflow-y: auto; padding-right: 4px; }
+        .matrix-menu-expanded::-webkit-scrollbar { width: 4px; }
+        .matrix-menu-expanded::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 2px; }
+
+        .matrix-tab-btn-exp { background: #0b1532; border: 1px solid rgba(255,255,255,0.03); border-left: 4px solid #475569; padding: 8px 12px; border-radius: 6px; text-align: left; cursor: pointer; transition: all 0.2s ease; }
+        .matrix-tab-btn-exp h4 { font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; color: #94a3b8; margin: 0; font-weight: 700; }
+        .matrix-tab-btn-exp p { font-size: 10.5px; margin: 1px 0 0 0; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .matrix-tab-btn-exp:hover { background: rgba(255,255,255,0.02); border-left-color: #64748b; }
+        .matrix-tab-btn-exp.active { background: rgba(0, 242, 254, 0.03); border-color: rgba(0, 242, 254, 0.1); border-left-color: #00f2fe; }
+        .matrix-tab-btn-exp.active h4 { color: #00f2fe; }
+        .matrix-tab-btn-exp.sec-resp { border-left-color: #10b981; }
+        .matrix-tab-btn-exp.sec-resp.active { border-left-color: #10b981; }
+        .matrix-tab-btn-exp.sec-resp.active h4 { color: #10b981; }
+
+        .matrix-display-panel-exp { background: #030817; border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 20px; position: relative; overflow-y: auto; height: 100%; }
+        .matrix-display-panel-exp::-webkit-scrollbar { width: 5px; }
+        .matrix-display-panel-exp::-webkit-scrollbar-thumb { background: rgba(0,242,254,0.15); border-radius: 3px; }
+        .pane-content-exp { display: none; }
+        .pane-content-exp.active { display: block; animation: paneReveal 0.25s ease-out forwards; }
+
+        @keyframes paneReveal { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* TABLES, CODE & HIGHLIGHTS */
+        .code-wrapper { background: #020617; color: #cbd5e1; padding: 12px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 11.5px; line-height: 1.45; border: 1px solid rgba(255,255,255,0.04); position: relative; margin-top: 5px; overflow-x: auto; }
+        .code-label { position: absolute; top: -10px; right: 15px; background: #1e293b; padding: 2px 12px; border-radius: 4px; font-size: 10px; font-family: 'Space Grotesk', sans-serif; color: #00f2fe; font-weight: 700; border: 1px solid rgba(0,242,254,0.2); }
+        mark { background: rgba(0,242,254,0.12); color: #00f2fe; padding: 0 4px; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; table-layout: fixed; }
+        th { background: rgba(255,255,255,0.02); color: #00f2fe; text-align: left; padding: 8px 10px; border-bottom: 2px solid rgba(0,242,254,0.15); font-family: 'Space Grotesk', sans-serif; font-weight: 700; }
+        td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.02); color: #cbd5e1; vertical-align: top; line-height: 1.45; word-wrap: break-word; overflow-wrap: break-word; }
+        .bullet-list { padding-left: 16px; margin: 4px 0; }
+        .bullet-list li { font-size: 13.5px; margin-bottom: 5px; color: #94a3b8; line-height: 1.5; }
+
+        .artifact-box { background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 15px; margin-top: 15px; }
+        .artifact-tag-wrapper { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .artifact-clickable-tag { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.07); padding: 8px 16px; border-radius: 8px; font-size: 13px; font-family: 'Space Grotesk', sans-serif; color: #94a3b8; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s ease; }
+        .artifact-clickable-tag:hover { background: rgba(0, 242, 254, 0.04); border-color: #00f2fe; color: #00f2fe; }
+        .artifact-clickable-tag.active { background: rgba(0, 242, 254, 0.08); border-color: #00f2fe; color: #00f2fe; box-shadow: 0 0 12px rgba(0,242,254,0.2); }
+
+        .live-inspector { background: rgba(7, 15, 36, 0.95); border: 1px solid rgba(0,242,254,0.15); border-radius: 12px; margin-top: 15px; padding: 20px; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(8px); animation: inspectorSlide 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+        @keyframes inspectorSlide { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .inspector-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px; font-size: 13.5px; background: rgba(0,0,0,0.3); padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.02); }
+
+        .expert-tip { font-size: 13px; color: #fbbf24; background: rgba(245,158,11,0.03); padding: 10px 14px; border-radius: 6px; border-left: 3px solid #f59e0b; margin-top: 10px; line-height: 1.5; }
+        
+        .highlight-box {
+            background: rgba(11, 22, 49, 0.5);
+            border: 1px solid rgba(0, 242, 254, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="presentation-viewport">
+
+    <div class="slide-container active" id="slide1">
+        <div class="itlearn-header">ITLEarn</div>
+        <div class="content-area" style="text-align: center;">
+            <p style="text-transform: uppercase; letter-spacing: 6px; color: #00f2fe; font-weight: 700; margin-bottom: 15px; font-family: 'Space Grotesk';">SESSION 02</p>
+            <h1>API TESTING &<br><span style="color:#00f2fe;">SYSTEM STRUCTURE</span></h1>
+            <div style="width: 60px; height: 3px; background: #00f2fe; margin: 35px auto; border-radius: 2px;"></div>
+            <p style="font-size: 24px; color: #cbd5e1; margin-bottom: 40px;">Giảng viên: <strong>Lê Trường Giang</strong></p>
+            <div>
+                <button class="btn-nav" onclick="handleNext()">START DIAGNOSTIC <i class="fa-solid fa-bolt"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide-container" id="slide2">
+        <div class="itlearn-header">ITLEarn</div><h2 class="slide-title">Kiểm tra 01: Khái niệm nền</h2>
+        <div class="content-area"><div class="cyber-card"><h3>Q1: Nếu phải giải thích bản chất của API cho một người "ngoại đạo", định nghĩa nào sau đây là trực quan nhất?</h3><div class="quiz-options" id="optionsQ1"><button class="option-btn" onclick="checkAnswer('Q1', 'wrong', this)">A. Là một hệ quản trị cơ sở dữ liệu dùng để lưu trữ số dư tài khoản khách hàng.</button><button class="option-btn" onclick="checkAnswer('Q1', 'correct', this)">B. Là "Cửa sổ giao tiếp" trung gian cho phép các phân hệ phần mềm trao đổi dữ liệu với nhau.</button><button class="option-btn" onclick="checkAnswer('Q1', 'wrong', this)">C. Là phần giao diện đồ họa (UI/UX) hiển thị trực tiếp trên Mobile App.</button><button class="option-btn" onclick="checkAnswer('Q1', 'wrong', this)">D. Là một cấu trúc phần cứng cáp quang vật lý bảo mật đường truyền mạng.</button></div><div class="quiz-feedback" id="feedbackQ1"></div><div class="action-box" id="actionQ1"><button class="btn-nav" onclick="handleNext()">Câu Tiếp Theo <i class="fa-solid fa-arrow-right"></i></button></div></div></div>
+    </div>
+    <div class="slide-container" id="slide3">
+        <div class="itlearn-header">ITLEarn</div><h2 class="slide-title">Kiểm tra 02: Kinh nghiệm thực tế</h2>
+        <div class="content-area"><div class="cyber-card"><h3>Q2: Trong các công việc hàng daily của một Tester dự án thực tế, hành động nào sau đây thuộc về API Testing?</h3><div class="quiz-options" id="optionsQ2"><button class="option-btn" onclick="checkAnswer('Q2', 'wrong', this)">A. Mở điện thoại, click nút Chuyển tiền và bắt lỗi giao diện hiển thị sai màu sắc.</button><button class="option-btn" onclick="checkAnswer('Q2', 'wrong', this)">B. Truy cập vào cơ sở dữ liệu lõi dùng lệnh SQL để thay đổi trực tiếp số dư.</button><button class="option-btn" onclick="checkAnswer('Q2', 'correct', this)">C. Giả lập Client gửi request chứa payload lên Server và verify cấu trúc JSON trả về.</button><button class="option-btn" onclick="checkAnswer('Q2', 'wrong', this)">D. Viết tài liệu kiểm thử Test Plan tổng thể gửi cho đại diện ngân hàng ký duyệt.</button></div><div class="quiz-feedback" id="feedbackQ2"></div><div class="action-box" id="actionQ2"><button class="btn-nav" onclick="handleNext()">Câu Tiếp Theo <i class="fa-solid fa-arrow-right"></i></button></div></div></div>
+    </div>
+    <div class="slide-container" id="slide4">
+        <div class="itlearn-header">ITLEarn</div><h2 class="slide-title">Kiểm tra 03: HTTP Methods</h2>
+        <div class="content-area"><div class="cyber-card"><h3>Q3: Khi khách hàng thực hiện hành động gửi yêu cầu lệnh "Chuyển khoản tiền", hệ thống Ngân hàng sẽ áp dụng Method nào?</h3><div class="quiz-options" id="optionsQ3"><button class="option-btn" onclick="checkAnswer('Q3', 'wrong', this)">A. Method GET để đảm bảo tốc độ tải gói tin nhanh và an toàn.</button><button class="option-btn" onclick="checkAnswer('Q3', 'correct', this)">B. Method POST để khởi tạo dữ liệu giao dịch an toàn kèm dữ liệu bọc trong Body.</button><button class="option-btn" onclick="checkAnswer('Q3', 'wrong', this)">C. Method DELETE để thực hiện xóa số tiền từ tài khoản nguồn.</button><button class="option-btn" onclick="checkAnswer('Q3', 'wrong', this)">D. Method OPTIONS để truy vấn cấu hình phân giải tên miền của máy chủ ngân hàng.</button></div><div class="quiz-feedback" id="feedbackQ3"></div><div class="action-box" id="actionQ3"><button class="btn-nav" onclick="handleNext()">Câu Tiếp Theo <i class="fa-solid fa-arrow-right"></i></button></div></div></div>
+    </div>
+    <div class="slide-container" id="slide5">
+        <div class="itlearn-header">ITLEarn</div><h2 class="slide-title">Kiểm tra 04: Mã trạng thái mạng</h2>
+        <div class="content-area"><div class="cyber-card"><h3>Q4: Một Giao dịch viên đăng nhập thành công nhưng nhận về mã lỗi 403 khi cố gọi API phê duyệt gói vay lớn (chỉ cấp Manager được gọi). Lỗi 403 phản ánh điều gì?</h3><div class="quiz-options" id="optionsQ4"><button class="option-btn" onclick="checkAnswer('Q4', 'wrong', this)">A. Hệ thống không nhận diện được danh tính tài khoản này (Chưa login thành công).</button><button class="option-btn" onclick="checkAnswer('Q4', 'correct', this)">B. Tài khoản đã xác thực danh tính đúng, nhưng không đủ quyền hạn thực thi tác vụ.</button><button class="option-btn" onclick="checkAnswer('Q4', 'wrong', this)">C. Máy chủ bị Typo đường dẫn API duyệt phê duyệt gói vay.</button><button class="option-btn" onclick="checkAnswer('Q4', 'wrong', this)">D. Máy chủ ngân hàng sập lõi kết nối hạ tầng.</button></div><div class="quiz-feedback" id="feedbackQ4"></div><div class="action-box" id="actionQ4"><button class="btn-nav" onclick="handleNext()">Câu Tiếp Theo <i class="fa-solid fa-arrow-right"></i></button></div></div></div>
+    </div>
+    <div class="slide-container" id="slide6">
+        <div class="itlearn-header">ITLEarn</div><h2 class="slide-title">Kiểm tra 05: Sử dụng công cụ</h2>
+        <div class="content-area"><div class="cyber-card"><h3>Q5: Khi kiểm thử chuỗi kịch bản, để tự động lấy mã Token từ API Login truyền cho các API phía sau mà không làm thủ công, kỹ thuật nào tối ưu nhất?</h3><div class="quiz-options" id="optionsQ5"><button class="option-btn" onclick="checkAnswer('Q5', 'wrong', this)">A. Sử dụng mục lưu lịch sử (History Tab) chạy lại chuỗi liên tiếp.</button><button class="option-btn" onclick="checkAnswer('Q5', 'wrong', this)">B. Ghi chép Token ra file nháp rồi nạp tự động qua một extension cài thêm.</button><button class="option-btn" onclick="checkAnswer('Q5', 'correct', this)">C. Viết tập lệnh Post-response Script trích xuất chuỗi JSON rồi lưu vào Collection Variable.</button><button class="option-btn" onclick="checkAnswer('Q5', 'wrong', this)">D. Đóng cứng chuỗi token vào phần cài đặt biến toàn cục Global Variables.</button></div><div class="quiz-feedback" id="feedbackQ5"></div><div class="action-box" id="actionQ5"><button class="btn-nav" onclick="handleNext()">Câu Tiếp Theo <i class="fa-solid fa-arrow-right"></i></button></div></div></div>
+    </div>
+    <div class="slide-container" id="slide6_2">
+        <div class="itlearn-header">ITLEarn</div><h2 class="slide-title">Kiểm tra 06: Bản chất Content-Type</h2>
+        <div class="content-area"><div class="cyber-card"><h3>Q6: Phát biểu nào sau đây mô tả chính xác nhất về cơ chế quy định cấu trúc Content-Type của gói tin API?</h3><div class="quiz-options" id="optionsQ6"><button class="option-btn" onclick="checkAnswer('Q6', 'wrong', this)">A. Request Content-Type do Server ép buộc bắt Client phải tuân theo cấu trúc mẫu.</button><button class="option-btn" onclick="checkAnswer('Q6', 'correct', this)">B. Request Content-Type do Client quy định gửi lên; Response Content-Type do Server quyết định trả về.</button><button class="option-btn" onclick="checkAnswer('Q6', 'wrong', this)">C. Cả hai đầu Content-Type đều do Firewall tự động tính toán để đồng bộ luồng.</button><button class="option-btn" onclick="checkAnswer('Q6', 'wrong', this)">D. Định dạng Content-Type chỉ có giá trị trên Swagger, không ảnh hưởng tới Postman.</button></div><div class="quiz-feedback" id="feedbackQ6"></div><div class="action-box" id="actionQ6"><button class="btn-nav" onclick="handleNext()">Câu Tiếp Theo <i class="fa-solid fa-arrow-right"></i></button></div></div></div>
+    </div>
+    <div class="slide-container" id="slide6_3">
+        <div class="itlearn-header">ITLEarn</div><h2 class="slide-title">Kiểm tra 07: Kỹ năng xử lý JSONPath</h2>
+        <div class="content-area"><div class="cyber-card"><h3>Q7: Cho chuỗi cấu trúc phản hồi response: <code style="color:#00f2fe;">{"data": {"list": [{"id": "ACC1", "val": 500}]}}</code>. Cú pháp JSONPath để trích xuất số 500 là?</h3><div class="quiz-options" id="optionsQ7"><button class="option-btn" onclick="checkAnswer('Q7', 'wrong', this)">A. data.list.id[0].val</button><button class="option-btn" onclick="checkAnswer('Q7', 'wrong', this)">B. data.list(1).val</button><button class="option-btn" onclick="checkAnswer('Q7', 'correct', this)">C. data.list[0].val</button><button class="option-btn" onclick="checkAnswer('Q7', 'wrong', this)">D. response.data.list.val</button></div><div class="quiz-feedback" id="feedbackQ7"></div><div class="action-box" id="actionQ7"><button class="btn-nav" onclick="handleNext()">Câu Tiếp Theo <i class="fa-solid fa-arrow-right"></i></button></div></div></div>
+    </div>
+    <div class="slide-container" id="slide6_4">
+        <div class="itlearn-header">ITLEarn</div><h2 class="slide-title">Kiểm tra 08: Bản chất lỗi của SOAP Protocol</h2>
+        <div class="content-area"><div class="cyber-card"><h3>Q8: Điểm "bẫy" nguy hiểm nhất khi thực hiện Test một API định dạng SOAP (Legacy XML) là gì?</h3><div class="quiz-options" id="optionsQ8"><button class="option-btn" onclick="checkAnswer('Q8', 'wrong', this)">A. Giao thức SOAP luôn trả về mã lỗi HTTP 404 cho mọi hành vi xử lý nghiệp vụ thất bại.</button><button class="option-btn" onclick="checkAnswer('Q8', 'correct', this)">B. Hệ thống có thể gặp lỗi nghiệp vụ nặng nề nhưng Server vẫn trả về mã mạng HTTP 200 OK.</button><button class="option-btn" onclick="checkAnswer('Q8', 'wrong', this)">C. SOAP không hỗ trợ chèn mã bảo mật Authorization Header như RESTful.</button><button class="option-btn" onclick="checkAnswer('Q8', 'wrong', this)">D. Gói XML của SOAP tự động thay đổi cấu trúc sau mỗi lần Client tắt máy tính.</button></div><div class="quiz-feedback" id="feedbackQ8"></div><div class="action-box" id="actionQ8"><button class="btn-nav btn-success-prime" onclick="showFinalScoreSummary()">Xem Kết Quả Đánh Giá <i class="fa-solid fa-square-poll-vertical"></i></button></div></div></div>
+    </div>
+
+    <div class="slide-container" id="slide7">
+        <div class="itlearn-header">ITLEarn</div>
+        <div class="content-area" style="text-align: center;">
+            <div style="background: rgba(11, 22, 49, 0.5); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; padding: 40px; max-width: 850px; margin: 0 auto;">
+                <div style="font-size: 40px; color: #fbbf24; margin-bottom: 5px;"><i class="fa-solid fa-trophy"></i></div>
+                <h2 style="font-size: 28px; margin-bottom: 10px; font-family: 'Space Grotesk'; letter-spacing: 1px;">DIAGNOSTIC REPORT CENTER</h2>
+                <div style="margin: 20px auto; width: 150px; height: 150px; border-radius: 50%; border: 3px solid #00f2fe; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #030817; box-shadow: 0 0 20px rgba(0,242,254,0.1);">
+                    <span id="finalScoreDisplay" style="font-size: 48px; font-weight: 700; color: #ffffff; font-family: 'Space Grotesk';">0/8</span>
+                    <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #00f2fe; font-weight: bold; margin-top: -3px;">Correct</span>
+                </div>
+                <h3 id="rankBadgeDisplay" style="font-size: 22px; color: #10b981; margin-bottom: 12px;">Danh hiệu: Đang phân tích...</h3>
+                <p id="motivationalMessageDisplay" style="font-size: 16px; color: #9ca3af; line-height: 1.6; max-width: 650px; margin: 0 auto 30px auto;">Lời khích lệ động viên đang được xử lý...</p>
+                <button class="btn-nav" onclick="handleNext()">VÀO CHƯƠNG TRÌNH CHÍNH <i class="fa-solid fa-play"></i></button>
+            </div>
+        </div>
+        <div class="nav-dock">
+            <button class="btn-dock" onclick="handlePrev()"><i class="fa-solid fa-chevron-left"></i> QUAY LẠI</button>
+            <button class="btn-dock" onclick="handleNext()">TIẾP THEO <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <div class="slide-container" id="slide8">
+        <div class="itlearn-header">ITLEarn</div>
+        <h2 class="slide-title">API: "Người đưa tin" hệ thống</h2>
+        <div class="content-area">
+            <div class="two-column" style="grid-template-columns: 310px 1fr; gap: 25px; width: 100%; align-items: center;">
+                <div>
+                    <h3>Kiến trúc Phân tán (Microservices) Thực Tế</h3>
+                    <p style="margin-bottom: 10px; font-size:14px;">Trong môi trường tài chính, API đi qua chuỗi quy trình nghiêm ngặt và phân cấp cô lập tuyệt đối:</p>
+                    <ul style="padding-left: 16px; font-size: 13.5px; display: flex; flex-direction: column; gap: 8px;">
+                        <li><strong>1. Cân bằng tải (Load Balancer):</strong> Phân phối requests tải từ App tránh nghẽn.</li>
+                        <li><strong>2. API Gateway Chặn dòng:</strong> Đọc Token xác thực đầu tiên. Trả lỗi mạng `401` tại cửa ngõ nếu token giả.</li>
+                        <li><strong>3. Tương tác Identity Server (Auth):</strong> Gateway liên lạc hai chiều với cụm Keycloak để validate tính toàn vẹn ký số JWT trước khi cho đi tiếp.</li>
+                        <li><strong>4. Message Queue (Kafka Event Stream):</strong> Luồng bất đồng bộ độc lập. Khi Transfer hoàn tất, service bắn một Event lên Kafka để cụm Notification tự gửi SMS sau.</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="architecture-grid-deep">
+                        <svg class="svg-pipe-deep">
+                            <path d="M 15 210 L 95 210" class="pipe-line-deep"/><path d="M 15 210 L 95 210" class="pulse-line-deep purple"/>
+                            <path d="M 95 210 L 200 210" class="pipe-line-deep"/><path d="M 95 210 L 200 210" class="pulse-line-deep cyan"/>
+                            <path d="M 250 180 C 235 95, 265 80, 305 80" class="pipe-line-deep"/><path d="M 250 180 C 235 95, 265 80, 305 80" class="pulse-line-deep red"/>
+                            <path d="M 265 210 C 305 210, 295 130, 335 130" class="pipe-line-deep"/><path d="M 265 210 C 305 210, 295 130, 335 130" class="pulse-line-deep"/>
+                            <path d="M 265 210 L 335 210" class="pipe-line-deep"/><path d="M 265 210 L 335 210" class="pulse-line-deep"/>
+                            <path d="M 265 210 C 305 210, 295 290, 335 290" class="pipe-line-deep"/><path d="M 265 210 C 305 210, 295 290, 335 290" class="pulse-line-deep"/>
+                            <path d="M 460 130 L 515 130" class="pipe-line-deep"/>
+                            <path d="M 460 210 L 515 210" class="pipe-line-deep"/>
+                            <path d="M 460 290 L 515 290" class="pipe-line-deep"/>
+                            <path d="M 460 210 C 485 210, 475 370, 510 370" class="pipe-line-deep"/><path d="M 460 210 C 485 210, 475 370, 510 370" class="pulse-line-deep amber"/>
+                        </svg>
+                        <div class="arch-layer-deep"><div class="arch-title-deep">Client</div><div class="node-deep"><i class="fa-solid fa-mobile-screen"></i> Mobile<br>App</div></div>
+                        <div class="arch-layer-deep"><div class="arch-title-deep">Load Balancer</div><div class="node-deep node-lb"><i class="fa-solid fa-network-wired"></i> NGINX /<br>F5 Big-IP</div></div>
+                        <div class="arch-layer-deep top-align"><div class="arch-title-deep">Security Gate</div><div class="node-deep node-sec-deep" style="margin-bottom: 20px;"><i class="fa-solid fa-key"></i> Identity<br>Server</div><div class="node-deep node-gate-deep"><i class="fa-solid fa-shield-halved"></i> API<br>GATEWAY</div></div>
+                        <div class="arch-layer-deep"><div class="arch-title-deep">Core Services</div><div class="node-deep node-svc-deep"><i class="fa-solid fa-credit-card"></i> Card SVC</div><div class="node-deep node-svc-deep"><i class="fa-solid fa-money-bill-transfer"></i> Transfer<br>Service</div><div class="node-deep node-svc-deep"><i class="fa-solid fa-user-gear"></i> Account<br>SVC</div></div>
+                        <div class="arch-layer-deep"><div class="arch-title-deep">Data & Event</div><div class="node-deep node-db-deep"><i class="fa-solid fa-database"></i> DB_Card</div><div class="node-deep node-db-deep"><i class="fa-solid fa-database"></i> DB_Trf</div><div class="node-deep node-db-deep"><i class="fa-solid fa-database"></i> DB_Acc</div><div class="node-deep node-mq-deep"><i class="fa-solid fa-truck-ramp-box"></i> Apache<br>Kafka</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-dock">
+            <button class="btn-dock" onclick="handlePrev()"><i class="fa-solid fa-chevron-left"></i> QUAY LẠI</button>
+            <button class="btn-dock" onclick="handleNext()">TIẾP THEO <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <div class="slide-container" id="slide8_2">
+        <div class="itlearn-header">ITLEarn</div>
+        <h2 class="slide-title">Quy trình kiểm thử API & Tài liệu thực chiến</h2>
+        <div class="content-area">
+            <div class="matrix-dashboard">
+                <div class="matrix-menu">
+                    <div class="matrix-tab-btn active" onclick="switchProcessTab(0)"><h4>1. Phân tích & Chuẩn bị</h4><p>Đọc tài liệu đặc tả & lấy quyền truy cập</p></div>
+                    <div class="matrix-tab-btn" onclick="switchProcessTab(1)"><h4>2. Thiết kế Kịch bản</h4><p>Xây dựng Test Cases & Ma trận dữ liệu</p></div>
+                    <div class="matrix-tab-btn" onclick="switchProcessTab(2)"><h4>3. Thực thi Kiểm thử</h4><p>Call Request, Check Log & Săn Bug</p></div>
+                    <div class="matrix-tab-btn" onclick="switchProcessTab(3)"><h4>4. Tổng kết & Báo cáo</h4><p>Đóng gói kịch bản tự động hóa</p></div>
+                </div>
+                <div class="matrix-display-panel" id="processDisplayPanel">
+                    <div class="matrix-pane-content process-pane active" id="paneStep1">
+                        <h3>Bước 1: Phân tích yêu cầu kịch bản nghiệp vụ</h3>
+                        <p>Tester nghiên cứu tài liệu đặc tả Backend cung cấp trước khi thiết lập kịch bản trên công cụ Postman.</p>
+                        <div class="artifact-box">
+                            <strong style="color: #00f2fe;"><i class="fa-solid fa-pointer"></i> CLICK ĐỂ XEM CHI TIẾT TÀI LIỆU LÀM MẪU:</strong>
+                            <div class="artifact-tag-wrapper">
+                                <span class="artifact-clickable-tag" onclick="inspectArtifact('api_spec', this)"><i class="fa-solid fa-file-code"></i> API Spec Document</span>
+                                <span class="artifact-clickable-tag" onclick="inspectArtifact('swagger', this)"><i class="fa-solid fa-book-open"></i> Swagger UI Framework</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="matrix-pane-content process-pane" id="paneStep2">
+                        <h3>Bước 2: Thiết kế kịch bản kiểm thử (Test Design)</h3>
+                        <p>Tầng API không có UI đồ họa thô, tư duy bóc tách bao phủ điều kiện biên phải cực kỳ nghiêm ngặt.</p>
+                        <div class="artifact-box">
+                            <strong style="color: #00f2fe;"><i class="fa-solid fa-pointer"></i> CLICK ĐỂ XEM CHI TIẾT TÀI LIỆU LÀM MẪU:</strong>
+                            <div class="artifact-tag-wrapper"><span class="artifact-clickable-tag" onclick="inspectArtifact('test_matrix', this)"><i class="fa-solid fa-table"></i> API Test Matrix (Excel)</span></div>
+                        </div>
+                    </div>
+                    <div class="matrix-pane-content process-pane" id="paneStep3">
+                        <h3>Bước 3: Thực thi kiểm thử & Săn lỗi (Execution)</h3>
+                        <p>Giả lập Client đẩy các gói tin thô chứa data payload rác biên và viết mã Assert để bắt lỗi tự động.</p>
+                        <div class="artifact-box">
+                            <strong style="color: #00f2fe;"><i class="fa-solid fa-pointer"></i> CLICK ĐỂ XEM CHI TIẾT TÀI LIỆU LÀM MẪU:</strong>
+                            <div class="artifact-tag-wrapper"><span class="artifact-clickable-tag" onclick="inspectArtifact('bug_report', this)"><i class="fa-solid fa-bug"></i> Jira Bug Report (cURL)</span></div>
+                        </div>
+                    </div>
+                    <div class="matrix-pane-content process-pane" id="paneStep4">
+                        <h3>Bước 4: Tổng kết & Báo cáo tự động hóa</h3>
+                        <p>Đóng gói kịch bản kiểm thử thành bộ test-suite tự động hóa để chạy Regression liên tục trong luồng CI/CD.</p>
+                        <div class="artifact-box">
+                            <strong style="color: #00f2fe;"><i class="fa-solid fa-pointer"></i> CLICK ĐỂ XEM CHI TIẾT TÀI LIỆU LÀM MẪU:</strong>
+                            <div class="artifact-tag-wrapper"><span class="artifact-clickable-tag" onclick="inspectArtifact('postman_json', this)"><i class="fa-solid fa-folder-open"></i> Postman Collection JSON</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="live-inspector" id="liveInspectorDock">
+                        <h4 id="inspectorTitle" style="color: #00f2fe; font-size:17px; margin-bottom: 10px;"><i class="fa-solid fa-eye"></i> Live Content</h4>
+                        <div class="inspector-meta">
+                            <div><strong>Định dạng chuẩn (Format):</strong> <span id="inspectorFormat" style="color:#ffffff;">N/A</span></div>
+                            <div><strong>Phân hệ áp dụng:</strong> <span style="color:#ffffff;">Core Banking / Payment Gateway</span></div>
+                        </div>
+                        <div id="inspectorExampleContainer" style="overflow: hidden; max-height: 200px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-dock">
+            <button class="btn-dock" onclick="handlePrev()"><i class="fa-solid fa-chevron-left"></i> QUAY LẠI</button>
+            <button class="btn-dock" onclick="handleNext()">TIẾP THEO <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <div class="slide-container" id="slide9">
+        <div class="itlearn-header">ITLEarn</div>
+        <h2 class="slide-title">So sánh SOAP và Restful Protocol</h2>
+        <div class="content-area">
+            <div class="matrix-dashboard">
+                <div class="matrix-menu">
+                    <div class="matrix-tab-btn active" onclick="switchMatrixTab(0)"><h4>Kiến trúc & Hạ tầng</h4><p>Hợp đồng WSDL vs Đặc tả OpenAPI</p></div>
+                    <div class="matrix-tab-btn" onclick="switchMatrixTab(1)"><h4>Security Nâng cao</h4><p>WS-Security vs TLS/SSL + JWT</p></div>
+                    <div class="matrix-tab-btn" onclick="switchMatrixTab(2)"><h4>Payload & Overhead</h4><p>Bẫy bóc tách cây XML vs JSON phẳng</p></div>
+                    <div class="matrix-tab-btn" onclick="switchMatrixTab(3)"><h4>Chiến lược Kiểm thử</h4><p>Săn lỗi Fault 200 OK & ACID</p></div>
+                </div>
+                <div class="matrix-display-panel">
+                    
+                    <div class="matrix-pane-content active">
+                        <h3>1. Bản chất thiết kế: Hợp đồng cứng vs Phong cách linh hoạt</h3>
+                        <p style="margin-bottom:8px;">Tại sao các hệ thống ngân hàng truyền thống (Core Banking cũ) vẫn bảo thủ trung thành với SOAP?</p>
+                        <ul class="bullet-list">
+                            <li><strong>SOAP (Protocol):</strong> Dựa trên hợp đồng giao tiếp XML Schema (WSDL) cực kỳ khắt khe. Nếu Client truyền sai kiểu dữ liệu dù chỉ 1 ký tự hoặc thiếu trường, máy chủ SOAP sẽ lập tức từ chối xử lý ngay từ tầng xử lý cú pháp. Đảm bảo tính toàn vẹn tuyệt đối.</li>
+                            <li><strong>RESTful (Architecture):</strong> Là phong cách kiến trúc mở, linh hoạt hơn. Không ép buộc định dạng (JSON, XML, Multipart). Sử dụng Swagger (OpenAPI) làm bản thiết kế đặc tả kỹ thuật để các phân hệ Front-End bám sát theo.</li>
+                            <li><strong>State:</strong> SOAP có thể cấu hình Stateful (máy chủ lưu context); RESTful tuyệt đối Stateless (mỗi request độc lập).</li>
+                        </ul>
+                    </div>
+
+                    <div class="matrix-pane-content">
+                        <h3>2. Security: WS-Security (Tin nhắn) vs TLS/SSL (Đường ống)</h3>
+                        <p style="margin-bottom:8px;">So sánh cơ chế bảo mật cốt lõi trong các hệ thống ngân hàng liên kết:</p>
+                        <ul class="bullet-list">
+                            <li><strong>SOAP (WS-Security):</strong> Mã hóa và ký số trực tiếp vào từng phần tử con (node XML) trong Body tin nhắn. Bảo mật xuyên suốt kể cả khi gói tin đi qua các trạm trung gian (Proxy/ESB) không an toàn trước khi đến đích.</li>
+                            <li><strong>REST (TLS/SSL + OAuth2):</strong> Chỉ mã hóa toàn bộ "đường ống" truyền nhận HTTPS (Point-to-point). Nếu Proxy trung gian bẻ khóa (Decrypt) được SSL, dữ liệu thô JSON bên trong sẽ lộ hoàn toàn trừ khi nhà phát triển tự viết mã hóa riêng cho Body.</li>
+                        </ul>
+                    </div>
+
+                    <div class="matrix-pane-content">
+                        <h3>3. Bẫy Hiệu năng bộ nhớ: DOM Parsing (XML) vs Token/Stream Parsing (JSON)</h3>
+                        <p style="margin-bottom:8px;">Cơ chế xử lý phân rã chuỗi thô (Parsing) trong RAM quyết định trực tiếp đến giới hạn chịu tải tối đa của hệ thống:</p>
+                        <ul class="bullet-list">
+                            <li><strong>DOM Parser (SOAP XML):</strong> Máy chủ SOAP bắt buộc phải tải toàn bộ tài liệu XML vào bộ nhớ RAM và xây dựng cấu trúc cây thực thể Tree-structure (Document Object Model) phức tạp. Từng thẻ đóng/mở, thuộc tính và namespace đều biến thành một Node Object riêng biệt chiếm dụng bộ nhớ $\rightarrow$ Tiêu tốn RAM gấp <strong>5 - 10 lần</strong> kích thước tệp tin thực tế.</li>
+                            <li><strong>Stream/Token Parser (REST JSON):</strong> Định dạng JSON phẳng không chứa metadata namespace rườm rà. Bộ parser phân rã chuỗi JSON trực tiếp bằng cơ chế Stream (quét tuần tự từ trái qua phải) và ánh xạ trực tiếp thành các kiểu dữ liệu nguyên bản của ngôn ngữ lập trình $\rightarrow$ Giải phóng RAM ngay lập tức và tăng tốc độ xử lý.</li>
+                            <li><strong>Overhead băng thông thực tế:</strong> XML sử dụng thẻ đóng mở liên tục khiến dung lượng Payload phình to (Ví dụ: Giao dịch chuyển tiền SOAP tốn khoảng ~1,500 bytes, trong khi REST JSON tương đương chỉ tốn ~350 - 400 bytes) $\rightarrow$ Máy chủ SOAP dễ bị nghẽn CPU và bộ nhớ RAM khi chịu tải cao.</li>
+                        </ul>
+                        <div class="expert-tip"><strong>Tác động hạ tầng:</strong> Ở hệ thống tải cao (10,000 TPS), CPU của máy chủ SOAP luôn bị đẩy lên 95%-100% để bộ dọn rác <strong>Garbage Collection (GC)</strong> dọn dẹp hàng triệu Node Object vụn do DOM Parser sinh ra, gây ra lỗi ngắt quãng hệ thống (GC Pause).</div>
+                    </div>
+
+                    <div class="matrix-pane-content">
+                        <h3>4. Chiến lược Test: Săn tìm "Mã lỗi ẩn danh" (The SOAP Fault 200 OK Trap)</h3>
+                        <p style="margin-bottom:8px;">Bẫy chết người đối với Tester khi viết kịch bản tự động hóa (Automation Script):</p>
+                        <ul class="bullet-list">
+                            <li><strong>Bản chất lỗi:</strong> Trong kiến trúc REST, mã lỗi phân tách rõ ràng qua Status Code (4xx, 5xx). Còn với SOAP, máy chủ Web Server đứng ngoài (như IIS, Apache) chỉ đóng vai trò vận chuyển gói tin XML. Nếu gói tin được chuyển đến đích thành công, Web Server vẫn trả về mã mạng <mark>HTTP 200 OK</mark> mặc dù logic nghiệp vụ bên trong bị lỗi nghiêm trọng.</li>
+                            <li><strong>Hậu quả thực tế:</strong> Nếu Tester chỉ viết script tự động kiểm tra Status Code (`pm.response.to.have.status(200)`), bộ test-suite sẽ báo trạng thái "Passed" (Màu xanh), bỏ lọt các lỗi chí mạng như: Tài khoản không đủ tiền, sai mã PIN, hoặc giao dịch bị từ chối.</li>
+                            <li><strong>Giải pháp viết Script kiểm thử nâng cao trong Postman:</strong> Tester bắt buộc phải chuyển đổi chuỗi XML thô trả về thành JSON, định vị sâu vào cấu trúc Node con của SOAP Envelope để rà quét thẻ <mark>&lt;soap:Fault&gt;</mark> hoặc mã lỗi nội bộ:</li>
+                        </ul>
+                        <div class="code-wrapper" style="font-size:11px; margin-top:5px;">
+                            <span class="code-label">Postman Script Săn Lỗi SOAP Fault ẩn danh</span>
+                            // Bước 1: Chuyển đổi dữ liệu phản hồi XML sang JSON Object<br>
+                            var xmlJson = xml2Json(pm.response.text());<br>
+                            <br>
+                            // Bước 2: Viết Assertion kiểm tra thẻ Fault không được phép xuất hiện<br>
+                            pm.test("Verify hệ thống không trả về thẻ lỗi nghiệp vụ SOAP:Fault", function() {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;var hasFault = xmlJson["soap:Envelope"]["soap:Body"]["soap:Fault"];<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;pm.expect(hasFault).to.be.undefined; <br>
+                            });
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="nav-dock">
+            <button class="btn-dock" onclick="handlePrev()"><i class="fa-solid fa-chevron-left"></i> QUAY LẠI</button>
+            <button class="btn-dock" onclick="handleNext()">TIẾP THEO <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <div class="slide-container" id="slide9_1">
+        <div class="itlearn-header">ITLEarn</div>
+        <h2 class="slide-title">Anatomy of an API: Cấu trúc cơ bản của một gói tin API</h2>
+        <div class="content-area">
+            <div class="two-column" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="highlight-box" style="border-color: rgba(0, 242, 254, 0.25);">
+                    <h3 style="color: #00f2fe;"><i class="fa-solid fa-paper-plane"></i> 1. Gói tin REQUEST (Client gửi)</h3>
+                    <p style="margin-bottom: 8px;">Là gói tin thô do trình duyệt/App khách hàng đóng gói truyền đi bao gồm:</p>
+                    <ul class="bullet-list" style="font-size: 12.5px;">
+                        <li><strong>Method:</strong> Động từ hành động xác định (GET, POST, PUT, DELETE).</li>
+                        <li><strong>URL Endpoint:</strong> Địa chỉ tài nguyên trên mạng (`/v1/transfer`).</li>
+                        <li><strong>Request Headers:</strong> Metadata chỉ định cấu hình kỹ thuật (Token, Content-Type).</li>
+                        <li><strong>Request Body:</strong> Toàn bộ dữ liệu nghiệp vụ chính gửi lên Server (JSON/XML).</li>
+                    </ul>
+                    <div class="code-wrapper" style="font-size: 10px; margin-top: 10px;">
+                        <span class="code-label">Raw HTTP Request</span>
+                        POST /v1/transfer HTTP/1.1<br>
+                        Host: api.itlearn.vn<br>
+                        Content-Type: application/json<br>
+                        Authorization: Bearer eyJhbGciOi...<br>
+                        <br>
+                        { "account_src": "9991", "amount": 200000 }
+                    </div>
+                </div>
+                <div class="highlight-box" style="border-color: rgba(16, 185, 129, 0.25);">
+                    <h3 style="color: #10b981;"><i class="fa-solid fa-reply"></i> 2. Gói tin RESPONSE (Server phản hồi)</h3>
+                    <p style="margin-bottom: 8px;">Là kết quả máy chủ dịch vụ sau khi xử lý nghiệp vụ gửi ngược lại cho khách hàng:</p>
+                    <ul class="bullet-list" style="font-size: 12.5px;">
+                        <li><strong>Status Code:</strong> Mã số định dạng kết quả (200=OK, 4xx=Lỗi Client, 5xx=Vỡ code).</li>
+                        <li><strong>Response Headers:</strong> Các cấu hình bảo mật, loại tệp tin do Web Server quyết định.</li>
+                        <li><strong>Response Body:</strong> Trực quan hóa dữ liệu kết quả nghiệp vụ thành công hoặc thất bại.</li>
+                    </ul>
+                    <div class="code-wrapper" style="border-color:#10b981; font-size: 10px; margin-top: 10px;">
+                        <span class="code-label" style="background:#10b981; color:#fff;">Raw HTTP Response</span>
+                        HTTP/1.1 200 OK<br>
+                        Content-Type: application/json; charset=utf-8<br>
+                        Date: Wed, 15 Jul 2026 11:00:00 GMT<br>
+                        <br>
+                        { "status": "SUCCESS", "tx_id": "FT202611" }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-dock">
+            <button class="btn-dock" onclick="handlePrev()"><i class="fa-solid fa-chevron-left"></i> QUAY LẠI</button>
+            <button class="btn-dock" onclick="handleNext()">TIẾP THEO <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <div class="slide-container" id="slide9_2">
+        <div class="itlearn-header">ITLEarn</div>
+        <h2 class="slide-title">Kiến thức tổng quát: Thực chiến Kiểm thử RESTful API</h2>
+        <div class="content-area">
+            <div class="matrix-dashboard-expanded">
+                <div class="matrix-menu-expanded">
+                    <div style="font-size:10px; font-weight:700; color:#475569; letter-spacing:0.5px; text-transform:uppercase; margin: 2px 0 2px 4px;"><i class="fa-solid fa-arrow-up-from-bracket"></i> Tầng Request (Cấu hình)</div>
+                    <div class="matrix-tab-btn-exp active" onclick="switchRestExpTab(0)"><h4>1. HTTP Method</h4><p>CRUD & Idempotency Key</p></div>
+                    <div class="matrix-tab-btn-exp" onclick="switchRestExpTab(1)"><h4>2. URL Endpoint</h4><p>Biên tự do & Injection check</p></div>
+                    <div class="matrix-tab-btn-exp" onclick="switchRestExpTab(2)"><h4>3. Header: Authorization</h4><p>Auth Matrix & IDOR Test</p></div>
+                    <div class="matrix-tab-btn-exp" onclick="switchRestExpTab(3)"><h4>4. Header: Content-Type</h4><p>Bẫy cưỡng ép định dạng & eKYC</p></div>
+                    <div class="matrix-tab-btn-exp" onclick="switchRestExpTab(4)"><h4>5. Request Body Payload</h4><p>Logic biên, số tiền âm & Khuyết Field</p></div>
+                    
+                    <div style="font-size:10px; font-weight:700; color:#475569; letter-spacing:0.5px; text-transform:uppercase; margin: 4px 0 2px 4px;"><i class="fa-solid fa-reply"></i> Tầng Response (Đối chứng)</div>
+                    <div class="matrix-tab-btn-exp sec-resp" onclick="switchRestExpTab(5)"><h4>6. HTTP Status Code</h4><p>Phân nhóm 2xx, 4xx, 5xx thực tế</p></div>
+                    <div class="matrix-tab-btn-exp sec-resp" onclick="switchRestExpTab(6)"><h4>7. Response Header</h4><p>Rà soát hiệu năng & Timeout</p></div>
+                    <div class="matrix-tab-btn-exp sec-resp" onclick="switchRestExpTab(7)"><h4>8. Response Body</h4><p>Schema Validation & Data Type</p></div>
+                </div>
+
+                <div class="matrix-display-panel-exp" id="restExpDisplayContainer">
+                    
+                    <div class="pane-content-exp active">
+                        <h3>1. HTTP Method - Phân định hành động & Chống trùng lặp dữ liệu</h3>
+                        <p>Hệ thống Backend ngân hàng phân định hành động nghiêm ngặt bằng Method để tối ưu hiệu năng và thiết lập cấu hình an toàn:</p>
+                        <ul class="bullet-list">
+                            <li><strong>GET (Read):</strong> Chỉ dùng để truy vấn dữ liệu (Ví dụ: xem số dư, danh sách thẻ). <mark>Cấm truyền dữ liệu trong body</mark> để tránh rò rỉ thông tin nhạy cảm trên log server.</li>
+                            <li><strong>POST (Create):</strong> Dùng khi khởi tạo giao dịch (Ví dụ: tạo lệnh chuyển tiền). Toàn bộ dữ liệu bắt buộc bọc kín trong Body.</li>
+                            <li><strong>PUT vs PATCH (Update):</strong> PUT dùng ghi đè toàn bộ bản ghi Object (Nếu truyền thiếu trường, dữ liệu cũ sẽ bị gán thành null). PATCH chỉ cập nhật cục bộ một vài thuộc tính (Ví dụ: khóa thẻ tạm thời).</li>
+                        </ul>
+                        <div class="expert-tip">
+                            <strong>Kịch bản test thực chiến - Idempotency Key:</strong> 
+                            Khi mạng chập chờn, người dùng bấm nút "Chuyển tiền" liên tục. API chuẩn cần cấu hình Header <mark>X-Idempotency-Key</mark> (chứa mã UUID duy nhất cho mỗi phiên gửi). Nếu trùng khóa trong 30 giây, máy chủ từ chối và trả về lỗi `409 Conflict` để tránh trừ tiền khách hàng hai lần.
+                        </div>
+                    </div>
+
+                    <div class="pane-content-exp">
+                        <h3>2. URL Endpoint - Thiết lập Biên phân vùng & Kịch bản Injection</h3>
+                        <p>URL chứa địa nhìn định danh tài nguyên hệ thống. Đây là nơi thường bị khai thác lỗ hổng bảo mật:</p>
+                        <ul class="bullet-list">
+                            <li><strong>Kiểm thử giá trị biên độ dài tham số (Boundary Testing):</strong> Thử nghiệm truyền mã tài khoản dài quá mức (Ví dụ: 1000 ký tự) xem hệ thống có bộ lọc Validation chặn lại và trả về lỗi `400 Bad Request` hay bị tràn bộ đệm gây sập Server (Lỗi `500`).</li>
+                            <li><strong>Kiểm thử bộ lọc ký tự điều hướng (Path Traversal):</strong> Chèn các ký tự điều hướng thư mục hệ thống như <code style="color:#00f2fe;">../etc/passwd</code> vào tham số URL để kiểm tra lỗi lộ tệp tin nội bộ.</li>
+                            <li><strong>SQL / NoSQL Injection:</strong> Điền các chuỗi ký tự phá vỡ câu lệnh SQL thô trực tiếp trên tham số URL (Ví dụ: <code style="color:#ef4444;">?cif_id=101%20OR%201=1</code>). API chuẩn bắt buộc phải mã hóa đầu vào (Input Sanitization) để vô hiệu hóa chuỗi mã độc.</li>
+                        </ul>
+                    </div>
+
+                    <div class="pane-content-exp">
+                        <h3>3. Header Authorization - Quản trị ma trận xác thực & Lỗi IDOR</h3>
+                        <p>Phân biệt rõ ràng hai khái niệm xác thực cốt lõi khi thiết lập kiểm thử bảo mật:</p>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 10px;">
+                            <div style="background:rgba(255,255,255,0.01); padding:8px; border-left:3px solid #00f2fe; border-radius:4px;">
+                                <strong style="font-size:12px; color:#00f2fe;">Authentication (Bạn là ai?) - Mã 401</strong>
+                                <p style="font-size:11.5px; margin:2px 0 0 0;">Xác thực danh tính đăng nhập. Token sai, rách, hết hạn $\rightarrow$ Trả lỗi mạng <mark>401 Unauthorized</mark>.</p>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.01); padding:8px; border-left:3px solid #7c3aed; border-radius:4px;">
+                                <strong style="font-size:12px; color:#7c3aed;">Authorization (Bạn có quyền gì?) - Mã 403</strong>
+                                <p style="font-size:11.5px; margin:2px 0 0 0;">Kiểm duyệt quyền hạn. Giao dịch viên cố tình gọi API phê duyệt giải ngân của Giám đốc $\rightarrow$ Trả lỗi <mark>403 Forbidden</mark>.</p>
+                            </div>
+                        </div>
+                        <ul class="bullet-list" style="font-size:12.5px;">
+                            <li><strong>Kiểm thử lỗ hổng IDOR (Insecure Direct Object Reference):</strong> Lấy Token hợp lệ của khách hàng A để gọi API truy vấn thông tin số dư của khách hàng B (bằng cách thay đổi tham số `account_id` trong request). API thiết kế chuẩn phải kiểm duyệt tính tương thích giữa Token và chủ tài sản, nếu không sẽ bị lộ dữ liệu hàng loạt.</li>
+                        </ul>
+                    </div>
+
+                    <div class="pane-content-exp">
+                        <h3>4. Header Content-Type - Bẫy cưỡng ép định dạng dữ liệu</h3>
+                        <p>Quy định định dạng truyền nhận dữ liệu giữa Client và Server. Việc kiểm thử sai lệch Header giúp phát hiện lỗi cấu hình của máy chủ:</p>
+                        <ul class="bullet-list">
+                            <li><strong>application/json:</strong> Chuẩn trao đổi dữ liệu key-value thông dụng nhất của RESTful API.</li>
+                            <li><strong>application/x-www-form-urlencoded:</strong> Dữ liệu mã hóa dạng chuỗi dính liền `key1=val1&key2=val2`. Thường sử dụng trong tích hợp các cổng thanh toán kết nối link điều hướng (Ví dụ: Napas, VNPAY).</li>
+                            <li><strong>multipart/form-data:</strong> Sử dụng khi truyền tải file nhị phân kèm dữ liệu văn bản. Ứng dụng thực tế: **Luồng eKYC gửi ảnh căn cước công dân và ảnh chân dung**. Kịch bản test: Tải lên file chứa mã độc có đuôi giả dạng ảnh (Ví dụ: `malware.png.exe`) xem máy chủ có phát hiện và chặn lại hay không.</li>
+                        </ul>
+                        <div class="expert-tip">
+                            <strong>Kịch bản bẫy "Header đè Body":</strong> 
+                            Client gửi một gói tin có Body là dữ liệu JSON chuẩn nhưng cố tình cấu hình Header `Content-Type: text/plain` hoặc `application/xml`. Nếu Backend không phân tách rõ ràng, nó sẽ bị crash, nhè log thô hoặc trả về lỗi 500 thay vì trả về lỗi chuẩn <mark>415 Unsupported Media Type</mark>.
+                        </div>
+                    </div>
+
+                    <div class="pane-content-exp">
+                        <h3>5. Request Body Payload - Phá vỡ logic dữ liệu đầu vào</h3>
+                        <p>Nơi lưu trữ nội dung chi tiết của tác vụ. Đây là khu vực tập trung nhiều lỗi logic nghiệp vụ nhất:</p>
+                        <ul class="bullet-list">
+                            <li><strong>Kiểm thử giá trị số âm chí mạng (Data Mutation):</strong> Điền số tiền giao dịch là số âm `{ "amount": -1000000 }`. Nếu Backend thiếu hàm Validation chặn giá trị $\le 0$, hệ thống khi thực thi phép toán trừ tiền <mark>(Số dư - Số tiền chuyển)</mark> sẽ biến thành phép cộng <mark>(Số dư - (-1000000) = Số dư + 1000000)</mark> $\rightarrow$ Tài khoản nguồn tự dưng được cộng thêm tiền khống!</li>
+                            <li><strong>Kiểm thử thiếu thuộc tính bắt buộc (Mandatory Field):</strong> Thử xóa bỏ thuộc tính bắt buộc `{ "account_destination": null }` xem Backend xử lý lỗi có an toàn không, hay bị lỗi vỡ luồng bộ nhớ `Null Pointer Exception` làm lộ thông tin hệ thống.</li>
+                        </ul>
+                    </div>
+
+                    <div class="pane-content-exp">
+                        <h3>6. HTTP Status Code - Định chuẩn mã lỗi Semantic trong kiểm thử thực tế</h3>
+                        <p>Status Code phản ánh chính xác kết quả xử lý của tầng mạng và logic nghiệp vụ hệ thống ngân hàng:</p>
+                        <table style="font-size:11px;">
+                            <thead>
+                                <tr><th>Nhóm</th><th>Mã lỗi sử dụng phổ biến</th><th>Kịch bản và Cách test thực tế</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>2xx (Success)</strong></td>
+                                    <td>`200 OK`, `201 Created`</td>
+                                    <td>Test luồng Happy Path. `201` dùng khi khởi tạo tài khoản mới thành công, `200` cho truy vấn xem số dư thẻ.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>4xx (Client Error)</strong></td>
+                                    <td>`400 Bad Request`<br>`409 Conflict`<br>`422 Unprocessable Entity`</td>
+                                    <td>- `400`: Test gửi chuỗi JSON sai cú pháp (thiếu dấu phẩy, sai ngoặc).<br>- `409`: Gửi trùng lặp giao dịch liên tiếp để test bộ chặn đúp lệnh.<br>- `422`: Body đúng cú pháp nhưng lỗi logic (Ví dụ: Số dư không đủ chuyển khoản).</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>5xx (Server Error)</strong></td>
+                                    <td>`500 Internal Error`<br>`504 Gateway Timeout`</td>
+                                    <td>- `500`: Test gửi ký tự đặc biệt phá vỡ câu lệnh SQL, nếu nhè lỗi code thô là Bug.<br>- `504`: Ép thời gian xử lý cơ sở dữ liệu quá tải để kiểm tra tính năng ngắt kết nối an sau.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pane-content-exp">
+                        <h3>7. Response Header - Rà soát Hiệu năng & Cấu hình mạng an toàn</h3>
+                        <p>Header phản hồi chứa các chỉ số cấu hình và đo lường hiệu năng tải hệ thống:</p>
+                        <ul class="bullet-list">
+                            <li><strong>Verify Content-Type đầu ra:</strong> Đảm bảo định dạng phản hồi trả về là `application/json; charset=utf-8` để các thiết bị Mobile hiển thị ký tự tiếng Việt không bị lỗi font chữ.</li>
+                            <li><strong>Đo lường thời gian phản hồi (Response Time):</strong> API nghiệp vụ lõi (Core Banking) bắt buộc thời gian phản hồi phải dưới **500ms**. Tester cần viết các đoạn script assertion tự động báo lỗi nếu thời gian chờ vượt ngưỡng an toàn để cảnh báo sớm nguy cơ nghẽn hàm xử lý (Bottleneck).</li>
+                        </ul>
+                    </div>
+
+                    <div class="pane-content-exp">
+                        <h3>8. Response Body - Kiểm soát Schema & Data Integrity</h3>
+                        <p>Nơi hiển thị kết quả cuối cùng trả về cho người dùng. Tester cần kiểm duyệt cực kỳ gắt gao:</p>
+                        <ul class="bullet-list">
+                            <li><strong>Kiểm duyệt định dạng Schema (Schema Validation):</strong> Đảm bảo các thuộc tính trả về không bị thay đổi định dạng chữ hoa/chữ thường so với tài liệu đặc tả ban đầu (Ví dụ: `transaction_id` bị DEV sửa nhầm thành `transactionId` làm Mobile App không đọc được dữ liệu, hiển thị màn hình trắng).</li>
+                            <li><strong>Lỗi bẻ cong kiểu dữ liệu khi Mapping:</strong> Số tiền lớn (`10,000,000,000.55` VND) của hệ thống Core Banking cũ khi đi qua API trung gian REST bị DEV ép sai kiểu dữ liệu sang String thô hoặc kiểu số thực float bị làm tròn, bẻ gãy bộ logic tính toán lãi suất chính xác.</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="nav-dock">
+            <button class="btn-dock" onclick="handlePrev()"><i class="fa-solid fa-chevron-left"></i> QUAY LẠI</button>
+            <button class="btn-dock" onclick="handleNext()">TIẾP THEO <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <div class="slide-container" id="slide9_3">
+        <div class="itlearn-header">ITLEarn</div>
+        <h2 class="slide-title">Làm chủ JSONPath & Kỹ thuật truy vấn dữ liệu khi Test API</h2>
+        <div class="content-area">
+            <div class="two-column" style="grid-template-columns: 1fr 1.15fr; gap:25px; align-items: stretch;">
+                <div>
+                    <h3>1. Bản chất JSONPath & Các Toán Tử Truy Vấn Core</h3>
+                    <p style="margin-bottom: 6px;">JSONPath là ngôn ngữ truy vấn dùng để bóc tách, định vị và trích xuất thông tin có cấu trúc từ chuỗi JSON phản hồi:</p>
+                    <table style="font-size:10.5px; margin-bottom: 10px;">
+                        <thead>
+                            <tr>
+                                <th style="width: 75px;">Toán tử</th>
+                                <th style="width: 145px;">Cú pháp ví dụ</th>
+                                <th>Nguyên lý hoạt động và ứng dụng kiểm thử</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>`$`</strong></td>
+                                <td>`$.customer_profile`</td>
+                                <td>Trỏ vào phần tử gốc (Root Object) của Response JSON để bắt đầu chuỗi truy vấn.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>`.` hoặc `[]`</strong></td>
+                                <td>`$.data.id` hoặc `$.data['id']`</td>
+                                <td>Truy cập thuộc tính trực tiếp (Child Operator) của một Object.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>`..`</strong></td>
+                                <td>`$..balance`</td>
+                                <td>Deep Scan (Quét đệ quy sâu) tìm tất cả các thuộc tính khớp tên bất kể phân cấp cha con.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>`*`</strong></td>
+                                <td>`$.accounts[*].id`</td>
+                                <td>Wildcard - Trích xuất tất cả các phần tử con hoặc tất cả giá trị trong mảng.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>`?()`</strong></td>
+                                <td>`$..list[?(@.status == 'ACTIVE')]`</td>
+                                <td>Filter Expression - Chỉ lọc ra các Object con thỏa mãn biểu thức logic mong muốn.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 style="margin-top: 5px;">2. Quy tắc kiểm tra cấu trúc dữ liệu JSON</h3>
+                    <ul class="bullet-list" style="font-size: 11.5px; display: flex; flex-direction: column; gap: 4px;">
+                        <li><strong>Kiểm soát nút rỗng (Null/Undefined Safety):</strong> Khi phân tích tài liệu API, cần xác định thuộc tính nào là bắt buộc có dữ liệu, thuộc tính nào có thể bị rỗng (`null`) để đối chiếu trên Response thực tế.</li>
+                        <li><strong>Xác định chỉ mục phần tử (Index Mapping):</strong> Nắm chắc quy tắc phần tử đầu tiên của một mảng luôn có chỉ số index bắt đầu từ số 0 (`[0]`), tránh nhầm lẫn khi đếm dữ liệu trực quan trên màn hình.</li>
+                        <li><strong>Đối soát Schema:</strong> Kiểm tra xem kiểu dữ liệu trả về thực tế có khớp với đặc tả không (Ví dụ: Số tiền giao dịch phải trả về kiểu Number không có dấu ngoặc kép, nếu trả về dạng String `"500000"` là lệch chuẩn thiết kế).</li>
+                    </ul>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <div class="code-wrapper" style="font-size:10.5px; height: 180px; overflow-y: auto; margin: 0;">
+                        <span class="code-label">Phản hồi mẫu phức tạp (Response Body JSON)</span>
+{<br>
+&nbsp;&nbsp;"cif_customer": "ITLEarn789",<br>
+&nbsp;&nbsp;"status_code": "ACTIVE",<br>
+&nbsp;&nbsp;"accounts": [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ "acc_no": "1101", "type": "SAVING", "balance": 50000000, "is_locked": false },<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ "acc_no": "1102", "type": "CHECKING", "balance": 1500000, "is_locked": true }<br>
+&nbsp;&nbsp; ]<br>
+}
+                    </div>
+                    
+                    <div class="highlight-box" style="margin-top:8px; padding: 15px; border-color: rgba(0, 242, 254, 0.25);">
+                        <h3 style="color:#00f2fe; font-size:14px; margin-bottom: 6px;"><i class="fa-solid fa-magnifying-glass"></i> Bản đồ ánh xạ đường dẫn JSONPath thực tế:</h3>
+                        <ul class="bullet-list" style="font-size:12px; display:flex; flex-direction:column; gap:8px;">
+                            <li>• <strong>Để lấy mã khách hàng:</strong> Trỏ đường dẫn <code style="color:#10b981;">$.cif_customer</code> <br>➔ Giá trị trả về: <code style="color:#ffffff;">"ITLEarn789"</code></li>
+                            <li>• <strong>Để lấy số tài khoản đầu tiên trong mảng:</strong> Trỏ đường dẫn <code style="color:#10b981;">$.accounts[0].acc_no</code> <br>➔ Giá trị trả về: <code style="color:#ffffff;">"1101"</code></li>
+                            <li>• <strong>Để lấy số dư tài khoản thứ hai trong mảng:</strong> Trỏ đường dẫn <code style="color:#10b981;">$.accounts[1].balance</code> <br>➔ Giá trị trả về: <code style="color:#ffffff;">1500000</code></li>
+                            <li>• <strong>Quét lấy toàn bộ danh sách số tài khoản:</strong> Trỏ đường dẫn <code style="color:#10b981;">$.accounts[*].acc_no</code> <br>➔ Kết quả trích xuất: <code style="color:#ffffff;">["1101", "1102"]</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-dock">
+            <button class="btn-dock" onclick="handlePrev()"><i class="fa-solid fa-chevron-left"></i> QUAY LẠI</button>
+            <button class="btn-dock" onclick="handleNext()">TIẾP THEO <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <div class="slide-container" id="slide9_4">
+        <div class="itlearn-header">ITLEarn</div>
+        <h2 class="slide-title">Làm chủ Postman Ecosystem: Environments & Variables</h2>
+        <div class="content-area">
+            <div class="matrix-dashboard" style="grid-template-columns: 320px 1fr;">
+                <div class="matrix-menu">
+                    <div class="matrix-tab-btn active" onclick="switchPostmanEcoTab(0)"><h4>Phạm vi Biến (Scope Precedence)</h4><p>Cơ chế nạp đè dữ liệu từ hẹp đến rộng</p></div>
+                    <div class="matrix-tab-btn" onclick="switchPostmanEcoTab(1)"><h4>Giao diện cấu hình động</h4><p>Cách truyền nhận tham số qua dấu ngoặc kép</p></div>
+                    <div class="matrix-tab-btn" onclick="switchPostmanEcoTab(2)"><h4>Kịch bản Chained Requests</h4><p>Tương tác truyền token qua biến môi trường</p></div>
+                </div>
+                <div class="matrix-display-panel" id="postmanEcoDisplayContainer">
+                    
+                    <div class="matrix-pane-content eco-pane active">
+                        <h3>Độ ưu tiên nạp biến trong hệ sinh thái Postman</h3>
+                        <p style="margin-bottom:6px;">Hiểu rõ cấp độ ưu tiên của biến giúp học viên kiểm soát luồng chạy dữ liệu động giữa các môi trường:</p>
+                        <table>
+                            <thead>
+                                <tr><th>Cấp độ Biến</th><th>Độ rộng (Scope)</th><th>Mô tả chi tiết ứng dụng kiểm thử ngân hàng</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><strong>Global</strong></td><td>Toàn Workspace</td><td>Lưu dữ liệu tĩnh không thay đổi (Ví dụ: Mã đối tác chung `Partner_ID`).</td></tr>
+                                <tr><td><strong>Collection</strong></td><td>Trong 1 Thư mục</td><td>Lưu cấu hình dùng chung cho các request trong thư mục đó.</td></tr>
+                                <tr><td><strong>Environment</strong></td><td>Trong 1 Môi trường</td><td><mark>Quan trọng nhất!</mark> Dùng lưu biến cấu hình URLs động bọc dưới dạng `{{base_url}}` để dễ chuyển nhanh máy chủ từ DEV $\rightarrow$ STG $\rightarrow$ UAT.</td></tr>
+                                <tr><td><strong>Local</strong></td><td>Duy nhất 1 Request</td><td>Biến tạm thời được khởi tạo nhanh khi nạp file dữ liệu chạy vòng lặp.</td></tr>
+                            </tbody>
+                        </table>
+                        <div class="expert-tip" style="margin-top: 5px; padding: 6px 10px;"><strong>Nguyên tắc đè biến (Precedence):</strong> Nếu cùng tên biến, Postman sẽ nạp biến có phạm vi hẹp nhất: <strong style="color:#00f2fe;">Local > Environment > Collection > Global</strong>.</div>
+                    </div>
+
+                    <div class="matrix-pane-content eco-pane">
+                        <h3>Cơ chế sử dụng biến động qua UI (Double Curly Braces)</h3>
+                        <p style="margin-bottom: 8px;">Cách nạp các biến động vào cấu trúc URL hoặc Body Payload mà không cần lập trình:</p>
+                        <div style="background:rgba(255,255,255,0.01); border:1px solid rgba(255,255,255,0.05); padding:12px; border-radius:8px; font-size:13px; display:flex; flex-direction:column; gap:10px;">
+                            <p style="margin:0;"><strong style="color:#00f2fe;"><i class="fa-solid fa-signature"></i> 1. Cấu trúc lồng biến:</strong>
+                            <br>Bọc tên biến trong cặp ngoặc nhọn kép dạng <mark>{{ten_bien}}</mark> ở bất kỳ ô nhập liệu nào trên UI của Postman (URL, Headers, Body, Params).</p>
+                            
+                            <p style="margin:0;"><strong style="color:#3b82f6;"><i class="fa-solid fa-cube"></i> 2. Các biến sinh dữ liệu tự động (Dynamic Variables):</strong>
+                            <br>Postman hỗ trợ sẵn các biến hệ thống để giả lập dữ liệu thực tế:
+                            <br>- <code style="color:#00f2fe;">{{$guid}}</code>: Tự động sinh ra một mã UUID ngẫu nhiên không trùng lặp (Ứng dụng cho X-Request-ID).
+                            <br>- <code style="color:#00f2fe;">{{$timestamp}}</code>: Sinh ra mốc thời gian hiện tại của hệ thống dưới dạng Unix Epoch.
+                            <br>- <code style="color:#00f2fe;">{{$randomFullName}}</code>: Tự động sinh tên ngẫu nhiên cho kịch bản tạo mới tài khoản.</p>
+                        </div>
+                    </div>
+
+                    <div class="matrix-pane-content eco-pane">
+                        <h3>Nguyên lý kịch bản chuỗi liên kết (Chained Requests) bằng Giao diện</h3>
+                        <p style="margin-bottom:8px;">Để chuyển tiếp dữ liệu (Ví dụ: Token, ID giao dịch) từ API trước sang API sau mà không phải sao chép thủ công:</p>
+                        <div style="background:rgba(255,255,255,0.01); border:1px solid rgba(255,255,255,0.05); padding:15px; border-radius:8px; font-size:13px;">
+                            <ul class="bullet-list" style="display:flex; flex-direction:column; gap:10px;">
+                                <li><strong>Bước 1 - Trích xuất Token:</strong> Ở API Login, sau khi nhận được phản hồi thành công, ta thực hiện lưu trữ giá trị Token vào biến môi trường bằng tính năng nạp biến tự động trên giao diện (hoặc thông qua Collection variables).</li>
+                                <li><strong>Bước 2 - Lưu trữ biến động:</strong> Biến môi trường <code style="color:#10b981;">jwt_banking_token</code> sẽ được ghi nhận trực quan tại mục quản lý Environment.</li>
+                                <li><strong>Bước 3 - Nạp tự động ở API tiếp theo:</strong> Tại request truy vấn số dư, chỉ cần cấu hình Authorization Header với cú pháp: <mark>Bearer {{jwt_banking_token}}</mark>. Postman sẽ tự động nạp giá trị token đã lưu mà không cần can thiệp code.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="nav-dock">
+            <button class="btn-dock" onclick="handlePrev()"><i class="fa-solid fa-chevron-left"></i> QUAY LẠI</button>
+            <button class="btn-dock" onclick="handleNext()">TIẾP THEO <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <div class="slide-container" id="slide10">
+        <div class="itlearn-header">ITLEarn</div>
+        <h2 class="slide-title">Tài Liệu Đặc Tả API Chuyển Tiền Liên Ngân Hàng (Interbank Transfer)</h2>
+        <div class="content-area">
+            <div class="matrix-dashboard" style="grid-template-columns: 280px 1fr; height: 460px;">
+                <div class="matrix-menu">
+                    <div class="matrix-tab-btn active" onclick="switchPracticeTab(0)">
+                        <h4>1. Khái Quát Kỹ Thuật</h4>
+                        <p>Endpoint & Headers cấu hình</p>
+                    </div>
+                    <div class="matrix-tab-btn" onclick="switchPracticeTab(1)">
+                        <h4>2. Request Body Spec</h4>
+                        <p>Mô tả chi tiết kiểu dữ liệu</p>
+                    </div>
+                    <div class="matrix-tab-btn" onclick="switchPracticeTab(2)">
+                        <h4>3. Responses Schema</h4>
+                        <p>Các mã lỗi & Kết quả đầu ra</p>
+                    </div>
+                </div>
+                <div class="matrix-display-panel" id="practiceDisplayContainer" style="padding: 15px 22px;">
+                    
+                    <div class="matrix-pane-content practice-pane active">
+                        <h3>Tổng Quan Kịch Bản API Chuyển Tiền Liên Ngân Hàng</h3>
+                        <p style="margin-bottom: 10px;">Dưới đây là tài liệu đặc tả kỹ thuật API chuyển khoản trực tuyến 24/7. Học viên dựa trên các thông số này để thiết lập cấu hình Postman:</p>
+                        <ul class="bullet-list" style="font-size: 13px;">
+                            <li><strong>Giao thức kết nối:</strong> RESTful API / HTTPS</li>
+                            <li><strong>HTTP Method:</strong> <code style="color:#f43f5e; font-weight:bold;">POST</code></li>
+                            <li><strong>Địa chỉ Endpoint:</strong> <code style="color:#00f2fe;">{{base_url}}/v1/transfer</code></li>
+                            <li><strong>Request Headers cấu hình bắt buộc:</strong>
+                                <br>- <code style="color:#00f2fe;">Content-Type: application/json</code> (Định dạng gói tin)
+                                <br>- <code style="color:#00f2fe;">Authorization: Bearer {{jwt_banking_token}}</code> (Xác thực tài khoản người dùng)
+                                <br>- <code style="color:#00f2fe;">X-Idempotency-Key: {{$guid}}</code> (Chặn trùng lặp, dùng biến dynamic UUID của Postman)
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="matrix-pane-content practice-pane">
+                        <h3>Bảng Định Nghĩa Cấu Trúc Body Payload (JSON)</h3>
+                        <table style="font-size: 11px; margin-bottom: 12px;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 140px;">Tham số (Key)</th>
+                                    <th style="width: 90px;">Kiểu (Type)</th>
+                                    <th style="width: 90px;">Bắt buộc</th>
+                                    <th>Mô tả & Điều kiện biên kịch bản</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>`account_source`</td>
+                                    <td>String</td>
+                                    <td><span style="color:#ef4444;">YES</span></td>
+                                    <td>Số tài khoản trích tiền (Độ dài từ 9 - 14 ký tự số).</td>
+                                </tr>
+                                <tr>
+                                    <td>`account_destination`</td>
+                                    <td>String</td>
+                                    <td><span style="color:#ef4444;">YES</span></td>
+                                    <td>Số tài khoản thụ hưởng nhận tiền.</td>
+                                </tr>
+                                <tr>
+                                    <td>`amount`</td>
+                                    <td>Number</td>
+                                    <td><span style="color:#ef4444;">YES</span></td>
+                                    <td>Số tiền chuyển khoản. <mark>Hạn mức: Min 10,000 VND</mark>.</td>
+                                </tr>
+                                <tr>
+                                    <td>`currency`</td>
+                                    <td>String</td>
+                                    <td><span style="color:#ef4444;">YES</span></td>
+                                    <td>Đơn vị tiền tệ lưu hành (Mặc định: "VND").</td>
+                                </tr>
+                                <tr>
+                                    <td>`remark`</td>
+                                    <td>String</td>
+                                    <td>NO</td>
+                                    <td>Nội dung chuyển khoản (Tối đa 150 ký tự không dấu).</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <strong style="font-size: 11.5px; color:#00f2fe;">Mẫu Request Payload chuẩn:</strong>
+                        <div class="code-wrapper" style="font-size: 10px; margin-top: 4px;">
+                            { "account_source": "9991102", "account_destination": "8881234", "amount": 500000, "currency": "VND", "remark": "Chuyen tien hoc phi ITLearn" }
+                        </div>
+                    </div>
+
+                    <div class="matrix-pane-content practice-pane">
+                        <h3>Danh Sách Mã Trạng Thái Trả Về (Responses Status Codes)</h3>
+                        <ul class="bullet-list" style="font-size: 12.5px; display: flex; flex-direction: column; gap: 8px;">
+                            <li>
+                                <strong style="color: #10b981;">Response 200 OK (Thành công):</strong> Khởi tạo lệnh chuyển khoản thành công từ Core.
+                                <div class="code-wrapper" style="border-color:#10b981; font-size: 9.5px; margin-top: 4px;">
+                                    { "status": "SUCCESS", "transaction_id": "FT2026071599", "fee": 0, "timestamp": "2026-07-15T11:00:00Z" }
+                                </div>
+                            </li>
+                            <li>
+                                <strong style="color: #fbbf24;">Response 400 Bad Request (Lỗi cú pháp / Thiếu tham số):</strong> Gói tin gửi lên thiếu tham số bắt buộc.
+                                <div class="code-wrapper" style="border-color:#fbbf24; font-size: 9.5px; margin-top: 4px;">
+                                    { "error_code": "MISSING_MANDATORY_FIELDS", "message": "The destination account is required." }
+                                </div>
+                            </li>
+                            <li>
+                                <strong style="color: #ef4444;">Response 422 Unprocessable Entity (Lỗi Logic nghiệp vụ):</strong> Sai hạn mức chuyển tiền tối thiểu hoặc Số dư tài khoản không đủ.
+                                <div class="code-wrapper" style="border-color:#ef4444; font-size: 9.5px; margin-top: 4px;">
+                                    { "error_code": "INSUFFICIENT_BALANCE", "message": "The source account does not have enough balance to perform the transaction." }
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="nav-dock">
+            <button class="btn-dock" onclick="handlePrev()"><i class="fa-solid fa-chevron-left"></i> QUAY LẠI</button>
+            <button class="btn-dock" onclick="handleNext()">TIẾP THEO <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <div class="slide-container" id="slide11">
+        <div class="itlearn-header">ITLEarn</div>
+        <h2 class="slide-title">Hướng dẫn thực hành kiểm thử trên Postman</h2>
+        <div class="content-area">
+            <div class="matrix-dashboard" style="grid-template-columns: 280px 1fr; height: 430px;">
+                <div class="matrix-menu">
+                    <div class="matrix-tab-btn active" onclick="switchPracticeTab(0)"><h4>Bước 1: Tạo Environment</h4><p>Cấu hình máy chủ DEV/STG</p></div>
+                    <div class="matrix-tab-btn" onclick="switchPracticeTab(1)"><h4>Bước 2: Cấu hình Request</h4><p>Nạp Headers & Body</p></div>
+                    <div class="matrix-tab-btn" onclick="switchPracticeTab(2)"><h4>Bước 3: Gửi & Xác Minh</h4><p>Kiểm tra kết quả trực quan</p></div>
+                </div>
+                <div class="matrix-display-panel" id="practiceDisplayContainer" style="padding: 15px;">
+                    
+                    <div class="matrix-pane-content practice-pane active">
+                        <h3>Bước 1: Khởi tạo Environment & Thiết lập biến toàn cục</h3>
+                        <p>Tuyệt đối không gõ cứng địa chỉ URL để tránh mất thời gian sửa tay khi đổi máy chủ kiểm thử:</p>
+                        <ol class="bullet-list" style="font-size: 13px;">
+                            <li>Bấm vào biểu tượng **Environments** ở thanh menu bên trái $\rightarrow$ Chọn **Create Environment** (Đặt tên là `Banking_Staging`).</li>
+                            <li>Tạo biến <code style="color:#00f2fe;">base_url</code> và điền giá trị máy chủ thử nghiệm (Ví dụ: `https://api-stg.itlearn.vn`).</li>
+                            <li>Tại thanh địa chỉ của Request, viết địa chỉ theo cú pháp: <mark>{{base_url}}/v1/transfer</mark>.</li>
+                        </ol>
+                    </div>
+
+                    <div class="matrix-pane-content practice-pane">
+                        <h3>Bước 2: Cấu hình Headers, Body & Trình sinh khóa tự động</h3>
+                        <ol class="bullet-list" style="font-size: 13px;">
+                            <li>Chọn Tab **Headers** $\rightarrow$ Thêm trường `X-Idempotency-Key` với giá trị là <mark>{{$guid}}</mark> (Đây là biến dynamic của Postman giúp sinh ngẫu nhiên mã UUID cho mỗi lần gửi để không bị chặn trùng lệnh).</li>
+                            <li>Chọn Tab **Body** $\rightarrow$ Chọn định dạng **raw** và đổi kiểu hiển thị sang **JSON**.</li>
+                            <li>Dán cấu trúc JSON mẫu của API Chuyển tiền vào khung soạn thảo.</li>
+                        </ol>
+                    </div>
+
+                    <div class="matrix-pane-content practice-pane">
+                        <h3>Bước 3: Thực thi gửi lệnh & Xác minh kết quả trên giao diện</h3>
+                        <p>Học viên nhấn nút <strong style="color: #00f2fe;">Send</strong> và thực hiện phân tích các chỉ số kết quả trả về bằng mắt thường:</p>
+                        <ol class="bullet-list" style="font-size: 13px; display: flex; flex-direction: column; gap: 8px;">
+                            <li><strong>Kiểm tra Status Code:</strong> Xem góc trên bên phải của vùng kết quả có nhả ra mã <mark>200 OK</mark> (Happy Path) hoặc mã lỗi <mark>400/422</mark> (Negative Path) hay không.</li>
+                            <li><strong>Phân tích Response Body:</strong> Xem chi tiết chuỗi JSON trả về xem có trả ra đúng mã giao dịch `transaction_id` không rỗng và trường `status` bằng `"SUCCESS"` hay không.</li>
+                            <li><strong>Đo lường Response Time & Size:</strong> Theo dõi thời gian xử lý phản hồi để đánh giá sơ bộ hiệu năng máy chủ (Chuẩn Core Banking bắt buộc <mark>&lt; 500ms</mark>).</li>
+                        </ol>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="nav-dock">
+            <button class="btn-dock" onclick="handlePrev()"><i class="fa-solid fa-chevron-left"></i> QUAY LẠI</button>
+            <button class="btn-dock" onclick="handleNext()">TIẾP THEO <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <div class="slide-container" id="slide12">
+        <div class="itlearn-header">ITLEarn</div>
+        <h2 class="slide-title">Tổng kết: Tối ưu hóa kiểm thử & Các lỗi phổ biến</h2>
+        <div class="content-area">
+            <div class="two-column" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="highlight-box" style="border-color: rgba(16, 185, 129, 0.3);">
+                    <h3 style="color:#10b981; font-size:16px; margin-bottom:8px;"><i class="fa-solid fa-bolt"></i> Giải pháp tối ưu hóa kịch bản Postman (UI-based)</h3>
+                    <ul class="bullet-list" style="font-size: 12.5px; display:flex; flex-direction:column; gap:6px;">
+                        <li><strong>Dùng cấu hình Auth kế thừa (Inherit Auth):</strong> Cấu hình Token một lần tại thư mục cha (Collection). Tất cả các API con bên trong sẽ tự động kế thừa, không cần sao chép thủ công.</li>
+                        <li><strong>Tập trung hóa quản trị biến động:</strong> Khai báo toàn bộ các tham số URLs, thông tin tài khoản cố định vào thư mục Environment để thay đổi đồng loạt nhanh chóng.</li>
+                        <li><strong>Phân chia thư mục khoa học (Collection Folder Structure):</strong> Chia kịch bản test thành 2 thư mục rõ rệt: **Positive Cases** (Luồng chạy đúng) và **Negative Cases** (Luồng kịch bản lỗi biên bảo mật) để dễ theo dõi kết quả trực quan.</li>
+                    </ul>
+                </div>
+                <div class="highlight-box" style="border-color: rgba(239, 68, 68, 0.3);">
+                    <h3 style="color:#ef4444; font-size:16px; margin-bottom:8px;"><i class="fa-solid fa-triangle-exclamation"></i> 5 lỗi phổ biến nhất của Junior Testers</h3>
+                    <ul class="bullet-list" style="font-size: 12.5px; display:flex; flex-direction:column; gap:6px;">
+                        <li><strong>1. Quên chọn Environment:</strong> URL hiển thị màu đỏ do Postman không tìm thấy định nghĩa của biến `{{base_url}}` $\rightarrow$ Gặp lỗi gửi thất bại.</li>
+                        <li><strong>2. Gõ cứng dữ liệu (Hardcode):</strong> Dán trực tiếp Token hoặc số tài khoản cố định vào body, dẫn đến lỗi hàng loạt case sau khi hết hạn phiên làm việc.</li>
+                        <li><strong>3. Thiếu Assertion bằng mắt trực quan:</strong> Chỉ thấy mã trạng thái mạng `200 OK` là bỏ qua bước rà quét logic nghiệp vụ lỗi được mô tả chi tiết hiển thị trong Response Body.</li>
+                        <li><strong>4. Nhầm lẫn phạm vi Biến:</strong> Lưu đè biến môi trường Staging đè lên môi trường UAT gây sai lệch kết quả giao dịch của toàn dự án.</li>
+                        <li><strong>5. Không xóa dữ liệu rác sau khi Test:</strong> Tạo tài khoản test liên tục nhưng không dọn dẹp, gây tràn bộ nhớ cơ sở dữ liệu phân hệ thử nghiệm ngân hàng.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="nav-dock">
+            <button class="btn-dock" onclick="handlePrev()"><i class="fa-solid fa-chevron-left"></i> QUAY LẠI</button>
+            <button class="btn-dock" onclick="handleNext()">TIẾP THEO <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <div class="slide-container" id="slide13">
+        <div class="itlearn-header">ITLEarn</div>
+        <h2 class="slide-title">Homework Lab: Thực Hành Thiết Kế Test Cases & Cấu hình Postman</h2>
+        <div class="content-area">
+            <div class="matrix-dashboard" style="grid-template-columns: 240px 1fr; height: 460px;">
+                <div class="matrix-menu">
+                    <div class="matrix-tab-btn active" onclick="switchPracticeTab(0)">
+                        <h4>1. Đặc Tả API Spec</h4>
+                        <p>Thông tin và cấu hình Header</p>
+                    </div>
+                    <div class="matrix-tab-btn" onclick="switchPracticeTab(1)">
+                        <h4>2. Payload & Responses</h4>
+                        <p>Các gói tin mẫu và mã trả về</p>
+                    </div>
+                    <div class="matrix-tab-btn" onclick="switchPracticeTab(2)">
+                        <h4>3. Kịch Bản Yêu Cầu</h4>
+                        <p>Các Test Cases bắt buộc cấu hình</p>
+                    </div>
+                </div>
+                <div class="matrix-display-panel" id="practiceDisplayContainer" style="padding: 15px 22px;">
+                    
+                    <div class="matrix-pane-content practice-pane active">
+                        <h3>Tài Liệu Đặc Tả API: Mở Tài Khoản Tiết Kiệm Online (Saving Account)</h3>
+                        <p style="margin-bottom: 10px;">Để làm bài tập về nhà, học viên cần đọc kỹ thông số kỹ thuật bên dưới để thiết lập Request chuẩn trên Postman:</p>
+                        <ul class="bullet-list" style="font-size: 13px;">
+                            <li><strong>HTTP Protocol:</strong> RESTful API</li>
+                            <li><strong>HTTP Method:</strong> <code style="color:#f43f5e; font-weight:bold;">POST</code></li>
+                            <li><strong>Base URL:</strong> <code style="color:#00f2fe;">{{base_url}}</code> (Cấu hình linh hoạt qua Environment)</li>
+                            <li><strong>Resource Path:</strong> <code style="color:#00f2fe;">/v1/savings/open-account</code></li>
+                            <li><strong>Headers bắt buộc:</strong>
+                                <br>- <code style="color:#00f2fe;">Content-Type: application/json</code>
+                                <br>- <code style="color:#00f2fe;">Authorization: Bearer {{jwt_banking_token}}</code> (Token lấy từ môi trường)
+                                <br>- <code style="color:#00f2fe;">X-Request-ID: {{$guid}}</code> (Bắt buộc dùng biến Dynamic UUID để chống trùng tệp tin log)
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="matrix-pane-content practice-pane">
+                        <h3>Cấu Trúc Gói Tin JSON & Các Kịch Bản Phản Hồi Từ Máy Chủ</h3>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top: 5px;">
+                            <div>
+                                <strong style="font-size: 12px; color: #00f2fe;">Request Body Payload (JSON)</strong>
+                                <div class="code-wrapper" style="font-size: 10px; margin-top: 4px; height: 160px; overflow-y: auto;">
+{<br>
+&nbsp;&nbsp;"customer_cif": "CIF9901",<br>
+&nbsp;&nbsp;"source_account": "11002231",<br>
+&nbsp;&nbsp;"deposit_amount": 5000000,<br>
+&nbsp;&nbsp;"tenor_months": 12,<br>
+&nbsp;&nbsp;"interest_payout": "MATURITY",<br>
+&nbsp;&nbsp;"auto_rollover": true<br>
+}
+                                </div>
+                            </div>
+                            <div>
+                                <strong style="font-size: 12px; color: #10b981;">Response 200 OK (Thành Công)</strong>
+                                <div class="code-wrapper" style="border-color: #10b981; font-size: 10px; margin-top: 4px; height: 160px; overflow-y: auto;">
+{<br>
+&nbsp;&nbsp;"status": "OPENED",<br>
+&nbsp;&nbsp;"savings_account_no": "SV-8889912",<br>
+&nbsp;&nbsp;"interest_rate": 5.85,<br>
+&nbsp;&nbsp;"maturity_date": "2027-07-15",<br>
+&nbsp;&nbsp;"created_at": "2026-07-15T11:00:00Z"<br>
+}
+                                </div>
+                            </div>
+                        </div>
+                        <p style="font-size: 11.5px; color: #f59e0b; margin-top: 8px;"><strong>Các mã lỗi nghiệp vụ bổ sung để kiểm thử thực tế:</strong>
+                            <br>• <strong>400 Bad Request:</strong> Gửi thiếu thuộc tính bắt buộc, trả về `{ "error_code": "INVALID_PARAMS" }`
+                            <br>• <strong>401 Unauthorized:</strong> Token sai/hết hạn, trả về `{ "error_code": "TOKEN_EXPIRED" }`
+                            <br>• <strong>422 Unprocessable Entity:</strong> Số tiền gửi dưới hạn định (Min: 1,000,000 VND), trả về `{ "error_code": "DEPOSIT_BELOW_MINIMUM" }`
+                        </p>
+                    </div>
+
+                    <div class="matrix-pane-content practice-pane">
+                        <h3>Nhiệm Vụ Bài Tập: Thiết Kế Ma Trận Kiểm Thử & Cấu Hình Trên Postman</h3>
+                        <p style="margin-bottom: 8px; font-weight: bold; color: #fbbf24;">Học viên bắt buộc phải thiết lập thành công 3 Request sau vào Collection Postman và xuất file JSON nộp bài:</p>
+                        <ul class="bullet-list" style="font-size: 12.5px; display: flex; flex-direction: column; gap: 6px;">
+                            <li><strong>Case 1: Happy Path (Mở tài khoản tiết kiệm thành công)</strong>
+                                <br>➔ Cấu hình đầy đủ Headers, gửi dữ liệu đúng hạn định (5,000,000 VND). Xác minh thủ công bằng trực quan: Mã trạng thái mạng trả về là `200 OK`, trường `status` bằng `OPENED` và `savings_account_no` có giá trị cụ thể.
+                            </li>
+                            <li><strong>Case 2: Security check (Lỗi Token không hợp lệ)</strong>
+                                <br>➔ Cấu hình cố tình làm rách token trong Authorization Header. Xác minh trực quan: Mã trạng thái trả về là `401 Unauthorized` và `error_code` trả về khớp giá trị `TOKEN_EXPIRED`.
+                            </li>
+                            <li><strong>Case 3: Logic Business Validate (Kiểm tra số tiền ký gửi tối thiểu)</strong>
+                                <br>➔ Cấu hình gửi số tiền dưới hạn định `{ "deposit_amount": 900000 }`. Xác minh trực quan: Mã trạng thái mạng trả về là `422 Unprocessable Entity` và mã lỗi trong Body phải là `DEPOSIT_BELOW_MINIMUM`.
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="nav-dock">
+            <button class="btn-dock" onclick="handlePrev()"><i class="fa-solid fa-chevron-left"></i> QUAY LẠI</button>
+            <button class="btn-dock" onclick="handleNext()">TIẾP THEO <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <div class="slide-container" id="slide22">
+        <div class="itlearn-header">ITLEarn</div><h2 class="slide-title">Hôm nay chúng ta đã phá vỡ rào cản lõi</h2>
+        <div class="content-area"><div class="two-column" style="grid-template-columns: 1fr 1fr;"><div class="highlight-box"><p style="color:#ffffff; font-weight: bold;">Hành trang em đã làm chủ:</p><ul style="text-align: left; font-size: 16px; margin-top: 10px; padding-left: 20px; display:flex; flex-direction:column; gap:10px;"><li>Bản chất giao tiếp API & Cấu trúc Microservices ngân hàng.</li><li>Cấu trúc chi tiết Request & Response, Content-Type bảo mật hai đầu.</li><li>Cơ chế Authentication vs Authorization phân tầng.</li><li>Bản chất bóc tách cấu trúc phản hồi bằng ngôn ngữ JSONPath.</li></ul></div><div class="highlight-box" style="border-color: rgba(244,63,94,0.15);"><p style="color:#ffffff; font-weight: bold;">Thực thi tiếp theo:</p><p style="font-size: 16px; margin-top: 10px; color:#9ca3af; line-height:1.6;">Mở máy tính, truy cập trực tiếp công cụ Postman cùng người hướng dẫn bẻ khóa cấu hình kịch bản thực chiến!</p><button class="btn-nav" style="margin-top: 25px; width: 100%; justify-content: center;"><i class="fa-solid fa-code"></i> KHỞI ĐỘNG POSTMAN NOW</button></div></div></div>
+        <div class="nav-dock">
+            <button class="btn-dock" onclick="handlePrev()"><i class="fa-solid fa-chevron-left"></i> QUAY LẠI</button>
+            <button class="btn-dock" style="opacity:0.3; cursor:not-allowed;" disabled>TIẾP THEO <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // TOÀN BỘ DANH SÁCH SLIDE CHUẨN ĐỒNG BỘ THEO THỨ TỰ TUẦN TỰ
+    const slideIds = [
+        'slide1', 'slide2', 'slide3', 'slide4', 'slide5', 'slide6', 'slide6_2', 'slide6_3', 'slide6_4', 'slide7', 'slide8', 'slide8_2', 'slide9', 'slide9_1', 'slide9_2', 'slide9_3', 'slide9_4', 'slide10', 'slide11', 'slide12', 'slide13', 'slide22'
+    ];
+
+    let currentScore = 0;
+    const totalQuestions = 8; 
+
+    const artifactRepository = {
+        api_spec: {
+            title: "API Specification Document (Tài liệu đặc tả kết nối lõi)",
+            format: "Định dạng Word/Confluence (Bảng cấu hình Key - Type - Mandatory)",
+            example: `<table><tr><th>Field Key</th><th>Data Type</th><th>Mandatory</th><th>Description</th></tr><tr><td><mark>account_source</mark></td><td>String</td><td>YES</td><td>Số tài khoản nguồn trích tiền (10-15 ký tự)</td></tr><tr><td><mark>account_destination</mark></td><td>String</td><td>YES</td><td>Số tài khoản nhận tiền hưởng thụ</td></tr><tr><td><mark>amount</mark></td><td>Number</td><td>YES</td><td>Số tiền giao dịch thực tế (Min: 10,000 VND)</td></tr></table>`
+        },
+        swagger: {
+            title: "Swagger UI Framework (Giao diện hiển thị Backend thô)",
+            format: "Web Interface dựa trên cấu trúc OpenAPIs standard",
+            example: `<div class="code-wrapper"><span class="code-label">Live Swagger Endpoint</span><span style="color:#10b981;font-weight:bold;">POST</span> /v1/payment/transfer-interbank<br><span style="color:#9ca3af;">Description: Thực hiện chuyển tiền nhanh Napas 247</span><br><span style="color:#f59e0b;">Response Sample 200 OK:</span> { "code": "00", "message": "Success", "transaction_id": "FT26190" }</div>`
+        },
+        test_matrix: {
+            title: "API Test Matrix (Bảng điều kiện bao phủ dữ liệu biên)",
+            format: "Bảng Excel chi tiết điều kiện biên TestCase ID & Data Payload",
+            example: `<table><tr><th>TC_ID</th><th>Scenario Type</th><th>Payload Input Matrix</th><th>Expected HTTP & Code</th></tr><tr><td>TC_01</td><td>Positive (Happy)</td><td>Valid Source, Valid Dest, Amount = 50,000</td><td><span style="color:#10b981;">200 OK (code: "00")</span></td></tr><tr><td>TC_02</td><td>Negative (Bảo mật)</td><td>No Authorization Token Bearer in Header</td><td><span style="color:#f43f5e;">401 Unauthorized</span></td></tr></table>`
+        },
+        bug_report: {
+            title: "Jira Bug Report Artifact (Báo cáo lỗi kèm gói tin tái lập)",
+            format: "Mẫu báo cáo lỗi Ticket Jira + Chuỗi mã cURL dòng lệnh",
+            example: `<div class="code-wrapper"><span class="code-label">cURL Repro Step</span>curl --request POST 'https://api.stg-bank.vn/v1/transfer' \\<br>--header 'Content-Type: application/json' \\<br>--data-raw '{ "account_source": "110022", "amount": -5000 }'<br><span style="color:#f43f5e; font-weight:bold; display:block; margin-top:5px;">[BUG FOUND]: Hệ thống không chặn số tiền âm, Backend trả về HTTP 200 thay vì 400!</span></div>`
+        },
+        postman_json: {
+            title: "Postman Collection Exported JSON (Kịch bản Automation)",
+            format: "Tệp tin cấu trúc chuẩn JSON v2.1 để import vào hệ thống CI/CD",
+            example: `<div class="code-wrapper"><span class="code-label">Collection Meta</span>{<br>&nbsp;&nbsp;"info": { "name": "Core_Banking_Automation", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json" }<br>}</div>`
+        }
+    };
+
+    function inspectArtifact(artifactKey, element) {
+        const container = document.getElementById('slide8_2');
+        const tags = container.querySelectorAll('.artifact-clickable-tag');
+        tags.forEach(tag => tag.classList.remove('active'));
+        element.classList.add('active');
+        
+        const data = artifactRepository[artifactKey];
+        if (data) {
+            document.getElementById('inspectorTitle').innerHTML = `<i class="fa-solid fa-file-lines"></i> ${data.title}`;
+            document.getElementById('inspectorFormat').innerText = data.format;
+            document.getElementById('inspectorExampleContainer').innerHTML = data.example;
+            document.getElementById('liveInspectorDock').style.display = 'block';
+        }
+    }
+
+    // CORE NAVIGATION ENGINE (DÙNG CLASS ĐỂ TRÁNH LỖI OVERRIDE CSS)
+    function goToSlide(slideId) {
+        const currentActive = document.querySelector('.slide-container.active');
+        const targetSlide = document.getElementById(slideId);
+        if (targetSlide) {
+            if (currentActive) {
+                currentActive.classList.remove('active');
+            }
+            targetSlide.classList.add('active');
+        }
+    }
+
+    function handleNext() {
+        const currentActive = document.querySelector('.slide-container.active');
+        if (!currentActive) return;
+        let currentIndex = slideIds.indexOf(currentActive.id);
+        if (currentIndex < slideIds.length - 1) { goToSlide(slideIds[currentIndex + 1]); }
+    }
+
+    function handlePrev() {
+        const currentActive = document.querySelector('.slide-container.active');
+        if (!currentActive) return;
+        let currentIndex = slideIds.indexOf(currentActive.id);
+        if (currentIndex > 0) { goToSlide(slideIds[currentIndex - 1]); }
+    }
+
+    // DIAGNOSTIC QUIZ ENGINE
+    function checkAnswer(questionId, status, clickedBtn) {
+        const optionsContainer = document.getElementById('options' + questionId);
+        const buttons = optionsContainer.getElementsByTagName('button');
+        for (let btn of buttons) {
+            btn.disabled = true;
+            btn.style.opacity = '0.4';
+            btn.style.cursor = 'not-allowed';
+        }
+        clickedBtn.style.opacity = '1';
+        const feedbackElement = document.getElementById('feedback' + questionId);
+        const actionBox = document.getElementById('action' + questionId);
+
+        if (status === 'correct') {
+            clickedBtn.classList.add('correct');
+            feedbackElement.style.color = '#10b981';
+            feedbackElement.innerHTML = `<i class="fa-solid fa-fire-flame-curved"></i> Đúng chuẩn Pro kiểm thử thực chiến! 🔥`;
+            currentScore++;
+        } else {
+            clickedBtn.classList.add('wrong');
+            feedbackElement.style.color = '#f59e0b';
+            feedbackElement.innerHTML = `<i class="fa-solid fa-circle-info"></i> Khúc này hơi lệch tí, chút nữa thực hành Postman là lấp gap ngay! 💎`;
+            for (let btn of buttons) {
+                if (btn.getAttribute('onclick').includes('correct')) {
+                    btn.classList.add('correct');
+                    btn.style.opacity = '1';
+                }
+            }
+        }
+        feedbackElement.style.opacity = '1';
+        if (actionBox) actionBox.style.display = 'flex';
+    }
+
+    function showFinalScoreSummary() {
+        document.getElementById('finalScoreDisplay').innerText = currentScore + "/" + totalQuestions;
+        const badgeElement = document.getElementById('rankBadgeDisplay');
+        const messageElement = document.getElementById('motivationalMessageDisplay');
+        if (currentScore === totalQuestions) {
+            badgeElement.style.color = '#10b981'; badgeElement.innerText = "👑 CHIẾN THẦN API LÕI NGÂN HÀNG";
+            messageElement.innerText = "Wow! Em xử lý mượt mà 100% bộ câu hỏi hack não đầu giờ. Sẵn sàng bứt phá kịch bản nâng cao cùng người hướng dẫn nhé!";
+        } else if (currentScore >= 5) {
+            badgeElement.style.color = '#00f2fe'; badgeElement.innerText = "⚡ THỢ SĂN BUG TIỀM NĂNG";
+            messageElement.innerText = "Rất tốt! Còn vài lỗ hổng nhỏ về giao thức cũ và JSONPath, người hướng dẫn sẽ cùng em quét sạch ngay bây giờ!";
+        } else {
+            badgeElement.style.color = '#f59e0b'; badgeElement.innerText = "🛠️ TÂN BINH THỰC CHIẾN CHỜ BỨT PHÁ";
+            messageElement.innerText = "Đừng lo lắng! Những lỗ hổng đầu giờ chính là nội dung cốt lõi chúng ta sẽ bẻ gãy trong buổi học hôm nay!";
+        }
+        goToSlide('slide7');
+    }
+
+    // MULTI-TAB SWITCHING HANDLERS
+    function switchMatrixTab(tabIndex) {
+        const tabButtons = document.querySelector('#slide9').querySelectorAll('.matrix-tab-btn');
+        const contents = document.querySelector('#slide9').querySelectorAll('.matrix-pane-content');
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        contents.forEach(content => content.classList.remove('active'));
+        tabButtons[tabIndex].classList.add('active');
+        contents[tabIndex].classList.add('active');
+    }
+
+    function switchProcessTab(tabIndex) {
+        const tabButtons = document.querySelector('#slide8_2').querySelectorAll('.matrix-tab-btn');
+        const contents = document.querySelector('#slide8_2').querySelectorAll('.process-pane');
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        contents.forEach(content => content.classList.remove('active'));
+        tabButtons[tabIndex].classList.add('active');
+        contents[tabIndex].classList.add('active');
+        document.getElementById('liveInspectorDock').style.display = 'none';
+        const tags = document.querySelector('#slide8_2').querySelectorAll('.artifact-clickable-tag');
+        tags.forEach(tag => tag.classList.remove('active'));
+        document.getElementById('processDisplayPanel').scrollTop = 0;
+    }
+
+    // REST EXPANDED TAB SWITCHER
+    function switchRestExpTab(tabIndex) {
+        const tabButtons = document.querySelector('#slide9_2').querySelectorAll('.matrix-tab-btn-exp');
+        const contents = document.querySelector('#slide9_2').querySelectorAll('.pane-content-exp');
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        contents.forEach(content => content.classList.remove('active'));
+        tabButtons[tabIndex].classList.add('active');
+        contents[tabIndex].classList.add('active');
+        document.getElementById('restExpDisplayContainer').scrollTop = 0;
+    }
+
+    // POSTMAN ECOSYSTEM TAB SWITCHER
+    function switchPostmanEcoTab(tabIndex) {
+        const tabButtons = document.querySelector('#slide9_4').querySelectorAll('.matrix-tab-btn');
+        const contents = document.querySelector('#slide9_4').querySelectorAll('.eco-pane');
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        contents.forEach(content => content.classList.remove('active'));
+        tabButtons[tabIndex].classList.add('active');
+        contents[tabIndex].classList.add('active');
+        document.getElementById('postmanEcoDisplayContainer').scrollTop = 0;
+    }
+
+    function switchPracticeTab(tabIndex) {
+        const currentActive = document.querySelector('.slide-container.active');
+        const tabButtons = currentActive.querySelectorAll('.matrix-tab-btn');
+        const contents = currentActive.querySelectorAll('.practice-pane');
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        contents.forEach(content => content.classList.remove('active'));
+        tabButtons[tabIndex].classList.add('active');
+        contents[tabIndex].classList.add('active');
+        const container = currentActive.querySelector('.matrix-display-panel');
+        if (container) container.scrollTop = 0;
+    }
+
+    // KEYBOARD LISTENER
+    document.addEventListener('keydown', function(event) {
+        const currentActive = document.querySelector('.slide-container.active');
+        if (!currentActive) return;
+        // Khóa phím mũi tên khi đang ở các slide trắc nghiệm làm bài
+        if (['slide2', 'slide3', 'slide4', 'slide5', 'slide6', 'slide6_2', 'slide6_3', 'slide6_4'].includes(currentActive.id)) return; 
+        if (event.key === 'ArrowRight' || event.key === 'Space') handleNext();
+        else if (event.key === 'ArrowLeft') handlePrev();
+    });
+</script>
+
+</body>
+</html>
