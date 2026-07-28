@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Documentation — Class Booking System | Auth Module</title>
+<style>
+  :root {
+    --primary: #1F4E79;
+    --secondary: #2E75B6;
+    --accent: #D6E4F0;
+    --success: #375623;
+    --success-bg: #E2EFDA;
+    --warning: #7F4F00;
+    --warning-bg: #FFF2CC;
+    --danger: #C00000;
+    --danger-bg: #FCE4D6;
+    --gray: #595959;
+    --light: #F8FAFC;
+    --border: #BDD7EE;
+    --code-bg: #1E1E2E;
+    --code-text: #CDD6F4;
+    --green: #A6E3A1;
+    --yellow: #F9E2AF;
+    --red: #F38BA8;
+    --blue: #89DCEB;
+    --purple: #CBA6F7;
+    --orange: #FAB387;
+    --white: #FFFFFF;
+    --sidebar-w: 280px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; color: #1E293B; background: #F1F5F9; display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  #sidebar {
+    width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--primary);
+    position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 100;
+    display: flex; flex-direction: column;
+  }
+  #sidebar .logo { padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.15); }
+  #sidebar .logo h1 { color: #fff; font-size: 15px; font-weight: 700; line-height: 1.3; }
+  #sidebar .logo p { color: rgba(255,255,255,0.55); font-size: 11px; margin-top: 4px; }
+  #sidebar nav { padding: 12px 0; flex: 1; }
+  #sidebar .nav-group { margin-bottom: 4px; }
+  #sidebar .nav-group-title { padding: 8px 18px 4px; color: rgba(255,255,255,0.45); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; }
+  #sidebar .nav-item {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    color: rgba(255,255,255,0.75); text-decoration: none; font-size: 13px;
+    border-left: 3px solid transparent; transition: all .15s; cursor: pointer;
+  }
+  #sidebar .nav-item:hover, #sidebar .nav-item.active { background: rgba(255,255,255,0.1); color: #fff; border-left-color: #4FC3F7; }
+  #sidebar .nav-item .badge {
+    margin-left: auto; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 8px;
+  }
+  .badge-post { background: #22C55E; color: #fff; }
+  .badge-get { background: #3B82F6; color: #fff; }
+  .badge-patch { background: #F59E0B; color: #fff; }
+  .badge-delete { background: #EF4444; color: #fff; }
+
+  /* MAIN */
+  #main { margin-left: var(--sidebar-w); flex: 1; }
+
+  /* TOPBAR */
+  .topbar { background: var(--primary); color: #fff; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  .topbar h2 { font-size: 16px; font-weight: 600; }
+  .topbar .meta { font-size: 12px; color: rgba(255,255,255,0.7); }
+  .version-badge { background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 12px; font-size: 11px; }
+
+  /* CONTENT */
+  .content { padding: 28px 32px; max-width: 1100px; }
+
+  /* OVERVIEW CARDS */
+  .overview-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+  .overview-card { background: #fff; border-radius: 10px; padding: 16px; border: 1px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .overview-card .num { font-size: 26px; font-weight: 800; color: var(--primary); }
+  .overview-card .lbl { font-size: 12px; color: var(--gray); margin-top: 3px; }
+  .overview-card .sub { font-size: 11px; color: #94A3B8; margin-top: 6px; }
+
+  /* BASE URL */
+  .base-url { background: var(--code-bg); border-radius: 10px; padding: 14px 20px; margin-bottom: 28px; display: flex; align-items: center; gap: 12px; }
+  .base-url span { color: rgba(255,255,255,0.5); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  .base-url code { color: var(--green); font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 14px; }
+
+  /* SECTION */
+  .section { margin-bottom: 40px; }
+  .section-title {
+    font-size: 18px; font-weight: 700; color: var(--primary);
+    border-bottom: 3px solid var(--secondary); padding-bottom: 10px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title .icon { font-size: 20px; }
+  .section-desc { background: var(--accent); border-left: 4px solid var(--secondary); border-radius: 0 8px 8px 0; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: var(--primary); line-height: 1.6; }
+
+  /* API ENDPOINT CARD */
+  .endpoint {
+    background: #fff; border-radius: 12px; border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; overflow: hidden;
+  }
+  .endpoint-header {
+    display: flex; align-items: center; gap: 12px; padding: 16px 20px;
+    cursor: pointer; user-select: none; transition: background .15s;
+  }
+  .endpoint-header:hover { background: #F8FAFC; }
+  .method-badge {
+    font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 6px;
+    min-width: 62px; text-align: center; letter-spacing: .3px;
+  }
+  .method-post { background: #DCFCE7; color: #15803D; }
+  .method-get { background: #DBEAFE; color: #1D4ED8; }
+  .method-patch { background: #FEF3C7; color: #B45309; }
+  .method-delete { background: #FEE2E2; color: #DC2626; }
+  .method-put { background: #F3E8FF; color: #7E22CE; }
+  .endpoint-path { font-family: 'Cascadia Code', monospace; font-size: 14px; font-weight: 600; color: #1E293B; }
+  .endpoint-summary { color: var(--gray); font-size: 13px; margin-left: auto; }
+  .auth-required { font-size: 11px; background: var(--warning-bg); color: var(--warning); padding: 2px 8px; border-radius: 10px; border: 1px solid #F6D67A; }
+  .public-badge { font-size: 11px; background: var(--success-bg); color: var(--success); padding: 2px 8px; border-radius: 10px; border: 1px solid #A9D18E; }
+  .chevron { margin-left: 10px; color: #94A3B8; font-size: 16px; transition: transform .2s; }
+  .endpoint.open .chevron { transform: rotate(180deg); }
+
+  .endpoint-body { display: none; border-top: 1px solid var(--border); }
+  .endpoint.open .endpoint-body { display: block; }
+
+  /* TABS */
+  .tabs { display: flex; background: #F8FAFC; border-bottom: 1px solid var(--border); }
+  .tab { padding: 10px 20px; font-size: 13px; font-weight: 500; color: var(--gray); cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; }
+  .tab.active { color: var(--secondary); border-bottom-color: var(--secondary); background: #fff; }
+  .tab:hover:not(.active) { color: var(--primary); background: #EEF5FB; }
+
+  .tab-content { display: none; padding: 20px; }
+  .tab-content.active { display: block; }
+
+  /* TABLES */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px; }
+  th { background: var(--primary); color: #fff; padding: 9px 12px; text-align: left; font-weight: 600; font-size: 12px; }
+  td { padding: 9px 12px; border-bottom: 1px solid #E2E8F0; vertical-align: top; line-height: 1.5; }
+  tr:nth-child(even) td { background: #F8FAFC; }
+  tr:hover td { background: #EFF6FF; }
+  .required { color: var(--danger); font-weight: 700; font-size: 11px; }
+  .optional { color: var(--gray); font-size: 11px; }
+  .type-badge { font-family: monospace; font-size: 11px; background: #EEF2FF; color: #4338CA; padding: 1px 6px; border-radius: 4px; }
+
+  /* CODE BLOCKS */
+  pre { background: var(--code-bg); border-radius: 10px; padding: 16px; overflow-x: auto; margin-bottom: 14px; position: relative; }
+  pre code { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 13px; line-height: 1.7; color: var(--code-text); }
+  .code-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+  .json-key { color: var(--blue); }
+  .json-str { color: var(--green); }
+  .json-num { color: var(--orange); }
+  .json-bool { color: var(--purple); }
+  .json-null { color: var(--red); }
+  .json-comment { color: rgba(255,255,255,0.3); font-style: italic; }
+  .sql-keyword { color: var(--purple); font-weight: bold; }
+  .sql-string { color: var(--green); }
+  .sql-comment { color: rgba(255,255,255,0.35); font-style: italic; }
+  .sql-func { color: var(--yellow); }
+  .sql-table { color: var(--blue); }
+  .sql-param { color: var(--orange); }
+
+  /* COPY BUTTON */
+  .code-wrapper { position: relative; }
+  .copy-btn { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all .15s; }
+  .copy-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+  .copy-btn.copied { background: #22C55E; color: #fff; border-color: #22C55E; }
+
+  /* FLOW DIAGRAM */
+  .flow { display: flex; align-items: stretch; gap: 0; margin: 16px 0; overflow-x: auto; }
+  .flow-step { flex: 1; min-width: 130px; background: var(--primary); color: #fff; padding: 12px 10px; text-align: center; position: relative; }
+  .flow-step:first-child { border-radius: 8px 0 0 8px; }
+  .flow-step:last-child { border-radius: 0 8px 8px 0; }
+  .flow-step .step-num { font-size: 10px; opacity: .7; margin-bottom: 4px; }
+  .flow-step .step-actor { font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+  .flow-step .step-action { font-size: 11px; opacity: .85; }
+  .flow-arrow { display: flex; align-items: center; color: var(--secondary); font-size: 18px; padding: 0 2px; flex-shrink: 0; }
+  .flow-step.s2 { background: #1F4E79; }
+  .flow-step.s3 { background: #375623; }
+  .flow-step.s4 { background: #5A8A3C; }
+  .flow-step.s5 { background: #70AD47; }
+
+  /* STATUS CODES */
+  .status-list { display: flex; flex-direction: column; gap: 8px; }
+  .status-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px; border-radius: 8px; border: 1px solid; }
+  .status-2xx { background: var(--success-bg); border-color: #A9D18E; }
+  .status-4xx { background: var(--danger-bg); border-color: #F4ABAB; }
+  .status-5xx { background: #FFF7ED; border-color: #FDBA74; }
+  .status-code { font-family: monospace; font-size: 13px; font-weight: 800; min-width: 40px; }
+  .status-2xx .status-code { color: var(--success); }
+  .status-4xx .status-code { color: var(--danger); }
+  .status-5xx .status-code { color: #C2410C; }
+  .status-name { font-weight: 600; font-size: 13px; }
+  .status-desc { font-size: 12px; color: var(--gray); margin-top: 2px; }
+
+  /* DB FLOW */
+  .db-flow { background: #0F172A; border-radius: 10px; padding: 20px; margin: 16px 0; }
+  .db-step { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
+  .db-step:last-child { margin-bottom: 0; }
+  .db-step-num { background: var(--secondary); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+  .db-step-content { flex: 1; }
+  .db-step-title { color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .db-step-sql { background: rgba(255,255,255,0.05); border-radius: 6px; padding: 8px 12px; font-family: monospace; font-size: 12px; color: var(--green); line-height: 1.6; }
+  .db-step-note { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 4px; }
+  .db-step.txn { border-left: 3px solid #F59E0B; padding-left: 12px; margin-left: 10px; }
+  .txn-label { color: #F59E0B; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; letter-spacing: .5px; }
+
+  /* DB TABLE */
+  .db-table-header { background: var(--code-bg); color: var(--blue); font-family: monospace; font-size: 13px; font-weight: 700; padding: 10px 16px; border-radius: 8px 8px 0 0; border: 1px solid #313244; border-bottom: none; }
+  .db-table-wrap { border: 1px solid #313244; border-radius: 0 0 8px 8px; overflow: hidden; margin-bottom: 18px; }
+  .db-table-wrap table { margin: 0; }
+  .db-table-wrap th { background: #181825; color: rgba(255,255,255,0.6); font-size: 11px; }
+  .db-table-wrap td { background: #1E1E2E; color: rgba(255,255,255,0.8); border-bottom: 1px solid #313244; font-size: 12px; }
+  .db-table-wrap tr:nth-child(even) td { background: #232336; }
+  .db-table-wrap tr:hover td { background: #2A2A40; }
+  .col-pk { color: #F9E2AF; font-weight: 700; }
+  .col-fk { color: #CBA6F7; }
+  .col-unique { color: #A6E3A1; }
+  .col-nullable { color: #6C7086; font-style: italic; }
+
+  /* SECURITY NOTE */
+  .security-note { background: #FFF7ED; border: 1px solid #FDBA74; border-radius: 8px; padding: 12px 16px; margin: 12px 0; display: flex; gap: 10px; align-items: flex-start; }
+  .security-note .icon { font-size: 16px; flex-shrink: 0; }
+  .security-note .text { font-size: 13px; color: #92400E; line-height: 1.5; }
+
+  /* LOGIC BOX */
+  .logic-box { background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 14px 16px; margin: 12px 0; }
+  .logic-box h4 { font-size: 12px; font-weight: 700; color: #1D4ED8; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+  .logic-box ul { list-style: none; }
+  .logic-box li { font-size: 13px; color: #1E3A5F; padding: 4px 0; padding-left: 16px; position: relative; line-height: 1.5; }
+  .logic-box li::before { content: '▸'; position: absolute; left: 0; color: var(--secondary); }
+
+  /* TAG */
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin: 2px; }
+  .tag-auth { background: #DBEAFE; color: #1D4ED8; }
+  .tag-db { background: #F3E8FF; color: #7E22CE; }
+  .tag-email { background: #FEF3C7; color: #B45309; }
+
+  h3.sub { font-size: 14px; color: var(--primary); font-weight: 700; margin: 16px 0 8px; border-left: 3px solid var(--secondary); padding-left: 10px; }
+  p.desc { font-size: 13px; color: #475569; line-height: 1.7; margin-bottom: 12px; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+
+  @media (max-width: 768px) {
+    #sidebar { display: none; }
+    #main { margin-left: 0; }
+    .overview-grid { grid-template-columns: repeat(2,1fr); }
+    .content { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="logo">
+    <h1>Class Booking System</h1>
+    <p>API Documentation v1.0</p>
+  </div>
+  <nav>
+    <div class="nav-group">
+      <div class="nav-group-title">Tổng quan</div>
+      <a class="nav-item active" onclick="scrollTo('overview')">📋 Overview & Base URL</a>
+      <a class="nav-item" onclick="scrollTo('auth-header')">🔐 Authentication Header</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Chương 3 — Đăng Ký</div>
+      <a class="nav-item" onclick="scrollTo('reg-check-email')"><span class="badge badge-get">GET</span> Check Email</a>
+      <a class="nav-item" onclick="scrollTo('reg-check-user')"><span class="badge badge-get">GET</span> Check Username</a>
+      <a class="nav-item" onclick="scrollTo('reg-register')"><span class="badge badge-post">POST</span> Register</a>
+      <a class="nav-item" onclick="scrollTo('reg-verify-email')"><span class="badge badge-get">GET</span> Verify Email</a>
+      <a class="nav-item" onclick="scrollTo('reg-resend')"><span class="badge badge-post">POST</span> Resend Email</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Chương 4 — Đăng Nhập</div>
+      <a class="nav-item" onclick="scrollTo('login-login')"><span class="badge badge-post">POST</span> Login</a>
+      <a class="nav-item" onclick="scrollTo('login-refresh')"><span class="badge badge-post">POST</span> Refresh Token</a>
+      <a class="nav-item" onclick="scrollTo('login-logout')"><span class="badge badge-post">POST</span> Logout</a>
+      <a class="nav-item" onclick="scrollTo('login-logout-all')"><span class="badge badge-post">POST</span> Logout All</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Chương 5 — Quên MK</div>
+      <a class="nav-item" onclick="scrollTo('fp-request')"><span class="badge badge-post">POST</span> Forgot Password</a>
+      <a class="nav-item" onclick="scrollTo('fp-validate')"><span class="badge badge-get">GET</span> Validate Token</a>
+      <a class="nav-item" onclick="scrollTo('fp-reset')"><span class="badge badge-post">POST</span> Reset Password</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Chương 6 — Đổi MK</div>
+      <a class="nav-item" onclick="scrollTo('cp-change')"><span class="badge badge-put">PATCH</span> Change Password</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Phụ lục</div>
+      <a class="nav-item" onclick="scrollTo('db-schema')">🗄️ Database Schema</a>
+      <a class="nav-item" onclick="scrollTo('error-codes')">⚠️ Error Codes</a>
+    </div>
+  </nav>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <div class="topbar">
+    <div>
+      <h2>Auth Module — API Documentation</h2>
+      <div class="meta">Chương 3–6: Đăng ký • Đăng nhập • Quên MK • Đổi MK</div>
+    </div>
+    <div class="version-badge">v1.0.0</div>
+  </div>
+
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div id="overview" class="section">
+      <div class="overview-grid">
+        <div class="overview-card"><div class="num">13</div><div class="lbl">API Endpoints</div><div class="sub">Chương 3–6</div></div>
+        <div class="overview-card"><div class="num">4</div><div class="lbl">Database Tables</div><div class="sub">users • refresh_tokens • email_verifications • password_reset_tokens</div></div>
+        <div class="overview-card"><div class="num">JWT</div><div class="lbl">Auth Method</div><div class="sub">RS256 • TTL 15 phút</div></div>
+        <div class="overview-card"><div class="num">bcrypt</div><div class="lbl">Password Hashing</div><div class="sub">salt rounds = 12</div></div>
+      </div>
+
+      <div class="base-url">
+        <span>Base URL</span>
+        <code>https://api.classbooking.com/api/v1</code>
+      </div>
+
+      <div class="base-url" style="margin-top:-16px">
+        <span>Content-Type</span>
+        <code>application/json</code>
+        <span style="margin-left:20px">Accept</span>
+        <code>application/json</code>
+      </div>
+    </div>
+
+    <!-- AUTH HEADER -->
+    <div id="auth-header" class="section">
+      <div class="section-title"><span class="icon">🔐</span> Authentication Header</div>
+      <p class="desc">Các endpoint yêu cầu xác thực phải gửi kèm Bearer Token trong header. Token lấy từ response của <code>/auth/login</code>.</p>
+      <div class="code-wrapper">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="json-key">Authorization</span>: Bearer <span class="json-str">eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...</span>
+
+<span class="json-comment">// JWT Payload sau khi decode:</span>
+{
+  <span class="json-key">"user_id"</span>: <span class="json-str">"uuid-v4"</span>,
+  <span class="json-key">"role"</span>: <span class="json-str">"CREATOR"</span>,
+  <span class="json-key">"email"</span>: <span class="json-str">"user@company.com"</span>,
+  <span class="json-key">"jti"</span>: <span class="json-str">"unique-token-id"</span>,
+  <span class="json-key">"must_change_password"</span>: <span class="json-bool">false</span>,
+  <span class="json-key">"iat"</span>: <span class="json-num">1746000000</span>,
+  <span class="json-key">"exp"</span>: <span class="json-num">1746000900</span>  <span class="json-comment">// TTL = 15 phút</span>
+}</code></pre>
+      </div>
+
+      <!-- STANDARD RESPONSE FORMAT -->
+      <h3 class="sub">Chuẩn Response Format</h3>
+      <div class="code-wrapper">
+        <pre><code><span class="json-comment">// ✅ Success</span>
+{
+  <span class="json-key">"success"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"data"</span>: { <span class="json-comment">/* payload */</span> },
+  <span class="json-key">"timestamp"</span>: <span class="json-str">"2026-05-09T10:00:00Z"</span>
+}
+
+<span class="json-comment">// ❌ Error</span>
+{
+  <span class="json-key">"success"</span>: <span class="json-bool">false</span>,
+  <span class="json-key">"error_code"</span>: <span class="json-str">"ERR_INVALID_CREDENTIALS"</span>,
+  <span class="json-key">"message"</span>: <span class="json-str">"Tên đăng nhập hoặc mật khẩu không đúng"</span>,
+  <span class="json-key">"details"</span>: { <span class="json-comment">/* optional context */</span> },
+  <span class="json-key">"timestamp"</span>: <span class="json-str">"2026-05-09T10:00:00Z"</span>
+}</code></pre>
+      </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════ CHAPTER 3: REGISTER ═══════════════ -->
+    <div class="section">
+      <div class="section-title"><span class="icon">📝</span> Chương 3 — Đăng Ký Tài Khoản
+        <span class="tag tag-auth">Public</span>
+        <span class="tag tag-db">users • email_verifications</span>
+      </div>
+      <div class="section-desc">
+        Luồng đăng ký gồm 3 bước: (1) Kiểm tra trùng lặp realtime, (2) Submit form tạo tài khoản INACTIVE, (3) Xác nhận email để kích hoạt. Tài khoản mặc định role=CREATOR, status=INACTIVE cho đến khi email_verified=true.
+      </div>
+
+      <!-- ── 3.1 CHECK EMAIL ── -->
+      <div id="reg-check-email" class="endpoint">
+        <div class="endpoint-header" onclick="toggle(this)">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/auth/check-email</span>
+          <span class="endpoint-summary">Kiểm tra email đã tồn tại</span>
+          <span class="public-badge">Public</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab(this,'overview')">Overview</div>
+            <div class="tab" onclick="switchTab(this,'request')">Request</div>
+            <div class="tab" onclick="switchTab(this,'response')">Response</div>
+            <div class="tab" onclick="switchTab(this,'db')">DB Logic</div>
+          </div>
+          <div class="tab-content active" data-tab="overview">
+            <p class="desc">Dùng để realtime check khi user gõ email trên form đăng ký. Gọi sau onBlur với debounce 600ms. Luôn trả 200 kể cả khi email không tồn tại — chỉ khác trường <code>available</code>.</p>
+            <div class="flow">
+              <div class="flow-step s1"><div class="step-num">1</div><div class="step-actor">Client</div><div class="step-action">onBlur email</div></div>
+              <div class="flow-arrow">›</div>
+              <div class="flow-step s2"><div class="step-num">2</div><div class="step-actor">Client</div><div class="step-action">GET ?email=</div></div>
+              <div class="flow-arrow">›</div>
+              <div class="flow-step s3"><div class="step-num">3</div><div class="step-actor">Server</div><div class="step-action">SELECT COUNT</div></div>
+              <div class="flow-arrow">›</div>
+              <div class="flow-step s4"><div class="step-num">4</div><div class="step-actor">Client</div><div class="step-action">Hiển thị ✓/✗</div></div>
+            </div>
+            <div class="logic-box">
+              <h4>Logic</h4>
+              <ul>
+                <li>Rate limit: 30 request/phút/IP</li>
+                <li>Kiểm tra cả tài khoản soft-deleted (deleted_at IS NOT NULL) — để tránh email conflict khi restore</li>
+                <li>Không trả thông tin chi tiết về tại sao không available</li>
+              </ul>
+            </div>
+          </div>
+          <div class="tab-content" data-tab="request">
+            <h3 class="sub">Query Parameters</h3>
+            <table><tr><th>Param</th><th>Type</th><th>Required</th><th>Validate</th><th>Mô tả</th></tr>
+              <tr><td><code>email</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>RFC5321 email format</td><td>Địa chỉ email cần kiểm tra</td></tr>
+            </table>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              <pre><code><span class="json-comment">// Request</span>
+GET /api/v1/auth/check-email?email=nguyen%40company.com</code></pre>
+            </div>
+          </div>
+          <div class="tab-content" data-tab="response">
+            <div class="code-wrapper">
+              <pre><code><span class="json-comment">// 200 — Email chưa tồn tại</span>
+{ <span class="json-key">"success"</span>: <span class="json-bool">true</span>, <span class="json-key">"data"</span>: { <span class="json-key">"available"</span>: <span class="json-bool">true</span> } }
+
+<span class="json-comment">// 200 — Email đã tồn tại</span>
+{ <span class="json-key">"success"</span>: <span class="json-bool">true</span>, <span class="json-key">"data"</span>: { <span class="json-key">"available"</span>: <span class="json-bool">false</span> } }
+
+<span class="json-comment">// 400 — Email sai format</span>
+{ <span class="json-key">"success"</span>: <span class="json-bool">false</span>, <span class="json-key">"error_code"</span>: <span class="json-str">"ERR_VALIDATION"</span>, <span class="json-key">"message"</span>: <span class="json-str">"Email không đúng định dạng"</span> }</code></pre>
+            </div>
+          </div>
+          <div class="tab-content" data-tab="db">
+            <div class="db-flow">
+              <div class="db-step">
+                <div class="db-step-num">1</div>
+                <div class="db-step-content">
+                  <div class="db-step-title">Validate email format (regex)</div>
+                  <div class="db-step-note">Thực hiện ở application layer trước khi query DB</div>
+                </div>
+              </div>
+              <div class="db-step">
+                <div class="db-step-num">2</div>
+                <div class="db-step-content">
+                  <div class="db-step-title">Query bảng users</div>
+                  <div class="db-step-sql">SELECT EXISTS(SELECT 1 FROM users WHERE email = lower(<span style="color:#FAB387">$1</span>)) AS exists;</div>
+                  <div class="db-step-note">Index: idx_users_email. lowercase($1) để case-insensitive match.</div>
+                </div>
+              </div>
+              <div class="db-step">
+                <div class="db-step-num">3</div>
+                <div class="db-step-content">
+                  <div class="db-step-title">Return { available: !exists }</div>
+                  <div class="db-step-note">Không phân biệt ACTIVE / INACTIVE / soft-deleted — đều trả false nếu tồn tại</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 3.2 CHECK USERNAME ── -->
+      <div id="reg-check-user" class="endpoint">
+        <div class="endpoint-header" onclick="toggle(this)">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/auth/check-username</span>
+          <span class="endpoint-summary">Kiểm tra username đã tồn tại</span>
+          <span class="public-badge">Public</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab(this,'overview')">Overview</div>
+            <div class="tab" onclick="switchTab(this,'request')">Request</div>
+            <div class="tab" onclick="switchTab(this,'response')">Response</div>
+            <div class="tab" onclick="switchTab(this,'db')">DB Logic</div>
+          </div>
+          <div class="tab-content active" data-tab="overview">
+            <p class="desc">Tương tự check-email. Gọi sau onBlur field username với debounce 600ms.</p>
+            <div class="logic-box"><h4>Logic</h4><ul>
+              <li>Validate format trước: chỉ [a-zA-Z0-9_], 6–50 ký tự</li>
+              <li>Query case-insensitive (LOWER)</li>
+              <li>Gợi ý thay thế nếu trùng: thêm số random vào cuối</li>
+            </ul></div>
+          </div>
+          <div class="tab-content" data-tab="request">
+            <table><tr><th>Param</th><th>Type</th><th>Required</th><th>Validate</th><th>Mô tả</th></tr>
+              <tr><td><code>username</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>^[a-zA-Z0-9_]{6,50}$</td><td>Username cần kiểm tra</td></tr>
+            </table>
+            <div class="code-wrapper"><pre><code>GET /api/v1/auth/check-username?username=nguyen_van_a</code></pre></div>
+          </div>
+          <div class="tab-content" data-tab="response">
+            <div class="code-wrapper"><pre><code><span class="json-comment">// 200 — Trùng username</span>
+{
+  <span class="json-key">"success"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"available"</span>: <span class="json-bool">false</span>,
+    <span class="json-key">"suggestions"</span>: [<span class="json-str">"nguyen_van_a1"</span>, <span class="json-str">"nguyen_van_a_2"</span>]
+  }
+}</code></pre></div>
+          </div>
+          <div class="tab-content" data-tab="db">
+            <div class="db-flow">
+              <div class="db-step"><div class="db-step-num">1</div><div class="db-step-content"><div class="db-step-title">Validate regex</div><div class="db-step-sql">^[a-zA-Z0-9_]{6,50}$</div></div></div>
+              <div class="db-step"><div class="db-step-num">2</div><div class="db-step-content"><div class="db-step-title">Query exact match</div><div class="db-step-sql">SELECT EXISTS(SELECT 1 FROM users WHERE lower(username) = lower(<span style="color:#FAB387">$1</span>)) AS exists;</div><div class="db-step-note">Index: idx_users_username</div></div></div>
+              <div class="db-step"><div class="db-step-num">3</div><div class="db-step-content"><div class="db-step-title">Nếu exists=true → generate suggestions</div><div class="db-step-sql"><span class="sql-comment">-- Thêm random suffix: username + floor(random()*999)</span></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 3.3 REGISTER ── -->
+      <div id="reg-register" class="endpoint">
+        <div class="endpoint-header" onclick="toggle(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/auth/register</span>
+          <span class="endpoint-summary">Tạo tài khoản mới</span>
+          <span class="public-badge">Public</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab(this,'overview')">Overview</div>
+            <div class="tab" onclick="switchTab(this,'request')">Request</div>
+            <div class="tab" onclick="switchTab(this,'response')">Response</div>
+            <div class="tab" onclick="switchTab(this,'db')">DB Logic</div>
+            <div class="tab" onclick="switchTab(this,'errors')">Errors</div>
+          </div>
+          <div class="tab-content active" data-tab="overview">
+            <p class="desc">Tạo tài khoản mới với role=CREATOR, status=INACTIVE. Sau khi tạo, gửi email xác nhận chứa link có TTL 24h. Tài khoản chỉ ACTIVE sau khi user click link xác nhận email.</p>
+            <div class="flow">
+              <div class="flow-step s1"><div class="step-num">1</div><div class="step-actor">Client</div><div class="step-action">POST /register</div></div>
+              <div class="flow-arrow">›</div>
+              <div class="flow-step s2"><div class="step-num">2</div><div class="step-actor">Server</div><div class="step-action">Validate + Unique check</div></div>
+              <div class="flow-arrow">›</div>
+              <div class="flow-step s3"><div class="step-num">3</div><div class="step-actor">Server</div><div class="step-action">bcrypt + INSERT DB</div></div>
+              <div class="flow-arrow">›</div>
+              <div class="flow-step s4"><div class="step-num">4</div><div class="step-actor">Email</div><div class="step-action">Send verify link</div></div>
+              <div class="flow-arrow">›</div>
+              <div class="flow-step s5"><div class="step-num">5</div><div class="step-actor">Client</div><div class="step-action">201 Created</div></div>
+            </div>
+            <div class="security-note"><span class="icon">🔒</span><div class="text"><strong>Security:</strong> Mật khẩu được hash bằng bcrypt(salt=12) trước khi lưu DB. Raw password KHÔNG được log hoặc lưu bất kỳ đâu. Email token dùng SHA-256 hash — chỉ raw token gửi qua email, DB chỉ lưu hash.</div></div>
+            <div class="logic-box"><h4>Business Logic</h4><ul>
+              <li>Rate limit: 5 request/phút/IP. Chặn spam đăng ký.</li>
+              <li>Email & username lowercase trước khi lưu (normalize).</li>
+              <li>Email token TTL = 24h. Sau đó phải resend.</li>
+              <li>Email không được phép trùng kể cả soft-deleted accounts.</li>
+              <li>Toàn bộ INSERT trong 1 transaction — rollback nếu bất kỳ bước nào lỗi.</li>
+              <li>Email gửi async (không block response 201).</li>
+            </ul></div>
+          </div>
+          <div class="tab-content" data-tab="request">
+            <h3 class="sub">Request Body (application/json)</h3>
+            <table>
+              <tr><th>Field</th><th>Type</th><th>Required</th><th>Validate</th><th>Mô tả</th></tr>
+              <tr><td><code>full_name</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>2–100 ký tự, chỉ chữ cái + khoảng trắng</td><td>Họ và tên đầy đủ</td></tr>
+              <tr><td><code>email</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>RFC5321, unique, lowercase</td><td>Địa chỉ email</td></tr>
+              <tr><td><code>username</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>^[a-zA-Z0-9_]{6,50}$, unique</td><td>Tên đăng nhập</td></tr>
+              <tr><td><code>password</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>≥8 ký tự, có HOA + thường + số</td><td>Mật khẩu</td></tr>
+              <tr><td><code>confirm_password</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>Phải khớp password</td><td>Xác nhận mật khẩu</td></tr>
+              <tr><td><code>phone_number</code></td><td><span class="type-badge">string</span></td><td><span class="optional">—</span></td><td>10 chữ số, bắt đầu 0</td><td>Số điện thoại</td></tr>
+              <tr><td><code>department</code></td><td><span class="type-badge">string</span></td><td><span class="optional">—</span></td><td>max 100 ký tự</td><td>Phòng ban</td></tr>
+            </table>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              <pre><code>{
+  <span class="json-key">"full_name"</span>: <span class="json-str">"Nguyễn Văn A"</span>,
+  <span class="json-key">"email"</span>: <span class="json-str">"nguyen.a@company.com"</span>,
+  <span class="json-key">"username"</span>: <span class="json-str">"nguyen_van_a"</span>,
+  <span class="json-key">"password"</span>: <span class="json-str">"MyPass123"</span>,
+  <span class="json-key">"confirm_password"</span>: <span class="json-str">"MyPass123"</span>,
+  <span class="json-key">"phone_number"</span>: <span class="json-str">"0912345678"</span>,
+  <span class="json-key">"department"</span>: <span class="json-str">"Phòng Kỹ thuật"</span>
+}</code></pre></div>
+          </div>
+          <div class="tab-content" data-tab="response">
+            <div class="code-wrapper"><pre><code><span class="json-comment">// 201 Created</span>
+{
+  <span class="json-key">"success"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"message"</span>: <span class="json-str">"Đăng ký thành công. Vui lòng kiểm tra email để kích hoạt tài khoản."</span>,
+    <span class="json-key">"email"</span>: <span class="json-str">"nguyen.a@company.com"</span>  <span class="json-comment">// để client hiển thị</span>
+  },
+  <span class="json-key">"timestamp"</span>: <span class="json-str">"2026-05-09T10:00:00Z"</span>
+}</code></pre></div>
+          </div>
+          <div class="tab-content" data-tab="db">
+            <div class="db-flow">
+              <div class="db-step"><div class="db-step-num">1</div><div class="db-step-content"><div class="db-step-title">Server-side Validation</div><div class="db-step-sql">Validate: full_name, email format, username regex, password strength, confirm match</div><div class="db-step-note">→ 400 ERR_VALIDATION nếu không pass</div></div></div>
+              <div class="db-step"><div class="db-step-num">2</div><div class="db-step-content"><div class="db-step-title">Normalize input</div><div class="db-step-sql">email = email.toLowerCase().trim()
+username = username.toLowerCase().trim()</div></div></div>
+              <div class="db-step"><div class="db-step-num">3</div><div class="db-step-content"><div class="db-step-title">Unique check — email</div><div class="db-step-sql">SELECT EXISTS(SELECT 1 FROM users WHERE email = <span style="color:#FAB387">$1</span>) AS exists;</div><div class="db-step-note">→ 409 ERR_EMAIL_EXISTS nếu exists=true</div></div></div>
+              <div class="db-step"><div class="db-step-num">4</div><div class="db-step-content"><div class="db-step-title">Unique check — username</div><div class="db-step-sql">SELECT EXISTS(SELECT 1 FROM users WHERE lower(username) = lower(<span style="color:#FAB387">$1</span>)) AS exists;</div><div class="db-step-note">→ 409 ERR_USERNAME_EXISTS nếu exists=true</div></div></div>
+              <div class="db-step"><div class="db-step-num">5</div><div class="db-step-content"><div class="db-step-title">Hash password (blocking ~150ms)</div><div class="db-step-sql">password_hash = await bcrypt.hash(password, 12)</div></div></div>
+              <div class="db-step"><div class="db-step-num">6</div><div class="db-step-content"><div class="db-step-title">Tạo email verification token</div><div class="db-step-sql">raw_token = crypto.randomBytes(32).toString('hex')  <span class="json-comment">// 64 hex chars</span>
+token_hash = SHA256(raw_token)</div></div></div>
+              <div class="db-step txn"><div class="txn-label">BEGIN TRANSACTION</div>
+                <div class="db-step"><div class="db-step-num">7</div><div class="db-step-content"><div class="db-step-title">INSERT users</div><div class="db-step-sql">INSERT INTO users (id, full_name, email, username, password_hash, phone_number, department, role, status, email_verified, must_change_password, created_at)
+VALUES (gen_random_uuid(), <span style="color:#FAB387">$1</span>, <span style="color:#FAB387">$2</span>, <span style="color:#FAB387">$3</span>, <span style="color:#FAB387">$4</span>, <span style="color:#FAB387">$5</span>, <span style="color:#FAB387">$6</span>, 'CREATOR', 'INACTIVE', false, false, NOW())
+RETURNING id;</div></div></div></div>
+                <div class="db-step"><div class="db-step-num">8</div><div class="db-step-content"><div class="db-step-title">INSERT email_verifications</div><div class="db-step-sql">INSERT INTO email_verifications (id, user_id, token_hash, expires_at, used)
+VALUES (gen_random_uuid(), <span style="color:#FAB387">$user_id</span>, <span style="color:#FAB387">$token_hash</span>, NOW() + INTERVAL '24 hours', false);</div></div></div>
+                <div class="db-step"><div class="db-step-num">9</div><div class="db-step-content"><div class="db-step-title">INSERT audit_log</div><div class="db-step-sql">INSERT INTO audit_logs (action, actor_email, ip_address, user_agent, metadata, created_at)
+VALUES ('USER_REGISTER', <span style="color:#FAB387">$email</span>, <span style="color:#FAB387">$ip</span>, <span style="color:#FAB387">$ua</span>, '{"username":"..."}', NOW());</div></div></div>
+              <div class="db-step-note" style="color:#F59E0B; margin-left:24px">COMMIT — nếu bất kỳ bước nào lỗi → ROLLBACK toàn bộ</div>
+              <div class="db-step"><div class="db-step-num">10</div><div class="db-step-content"><div class="db-step-title">Gửi email async (không block 201)</div><div class="db-step-sql">emailQueue.add({ to: email, token: raw_token, type: 'VERIFY_EMAIL' })</div><div class="db-step-note">Bull/Redis queue — retry 3 lần nếu fail</div></div></div>
+            </div>
+          </div>
+          <div class="tab-content" data-tab="errors">
+            <div class="status-list">
+              <div class="status-item status-2xx"><span class="status-code">201</span><div><div class="status-name">Created</div><div class="status-desc">Tạo tài khoản thành công. Email xác nhận đã gửi.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">400</span><div><div class="status-name">ERR_VALIDATION</div><div class="status-desc">Dữ liệu không hợp lệ: thiếu field bắt buộc, sai format, MK không đủ mạnh, confirm_password không khớp.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">409</span><div><div class="status-name">ERR_EMAIL_EXISTS</div><div class="status-desc">Email đã được sử dụng bởi tài khoản khác (kể cả soft-deleted).</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">409</span><div><div class="status-name">ERR_USERNAME_EXISTS</div><div class="status-desc">Username đã tồn tại trong hệ thống.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">422</span><div><div class="status-name">ERR_PASSWORD_WEAK</div><div class="status-desc">Mật khẩu không đủ tiêu chí: thiếu HOA, thường, hoặc số.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">429</span><div><div class="status-name">ERR_RATE_LIMIT</div><div class="status-desc">Quá 5 request/phút từ IP này. retry_after: 60s.</div></div></div>
+              <div class="status-item status-5xx"><span class="status-code">503</span><div><div class="status-name">ERR_EMAIL_SERVICE_DOWN</div><div class="status-desc">User đã được tạo trong DB nhưng email không gửi được. User có thể yêu cầu resend.</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 3.4 VERIFY EMAIL ── -->
+      <div id="reg-verify-email" class="endpoint">
+        <div class="endpoint-header" onclick="toggle(this)">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/auth/verify-email</span>
+          <span class="endpoint-summary">Xác nhận email bằng token</span>
+          <span class="public-badge">Public</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab(this,'overview')">Overview</div>
+            <div class="tab" onclick="switchTab(this,'request')">Request</div>
+            <div class="tab" onclick="switchTab(this,'db')">DB Logic</div>
+          </div>
+          <div class="tab-content active" data-tab="overview">
+            <p class="desc">Endpoint này được gọi khi user click link trong email xác nhận. Server validate token, cập nhật email_verified=true và status=ACTIVE, sau đó redirect về /login.</p>
+            <div class="security-note"><span class="icon">🔒</span><div class="text">Token trong URL là <strong>raw token</strong>. Server tính SHA-256(raw_token) để so khớp với token_hash lưu trong DB. Không lưu raw token ở DB — tránh lộ nếu DB bị breach.</div></div>
+          </div>
+          <div class="tab-content" data-tab="request">
+            <table><tr><th>Param</th><th>Type</th><th>Required</th><th>Mô tả</th></tr>
+              <tr><td><code>token</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>Raw token 64 ký tự hex từ email link</td></tr>
+            </table>
+            <div class="code-wrapper"><pre><code>GET /api/v1/auth/verify-email?token=a3f8c2d1e0b94762...
+
+<span class="json-comment">// Response: HTTP 302 Redirect</span>
+Location: /login?message=email_verified_success
+<span class="json-comment">// hoặc nếu lỗi:</span>
+Location: /verify-email/expired</code></pre></div>
+          </div>
+          <div class="tab-content" data-tab="db">
+            <div class="db-flow">
+              <div class="db-step"><div class="db-step-num">1</div><div class="db-step-content"><div class="db-step-title">Hash token</div><div class="db-step-sql">token_hash = SHA256(raw_token_from_query)</div></div></div>
+              <div class="db-step"><div class="db-step-num">2</div><div class="db-step-content"><div class="db-step-title">Lookup token</div><div class="db-step-sql">SELECT id, user_id, used, expires_at FROM email_verifications
+WHERE token_hash = <span style="color:#FAB387">$hash</span>;</div><div class="db-step-note">→ Không tìm thấy: redirect /expired</div></div></div>
+              <div class="db-step"><div class="db-step-num">3</div><div class="db-step-content"><div class="db-step-title">Validate token state</div><div class="db-step-sql">IF used = true THEN redirect /expired
+IF expires_at &lt; NOW() THEN redirect /expired</div></div></div>
+              <div class="db-step txn"><div class="txn-label">BEGIN TRANSACTION</div>
+                <div class="db-step"><div class="db-step-num">4</div><div class="db-step-content"><div class="db-step-title">UPDATE users — kích hoạt tài khoản</div><div class="db-step-sql">UPDATE users SET email_verified = true, status = 'ACTIVE', updated_at = NOW()
+WHERE id = <span style="color:#FAB387">$user_id</span>;</div></div></div>
+                <div class="db-step"><div class="db-step-num">5</div><div class="db-step-content"><div class="db-step-title">UPDATE token — đánh dấu đã dùng</div><div class="db-step-sql">UPDATE email_verifications SET used = true, used_at = NOW()
+WHERE id = <span style="color:#FAB387">$token_id</span>;</div></div></div>
+                <div class="db-step"><div class="db-step-num">6</div><div class="db-step-content"><div class="db-step-title">INSERT audit_log</div><div class="db-step-sql">INSERT INTO audit_logs (action, actor_id, ip_address, created_at)
+VALUES ('EMAIL_VERIFIED', <span style="color:#FAB387">$user_id</span>, <span style="color:#FAB387">$ip</span>, NOW());</div></div></div>
+              </div>
+              <div class="db-step"><div class="db-step-num">7</div><div class="db-step-content"><div class="db-step-title">Redirect về login</div><div class="db-step-sql">HTTP 302 → /login?message=email_verified_success</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 3.5 RESEND EMAIL ── -->
+      <div id="reg-resend" class="endpoint">
+        <div class="endpoint-header" onclick="toggle(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/auth/resend-verification</span>
+          <span class="endpoint-summary">Gửi lại email xác nhận</span>
+          <span class="public-badge">Public</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab(this,'overview')">Overview</div>
+            <div class="tab" onclick="switchTab(this,'request')">Request</div>
+            <div class="tab" onclick="switchTab(this,'db')">DB Logic</div>
+            <div class="tab" onclick="switchTab(this,'errors')">Errors</div>
+          </div>
+          <div class="tab-content active" data-tab="overview">
+            <p class="desc">Gửi lại email xác nhận cho user chưa verify. Luôn trả 200 kể cả khi email không tồn tại (chống enumeration). Vô hiệu token cũ và tạo token mới TTL 24h.</p>
+            <div class="logic-box"><h4>Rate Limit Logic</h4><ul>
+              <li>Tối đa 3 lần gửi lại / email / giờ</li>
+              <li>Đếm trong bảng email_verifications: COUNT WHERE user_id = X AND created_at > NOW()-1h</li>
+              <li>Trả 429 khi vượt ngưỡng</li>
+            </ul></div>
+          </div>
+          <div class="tab-content" data-tab="request">
+            <table><tr><th>Field</th><th>Type</th><th>Required</th><th>Mô tả</th></tr>
+              <tr><td><code>email</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>Email cần gửi lại xác nhận</td></tr>
+            </table>
+            <div class="code-wrapper"><pre><code>POST /api/v1/auth/resend-verification
+{ <span class="json-key">"email"</span>: <span class="json-str">"nguyen.a@company.com"</span> }</code></pre></div>
+          </div>
+          <div class="tab-content" data-tab="db">
+            <div class="db-flow">
+              <div class="db-step"><div class="db-step-num">1</div><div class="db-step-content"><div class="db-step-title">Lookup user (không tiết lộ kết quả)</div><div class="db-step-sql">SELECT id, status, email_verified FROM users WHERE email = lower(<span style="color:#FAB387">$1</span>) AND deleted_at IS NULL;</div></div></div>
+              <div class="db-step"><div class="db-step-num">2</div><div class="db-step-content"><div class="db-step-title">Chỉ tiếp tục nếu: tồn tại AND NOT email_verified AND status='INACTIVE'</div><div class="db-step-note">Nếu không: vẫn trả 200 (không tiết lộ)</div></div></div>
+              <div class="db-step"><div class="db-step-num">3</div><div class="db-step-content"><div class="db-step-title">Rate limit check</div><div class="db-step-sql">SELECT COUNT(*) FROM email_verifications WHERE user_id = <span style="color:#FAB387">$uid</span> AND created_at > NOW() - INTERVAL '1 hour';</div><div class="db-step-note">→ 429 nếu count >= 3</div></div></div>
+              <div class="db-step"><div class="db-step-num">4</div><div class="db-step-content"><div class="db-step-title">Revoke token cũ</div><div class="db-step-sql">UPDATE email_verifications SET revoked = true WHERE user_id = <span style="color:#FAB387">$uid</span> AND used = false AND revoked = false;</div></div></div>
+              <div class="db-step"><div class="db-step-num">5</div><div class="db-step-content"><div class="db-step-title">Tạo & Insert token mới</div><div class="db-step-sql">raw = crypto.randomBytes(32).toString('hex')
+INSERT INTO email_verifications (user_id, token_hash, expires_at) VALUES (<span style="color:#FAB387">$uid</span>, SHA256(raw), NOW()+24h);</div></div></div>
+              <div class="db-step"><div class="db-step-num">6</div><div class="db-step-content"><div class="db-step-title">Gửi email async</div><div class="db-step-sql">emailQueue.add({ to: email, token: raw, type: 'VERIFY_EMAIL' })</div></div></div>
+            </div>
+          </div>
+          <div class="tab-content" data-tab="errors">
+            <div class="status-list">
+              <div class="status-item status-2xx"><span class="status-code">200</span><div><div class="status-name">Success (always)</div><div class="status-desc">Luôn trả 200. Nếu email tồn tại và hợp lệ, email đã được gửi.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">429</span><div><div class="status-name">ERR_RATE_LIMIT</div><div class="status-desc">Quá 3 lần gửi lại trong 1 giờ. Vui lòng thử lại sau.</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══════════════ CHAPTER 4: LOGIN ═══════════════ -->
+    <div class="section">
+      <div class="section-title"><span class="icon">🔑</span> Chương 4 — Đăng Nhập & Đăng Xuất
+        <span class="tag tag-auth">Public / JWT</span>
+        <span class="tag tag-db">users • refresh_tokens • login_history</span>
+      </div>
+      <div class="section-desc">JWT-based authentication. Access Token TTL=15 phút (RS256). Refresh Token TTL=7/30 ngày. Lockout sau 5 lần sai liên tiếp: khóa 15 phút.</div>
+
+      <!-- ── 4.1 LOGIN ── -->
+      <div id="login-login" class="endpoint">
+        <div class="endpoint-header" onclick="toggle(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/auth/login</span>
+          <span class="endpoint-summary">Đăng nhập, nhận JWT tokens</span>
+          <span class="public-badge">Public</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab(this,'overview')">Overview</div>
+            <div class="tab" onclick="switchTab(this,'request')">Request</div>
+            <div class="tab" onclick="switchTab(this,'response')">Response</div>
+            <div class="tab" onclick="switchTab(this,'db')">DB Logic</div>
+            <div class="tab" onclick="switchTab(this,'errors')">Errors</div>
+          </div>
+          <div class="tab-content active" data-tab="overview">
+            <p class="desc">Xác thực credentials, trả về Access Token (JWT RS256, TTL 15 phút) và Refresh Token (UUID hash, TTL 7 hoặc 30 ngày). Ghi login_history mỗi lần.</p>
+            <div class="flow">
+              <div class="flow-step s1"><div class="step-num">1</div><div class="step-actor">Client</div><div class="step-action">POST credentials</div></div>
+              <div class="flow-arrow">›</div>
+              <div class="flow-step s2"><div class="step-num">2</div><div class="step-actor">Server</div><div class="step-action">Find user + Check lockout</div></div>
+              <div class="flow-arrow">›</div>
+              <div class="flow-step s3"><div class="step-num">3</div><div class="step-actor">Server</div><div class="step-action">bcrypt.compare</div></div>
+              <div class="flow-arrow">›</div>
+              <div class="flow-step s4"><div class="step-num">4</div><div class="step-actor">Server</div><div class="step-action">Issue JWT + Refresh</div></div>
+              <div class="flow-arrow">›</div>
+              <div class="flow-step s5"><div class="step-num">5</div><div class="step-actor">Client</div><div class="step-action">Store tokens</div></div>
+            </div>
+            <div class="security-note"><span class="icon">🔒</span><div class="text"><strong>Anti-enumeration:</strong> Trả cùng 1 error <code>ERR_INVALID_CREDENTIALS</code> cho cả "user không tồn tại" và "sai mật khẩu" — không tiết lộ field nào sai.<br><strong>Lockout:</strong> failed_login_count >= 5 → locked_until = NOW() + 15 phút. Reset về 0 khi đăng nhập thành công.</div></div>
+            <div class="logic-box"><h4>Lockout Logic</h4><ul>
+              <li>Sau lần sai thứ 3: response kèm remaining_attempts=2</li>
+              <li>Sau lần sai thứ 5: locked_until = NOW()+15min, failed_login_count=0</li>
+              <li>Khi locked: kiểm tra locked_until trước bcrypt.compare (tiết kiệm CPU)</li>
+              <li>Unlock tự động sau 15 phút (locked_until &lt; NOW())</li>
+              <li>Mỗi lần login (thành công hay thất bại) đều INSERT login_history</li>
+            </ul></div>
+          </div>
+          <div class="tab-content" data-tab="request">
+            <table><tr><th>Field</th><th>Type</th><th>Required</th><th>Mô tả</th></tr>
+              <tr><td><code>username_or_email</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>Username hoặc email</td></tr>
+              <tr><td><code>password</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>Mật khẩu</td></tr>
+              <tr><td><code>remember_me</code></td><td><span class="type-badge">boolean</span></td><td><span class="optional">—</span></td><td>true → Refresh Token TTL=30d, false/default → 7d</td></tr>
+            </table>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              <pre><code>{
+  <span class="json-key">"username_or_email"</span>: <span class="json-str">"nguyen_van_a"</span>,
+  <span class="json-key">"password"</span>: <span class="json-str">"MyPass123"</span>,
+  <span class="json-key">"remember_me"</span>: <span class="json-bool">true</span>
+}</code></pre></div>
+          </div>
+          <div class="tab-content" data-tab="response">
+            <div class="code-wrapper"><pre><code><span class="json-comment">// 200 OK</span>
+{
+  <span class="json-key">"success"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"access_token"</span>: <span class="json-str">"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."</span>,
+    <span class="json-key">"refresh_token"</span>: <span class="json-str">"f8a3c9d2e1b04756..."</span>,  <span class="json-comment">// raw UUID hex, 64 chars</span>
+    <span class="json-key">"token_type"</span>: <span class="json-str">"Bearer"</span>,
+    <span class="json-key">"expires_in"</span>: <span class="json-num">900</span>,  <span class="json-comment">// 15 phút tính bằng giây</span>
+    <span class="json-key">"user"</span>: {
+      <span class="json-key">"id"</span>: <span class="json-str">"uuid-v4"</span>,
+      <span class="json-key">"full_name"</span>: <span class="json-str">"Nguyễn Văn A"</span>,
+      <span class="json-key">"email"</span>: <span class="json-str">"nguyen.a@company.com"</span>,
+      <span class="json-key">"role"</span>: <span class="json-str">"CREATOR"</span>,
+      <span class="json-key">"avatar_url"</span>: <span class="json-null">null</span>,
+      <span class="json-key">"must_change_password"</span>: <span class="json-bool">false</span>
+    }
+  }
+}
+
+<span class="json-comment">// 423 — Tài khoản bị khóa</span>
+{
+  <span class="json-key">"success"</span>: <span class="json-bool">false</span>,
+  <span class="json-key">"error_code"</span>: <span class="json-str">"ERR_ACCOUNT_LOCKED"</span>,
+  <span class="json-key">"message"</span>: <span class="json-str">"Tài khoản bị khóa tạm thời"</span>,
+  <span class="json-key">"details"</span>: { <span class="json-key">"unlock_at"</span>: <span class="json-str">"2026-05-09T10:15:00Z"</span> }
+}
+
+<span class="json-comment">// 401 — Sai credentials (kể cả user không tồn tại)</span>
+{
+  <span class="json-key">"success"</span>: <span class="json-bool">false</span>,
+  <span class="json-key">"error_code"</span>: <span class="json-str">"ERR_INVALID_CREDENTIALS"</span>,
+  <span class="json-key">"details"</span>: { <span class="json-key">"remaining_attempts"</span>: <span class="json-num">2</span> }  <span class="json-comment">// null nếu lần đầu</span>
+}</code></pre></div>
+          </div>
+          <div class="tab-content" data-tab="db">
+            <div class="db-flow">
+              <div class="db-step"><div class="db-step-num">1</div><div class="db-step-content"><div class="db-step-title">Find user by email or username</div><div class="db-step-sql">SELECT id, password_hash, role, status, email_verified, failed_login_count, locked_until, must_change_password
+FROM users WHERE (lower(email) = lower(<span style="color:#FAB387">$1</span>) OR lower(username) = lower(<span style="color:#FAB387">$1</span>)) AND deleted_at IS NULL;</div><div class="db-step-note">→ Không tìm thấy: INSERT login_history (status=FAILED) → 401 ERR_INVALID_CREDENTIALS</div></div></div>
+              <div class="db-step"><div class="db-step-num">2</div><div class="db-step-content"><div class="db-step-title">Check lockout</div><div class="db-step-sql">IF locked_until IS NOT NULL AND locked_until > NOW() THEN
+  → INSERT login_history (reason='ACCOUNT_LOCKED') → 423 ERR_ACCOUNT_LOCKED</div></div></div>
+              <div class="db-step"><div class="db-step-num">3</div><div class="db-step-content"><div class="db-step-title">Check status</div><div class="db-step-sql">IF status != 'ACTIVE' THEN → 403 ERR_ACCOUNT_INACTIVE
+IF email_verified = false THEN → 403 ERR_EMAIL_NOT_VERIFIED</div></div></div>
+              <div class="db-step"><div class="db-step-num">4</div><div class="db-step-content"><div class="db-step-title">Verify password</div><div class="db-step-sql">result = await bcrypt.compare(password, password_hash)  <span class="json-comment">// ~150ms</span>
+IF result = false:
+  new_count = failed_login_count + 1
+  IF new_count >= 5:
+    UPDATE users SET locked_until=NOW()+15min, failed_login_count=0
+  ELSE:
+    UPDATE users SET failed_login_count=new_count
+  INSERT login_history (status='FAILED', failed_count_after=new_count)
+  → 401 ERR_INVALID_CREDENTIALS + remaining_attempts</div></div></div>
+              <div class="db-step"><div class="db-step-num">5</div><div class="db-step-content"><div class="db-step-title">Reset failed count (password đúng)</div><div class="db-step-sql">UPDATE users SET failed_login_count=0, locked_until=NULL, last_login_at=NOW(), updated_at=NOW() WHERE id=<span style="color:#FAB387">$uid</span>;</div></div></div>
+              <div class="db-step"><div class="db-step-num">6</div><div class="db-step-content"><div class="db-step-title">Issue Access Token (JWT RS256)</div><div class="db-step-sql">payload = { user_id, role, email, jti: uuid(), must_change_password }
+access_token = jwt.sign(payload, PRIVATE_KEY, { algorithm:'RS256', expiresIn:'15m' })</div></div></div>
+              <div class="db-step"><div class="db-step-num">7</div><div class="db-step-content"><div class="db-step-title">Issue Refresh Token</div><div class="db-step-sql">raw_rt = uuidv4()
+hash_rt = SHA256(raw_rt)
+ttl = remember_me ? '30 days' : '7 days'
+INSERT INTO refresh_tokens (user_id, token_hash, expires_at, device_info)
+VALUES (<span style="color:#FAB387">$uid</span>, <span style="color:#FAB387">$hash_rt</span>, NOW()+ttl, <span style="color:#FAB387">$device_info</span>);</div></div></div>
+              <div class="db-step"><div class="db-step-num">8</div><div class="db-step-content"><div class="db-step-title">Record login history</div><div class="db-step-sql">INSERT INTO login_history (user_id, ip_address, user_agent, status, created_at)
+VALUES (<span style="color:#FAB387">$uid</span>, <span style="color:#FAB387">$ip</span>, <span style="color:#FAB387">$ua</span>, 'SUCCESS', NOW());</div></div></div>
+              <div class="db-step"><div class="db-step-num">9</div><div class="db-step-content"><div class="db-step-title">INSERT audit_log</div><div class="db-step-sql">INSERT INTO audit_logs (action, actor_id, ip_address, user_agent, created_at)
+VALUES ('USER_LOGIN', <span style="color:#FAB387">$uid</span>, <span style="color:#FAB387">$ip</span>, <span style="color:#FAB387">$ua</span>, NOW());</div></div></div>
+            </div>
+          </div>
+          <div class="tab-content" data-tab="errors">
+            <div class="status-list">
+              <div class="status-item status-2xx"><span class="status-code">200</span><div><div class="status-name">Success</div><div class="status-desc">Đăng nhập thành công. Trả về access_token + refresh_token.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">400</span><div><div class="status-name">ERR_VALIDATION</div><div class="status-desc">Thiếu username_or_email hoặc password.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">401</span><div><div class="status-name">ERR_INVALID_CREDENTIALS</div><div class="status-desc">Sai username/password (kể cả user không tồn tại). Kèm remaining_attempts nếu đã sai ≥ 3 lần.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">403</span><div><div class="status-name">ERR_ACCOUNT_INACTIVE</div><div class="status-desc">Tài khoản chưa được kích hoạt.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">403</span><div><div class="status-name">ERR_EMAIL_NOT_VERIFIED</div><div class="status-desc">Email chưa được xác nhận.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">423</span><div><div class="status-name">ERR_ACCOUNT_LOCKED</div><div class="status-desc">Tài khoản bị khóa. Kèm unlock_at timestamp.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">429</span><div><div class="status-name">ERR_RATE_LIMIT</div><div class="status-desc">Quá 20 request/phút từ IP này.</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 4.2 REFRESH TOKEN ── -->
+      <div id="login-refresh" class="endpoint">
+        <div class="endpoint-header" onclick="toggle(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/auth/refresh</span>
+          <span class="endpoint-summary">Gia hạn Access Token</span>
+          <span class="public-badge">Public</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab(this,'overview')">Overview</div>
+            <div class="tab" onclick="switchTab(this,'request')">Request</div>
+            <div class="tab" onclick="switchTab(this,'response')">Response</div>
+            <div class="tab" onclick="switchTab(this,'db')">DB Logic</div>
+          </div>
+          <div class="tab-content active" data-tab="overview">
+            <p class="desc">Cấp Access Token mới khi token cũ sắp hết hạn. Client nên gọi khi access_token còn &lt;2 phút. Hỗ trợ Refresh Token Rotation (tùy cấu hình).</p>
+            <div class="security-note"><span class="icon">🔒</span><div class="text"><strong>Replay Attack Prevention:</strong> Nếu cùng refresh_token bị dùng 2 lần → Server phát hiện (revoked=true nhưng được dùng lại) → Revoke TẤT CẢ refresh_tokens của user → buộc đăng nhập lại trên mọi thiết bị.</div></div>
+          </div>
+          <div class="tab-content" data-tab="request">
+            <table><tr><th>Field</th><th>Type</th><th>Required</th><th>Mô tả</th></tr>
+              <tr><td><code>refresh_token</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>Raw refresh token nhận từ /login</td></tr>
+            </table>
+          </div>
+          <div class="tab-content" data-tab="response">
+            <div class="code-wrapper"><pre><code><span class="json-comment">// 200 OK</span>
+{
+  <span class="json-key">"success"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"access_token"</span>: <span class="json-str">"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."</span>,
+    <span class="json-key">"expires_in"</span>: <span class="json-num">900</span>
+  }
+}</code></pre></div>
+          </div>
+          <div class="tab-content" data-tab="db">
+            <div class="db-flow">
+              <div class="db-step"><div class="db-step-num">1</div><div class="db-step-content"><div class="db-step-title">Hash input token</div><div class="db-step-sql">hash = SHA256(refresh_token_from_body)</div></div></div>
+              <div class="db-step"><div class="db-step-num">2</div><div class="db-step-content"><div class="db-step-title">Lookup refresh token</div><div class="db-step-sql">SELECT rt.id, rt.user_id, rt.revoked, rt.expires_at, u.status, u.role, u.email
+FROM refresh_tokens rt JOIN users u ON rt.user_id = u.id
+WHERE rt.token_hash = <span style="color:#FAB387">$hash</span>;</div><div class="db-step-note">→ Không tìm thấy: 401 ERR_TOKEN_INVALID</div></div></div>
+              <div class="db-step"><div class="db-step-num">3</div><div class="db-step-content"><div class="db-step-title">Validate token state</div><div class="db-step-sql">IF revoked = true:
+  <span class="json-comment">// Replay attack! Revoke toàn bộ session</span>
+  UPDATE refresh_tokens SET revoked=true WHERE user_id=<span style="color:#FAB387">$uid</span> AND revoked=false
+  → 401 ERR_TOKEN_INVALID (+ notify Admin)
+IF expires_at &lt; NOW() → 401 ERR_TOKEN_EXPIRED
+IF user.status != 'ACTIVE' → 403 ERR_ACCOUNT_INACTIVE</div></div></div>
+              <div class="db-step"><div class="db-step-num">4</div><div class="db-step-content"><div class="db-step-title">Issue new Access Token</div><div class="db-step-sql">access_token = jwt.sign({ user_id, role, email, jti:uuid() }, PRIVATE_KEY, { expiresIn:'15m' })</div></div></div>
+              <div class="db-step"><div class="db-step-num">5</div><div class="db-step-content"><div class="db-step-title">[Optional] Rotate Refresh Token</div><div class="db-step-sql"><span class="json-comment">// Nếu bật rotation:</span>
+UPDATE refresh_tokens SET revoked=true WHERE id=<span style="color:#FAB387">$rt_id</span>
+new_raw = uuidv4(); INSERT new refresh token...</div><div class="db-step-note">Rotation tăng bảo mật nhưng phức tạp client hơn</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 4.3 LOGOUT ── -->
+      <div id="login-logout" class="endpoint">
+        <div class="endpoint-header" onclick="toggle(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/auth/logout</span>
+          <span class="endpoint-summary">Đăng xuất thiết bị hiện tại</span>
+          <span class="auth-required">🔐 JWT Required</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab(this,'overview')">Overview</div>
+            <div class="tab" onclick="switchTab(this,'request')">Request</div>
+            <div class="tab" onclick="switchTab(this,'db')">DB Logic</div>
+          </div>
+          <div class="tab-content active" data-tab="overview">
+            <p class="desc">Revoke Refresh Token của thiết bị hiện tại. Access Token vẫn valid đến hết TTL 15 phút (stateless JWT — không thể invalidate ngay). Ghi audit_log.</p>
+          </div>
+          <div class="tab-content" data-tab="request">
+            <h3 class="sub">Headers</h3>
+            <table><tr><th>Header</th><th>Required</th><th>Mô tả</th></tr>
+              <tr><td><code>Authorization</code></td><td><span class="required">✓</span></td><td>Bearer &lt;access_token&gt;</td></tr>
+            </table>
+            <h3 class="sub">Request Body</h3>
+            <table><tr><th>Field</th><th>Type</th><th>Required</th><th>Mô tả</th></tr>
+              <tr><td><code>refresh_token</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>Raw refresh token cần revoke</td></tr>
+            </table>
+          </div>
+          <div class="tab-content" data-tab="db">
+            <div class="db-flow">
+              <div class="db-step"><div class="db-step-num">1</div><div class="db-step-content"><div class="db-step-title">Verify JWT → extract user_id</div><div class="db-step-sql">payload = jwt.verify(access_token, PUBLIC_KEY)</div></div></div>
+              <div class="db-step"><div class="db-step-num">2</div><div class="db-step-content"><div class="db-step-title">Hash refresh token</div><div class="db-step-sql">hash = SHA256(refresh_token_from_body)</div></div></div>
+              <div class="db-step"><div class="db-step-num">3</div><div class="db-step-content"><div class="db-step-title">Revoke token</div><div class="db-step-sql">UPDATE refresh_tokens SET revoked=true, revoked_at=NOW()
+WHERE token_hash=<span style="color:#FAB387">$hash</span> AND user_id=<span style="color:#FAB387">$uid</span> AND revoked=false;</div><div class="db-step-note">Rows affected = 0 → trả 200 (idempotent)</div></div></div>
+              <div class="db-step"><div class="db-step-num">4</div><div class="db-step-content"><div class="db-step-title">INSERT audit_log</div><div class="db-step-sql">INSERT INTO audit_logs (action, actor_id, ip_address, created_at)
+VALUES ('USER_LOGOUT', <span style="color:#FAB387">$uid</span>, <span style="color:#FAB387">$ip</span>, NOW());</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 4.4 LOGOUT ALL ── -->
+      <div id="login-logout-all" class="endpoint">
+        <div class="endpoint-header" onclick="toggle(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/auth/logout-all</span>
+          <span class="endpoint-summary">Đăng xuất tất cả thiết bị</span>
+          <span class="auth-required">🔐 JWT Required</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab(this,'overview')">Overview</div>
+            <div class="tab" onclick="switchTab(this,'db')">DB Logic</div>
+          </div>
+          <div class="tab-content active" data-tab="overview">
+            <p class="desc">Revoke TẤT CẢ Refresh Token của user. Tất cả thiết bị nhận SSE event SESSION_EXPIRED và bị redirect /login.</p>
+          </div>
+          <div class="tab-content" data-tab="db">
+            <div class="db-flow">
+              <div class="db-step"><div class="db-step-num">1</div><div class="db-step-content"><div class="db-step-title">Revoke all refresh tokens</div><div class="db-step-sql">UPDATE refresh_tokens SET revoked=true, revoked_at=NOW()
+WHERE user_id=<span style="color:#FAB387">$uid</span> AND revoked=false;</div><div class="db-step-note">Trả về rowCount (số thiết bị bị logout)</div></div></div>
+              <div class="db-step"><div class="db-step-num">2</div><div class="db-step-content"><div class="db-step-title">Push SSE to all active connections</div><div class="db-step-sql">sseService.broadcast(user_id, { type: 'SESSION_EXPIRED' })</div><div class="db-step-note">Tất cả tab/thiết bị đang online nhận event và redirect /login</div></div></div>
+              <div class="db-step"><div class="db-step-num">3</div><div class="db-step-content"><div class="db-step-title">INSERT audit_log</div><div class="db-step-sql">INSERT INTO audit_logs (action, actor_id, metadata, created_at)
+VALUES ('USER_LOGOUT', <span style="color:#FAB387">$uid</span>, '{"scope":"all_devices"}', NOW());</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ CHAPTER 5: FORGOT PASSWORD ═══════════════ -->
+    <div class="section">
+      <div class="section-title"><span class="icon">🔓</span> Chương 5 — Quên Mật Khẩu
+        <span class="tag tag-auth">Public</span>
+        <span class="tag tag-db">users • password_reset_tokens • refresh_tokens</span>
+        <span class="tag tag-email">Email</span>
+      </div>
+      <div class="section-desc">3-step flow: (1) Nhập email → nhận link, (2) Validate token, (3) Đặt MK mới. Luôn trả 200 bước 1 kể cả email không tồn tại (chống enumeration). Token TTL=1h.</div>
+
+      <!-- ── 5.1 FORGOT PASSWORD ── -->
+      <div id="fp-request" class="endpoint">
+        <div class="endpoint-header" onclick="toggle(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/auth/forgot-password</span>
+          <span class="endpoint-summary">Yêu cầu link đặt lại mật khẩu</span>
+          <span class="public-badge">Public</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab(this,'overview')">Overview</div>
+            <div class="tab" onclick="switchTab(this,'request')">Request</div>
+            <div class="tab" onclick="switchTab(this,'db')">DB Logic</div>
+            <div class="tab" onclick="switchTab(this,'errors')">Errors</div>
+          </div>
+          <div class="tab-content active" data-tab="overview">
+            <p class="desc">Tạo password reset token TTL=1h và gửi email chứa link. Vô hiệu tất cả token reset cũ chưa dùng.</p>
+            <div class="security-note"><span class="icon">🔒</span><div class="text"><strong>Anti-enumeration:</strong> Luôn trả HTTP 200 với cùng message dù email tồn tại hay không. Không tiết lộ tài khoản nào tồn tại trong hệ thống.<br><strong>Rate limit:</strong> Tối đa 3 request/giờ/email để tránh spam. Sau 3 lần: 429.</div></div>
+          </div>
+          <div class="tab-content" data-tab="request">
+            <table><tr><th>Field</th><th>Type</th><th>Required</th><th>Mô tả</th></tr>
+              <tr><td><code>email</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>Email tài khoản cần đặt lại MK</td></tr>
+            </table>
+            <div class="code-wrapper"><pre><code><span class="json-comment">// 200 — Always (anti-enumeration)</span>
+{
+  <span class="json-key">"success"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"message"</span>: <span class="json-str">"Nếu email tồn tại trong hệ thống, link khôi phục đã được gửi."</span>
+  }
+}</code></pre></div>
+          </div>
+          <div class="tab-content" data-tab="db">
+            <div class="db-flow">
+              <div class="db-step"><div class="db-step-num">1</div><div class="db-step-content"><div class="db-step-title">Rate limit check (per email)</div><div class="db-step-sql">SELECT COUNT(*) FROM password_reset_tokens
+WHERE user_id = (SELECT id FROM users WHERE email=lower(<span style="color:#FAB387">$1</span>))
+AND created_at > NOW() - INTERVAL '1 hour';</div><div class="db-step-note">→ 429 nếu count >= 3</div></div></div>
+              <div class="db-step"><div class="db-step-num">2</div><div class="db-step-content"><div class="db-step-title">Lookup user</div><div class="db-step-sql">SELECT id, status FROM users WHERE lower(email)=lower(<span style="color:#FAB387">$1</span>) AND deleted_at IS NULL;</div><div class="db-step-note">→ Không tìm thấy hoặc status != ACTIVE: trả 200 (không làm gì)</div></div></div>
+              <div class="db-step"><div class="db-step-num">3</div><div class="db-step-content"><div class="db-step-title">Revoke old unused tokens</div><div class="db-step-sql">UPDATE password_reset_tokens SET revoked=true
+WHERE user_id=<span style="color:#FAB387">$uid</span> AND used=false AND revoked=false;</div></div></div>
+              <div class="db-step"><div class="db-step-num">4</div><div class="db-step-content"><div class="db-step-title">Create new reset token</div><div class="db-step-sql">raw_token = crypto.randomBytes(32).toString('hex')
+INSERT INTO password_reset_tokens (user_id, token_hash, expires_at, request_ip)
+VALUES (<span style="color:#FAB387">$uid</span>, SHA256(raw_token), NOW()+INTERVAL '1 hour', <span style="color:#FAB387">$ip</span>);</div></div></div>
+              <div class="db-step"><div class="db-step-num">5</div><div class="db-step-content"><div class="db-step-title">Send email async</div><div class="db-step-sql">emailQueue.add({ to: email, token: raw_token, type: 'PASSWORD_RESET', ttl: '1 giờ' })</div><div class="db-step-note">Link: https://app.domain.com/reset-password?token=raw_token</div></div></div>
+              <div class="db-step"><div class="db-step-num">6</div><div class="db-step-content"><div class="db-step-title">INSERT audit_log</div><div class="db-step-sql">INSERT INTO audit_logs (action, actor_id, ip_address, created_at)
+VALUES ('PASSWORD_RESET_REQUESTED', <span style="color:#FAB387">$uid</span>, <span style="color:#FAB387">$ip</span>, NOW());</div></div></div>
+            </div>
+          </div>
+          <div class="tab-content" data-tab="errors">
+            <div class="status-list">
+              <div class="status-item status-2xx"><span class="status-code">200</span><div><div class="status-name">Success (always)</div><div class="status-desc">Luôn trả 200 bất kể email có tồn tại hay không.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">400</span><div><div class="status-name">ERR_VALIDATION</div><div class="status-desc">Email sai format.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">429</span><div><div class="status-name">ERR_RATE_LIMIT</div><div class="status-desc">Quá 3 lần/giờ từ cùng email. Kèm retry_after.</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 5.2 VALIDATE TOKEN ── -->
+      <div id="fp-validate" class="endpoint">
+        <div class="endpoint-header" onclick="toggle(this)">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/auth/validate-reset-token</span>
+          <span class="endpoint-summary">Validate reset token trước khi render form</span>
+          <span class="public-badge">Public</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab(this,'overview')">Overview</div>
+            <div class="tab" onclick="switchTab(this,'request')">Request</div>
+            <div class="tab" onclick="switchTab(this,'db')">DB Logic</div>
+          </div>
+          <div class="tab-content active" data-tab="overview">
+            <p class="desc">Client gọi endpoint này trước khi render form đặt lại MK. Nếu token invalid → redirect về /reset-password/expired. Không tiêu thụ token (token vẫn valid để POST reset).</p>
+          </div>
+          <div class="tab-content" data-tab="request">
+            <table><tr><th>Param</th><th>Type</th><th>Required</th><th>Mô tả</th></tr>
+              <tr><td><code>token</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>Raw reset token từ URL email</td></tr>
+            </table>
+            <div class="code-wrapper"><pre><code><span class="json-comment">// 200 — Token valid</span>
+{
+  <span class="json-key">"success"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"valid"</span>: <span class="json-bool">true</span>,
+    <span class="json-key">"expires_at"</span>: <span class="json-str">"2026-05-09T11:00:00Z"</span>
+  }
+}</code></pre></div>
+          </div>
+          <div class="tab-content" data-tab="db">
+            <div class="db-flow">
+              <div class="db-step"><div class="db-step-num">1</div><div class="db-step-content"><div class="db-step-title">Hash token</div><div class="db-step-sql">hash = SHA256(token_from_query)</div></div></div>
+              <div class="db-step"><div class="db-step-num">2</div><div class="db-step-content"><div class="db-step-title">Lookup & validate</div><div class="db-step-sql">SELECT id, user_id, used, revoked, expires_at FROM password_reset_tokens WHERE token_hash=<span style="color:#FAB387">$hash</span>;
+IF NOT FOUND OR used=true OR revoked=true OR expires_at &lt; NOW():
+  → 400 ERR_TOKEN_INVALID</div></div></div>
+              <div class="db-step"><div class="db-step-num">3</div><div class="db-step-content"><div class="db-step-title">Return valid + expires_at</div><div class="db-step-note">Token KHÔNG bị đánh dấu used ở bước này — chỉ dùng để hiển thị form</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 5.3 RESET PASSWORD ── -->
+      <div id="fp-reset" class="endpoint">
+        <div class="endpoint-header" onclick="toggle(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/auth/reset-password</span>
+          <span class="endpoint-summary">Đặt lại mật khẩu bằng token</span>
+          <span class="public-badge">Public</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab(this,'overview')">Overview</div>
+            <div class="tab" onclick="switchTab(this,'request')">Request</div>
+            <div class="tab" onclick="switchTab(this,'response')">Response</div>
+            <div class="tab" onclick="switchTab(this,'db')">DB Logic</div>
+            <div class="tab" onclick="switchTab(this,'errors')">Errors</div>
+          </div>
+          <div class="tab-content active" data-tab="overview">
+            <p class="desc">Đặt lại mật khẩu mới. Sau khi thành công: revoke TẤT CẢ refresh tokens (logout mọi thiết bị), gửi email cảnh báo bảo mật.</p>
+            <div class="logic-box"><h4>Business Logic</h4><ul>
+              <li>Không cho phép MK mới trùng MK cũ (bcrypt.compare)</li>
+              <li>Toàn bộ UPDATE trong 1 transaction</li>
+              <li>Revoke tất cả refresh_tokens → tất cả thiết bị bị logout</li>
+              <li>Reset: failed_login_count=0, locked_until=NULL (mở khóa nếu đang bị khóa)</li>
+            </ul></div>
+          </div>
+          <div class="tab-content" data-tab="request">
+            <table><tr><th>Field</th><th>Type</th><th>Required</th><th>Mô tả</th></tr>
+              <tr><td><code>token</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>Raw reset token từ URL</td></tr>
+              <tr><td><code>new_password</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>Mật khẩu mới (≥8 ký tự, HOA+thường+số)</td></tr>
+              <tr><td><code>confirm_password</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>Xác nhận mật khẩu mới</td></tr>
+            </table>
+          </div>
+          <div class="tab-content" data-tab="response">
+            <div class="code-wrapper"><pre><code><span class="json-comment">// 200 OK</span>
+{
+  <span class="json-key">"success"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"message"</span>: <span class="json-str">"Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập lại."</span>
+  }
+}</code></pre></div>
+          </div>
+          <div class="tab-content" data-tab="db">
+            <div class="db-flow">
+              <div class="db-step"><div class="db-step-num">1</div><div class="db-step-content"><div class="db-step-title">Validate input</div><div class="db-step-sql">new_password == confirm_password → 400 ERR_PASSWORD_MISMATCH
+password_strength(new_password) → 422 ERR_PASSWORD_WEAK</div></div></div>
+              <div class="db-step"><div class="db-step-num">2</div><div class="db-step-content"><div class="db-step-title">Lookup & validate token</div><div class="db-step-sql">hash = SHA256(token)
+SELECT prt.id, prt.user_id, u.password_hash FROM password_reset_tokens prt
+JOIN users u ON prt.user_id=u.id
+WHERE prt.token_hash=<span style="color:#FAB387">$hash</span> AND prt.used=false AND prt.revoked=false AND prt.expires_at>NOW();</div><div class="db-step-note">→ 400 ERR_TOKEN_INVALID nếu không hợp lệ</div></div></div>
+              <div class="db-step"><div class="db-step-num">3</div><div class="db-step-content"><div class="db-step-title">Check password not same as old</div><div class="db-step-sql">same = await bcrypt.compare(new_password, old_password_hash)
+IF same → 422 ERR_PASSWORD_SAME_AS_OLD</div></div></div>
+              <div class="db-step"><div class="db-step-num">4</div><div class="db-step-content"><div class="db-step-title">Hash new password</div><div class="db-step-sql">new_hash = await bcrypt.hash(new_password, 12)</div></div></div>
+              <div class="db-step txn"><div class="txn-label">BEGIN TRANSACTION</div>
+                <div class="db-step"><div class="db-step-num">5</div><div class="db-step-content"><div class="db-step-title">UPDATE users</div><div class="db-step-sql">UPDATE users SET password_hash=<span style="color:#FAB387">$new_hash</span>, failed_login_count=0, locked_until=NULL, updated_at=NOW()
+WHERE id=<span style="color:#FAB387">$uid</span>;</div></div></div>
+                <div class="db-step"><div class="db-step-num">6</div><div class="db-step-content"><div class="db-step-title">Mark token used</div><div class="db-step-sql">UPDATE password_reset_tokens SET used=true, used_at=NOW() WHERE id=<span style="color:#FAB387">$token_id</span>;</div></div></div>
+                <div class="db-step"><div class="db-step-num">7</div><div class="db-step-content"><div class="db-step-title">Revoke ALL refresh tokens</div><div class="db-step-sql">UPDATE refresh_tokens SET revoked=true, revoked_at=NOW()
+WHERE user_id=<span style="color:#FAB387">$uid</span> AND revoked=false;</div><div class="db-step-note">Tất cả thiết bị bị logout</div></div></div>
+                <div class="db-step"><div class="db-step-num">8</div><div class="db-step-content"><div class="db-step-title">INSERT audit_log</div><div class="db-step-sql">INSERT INTO audit_logs (action, actor_id, ip_address, created_at)
+VALUES ('PASSWORD_RESET_COMPLETED', <span style="color:#FAB387">$uid</span>, <span style="color:#FAB387">$ip</span>, NOW());</div></div></div>
+              </div>
+              <div class="db-step"><div class="db-step-num">9</div><div class="db-step-content"><div class="db-step-title">Send security alert email async</div><div class="db-step-sql">emailQueue.add({ to: email, type: 'PASSWORD_RESET_ALERT', reset_at: NOW() })</div></div></div>
+            </div>
+          </div>
+          <div class="tab-content" data-tab="errors">
+            <div class="status-list">
+              <div class="status-item status-2xx"><span class="status-code">200</span><div><div class="status-name">Success</div><div class="status-desc">MK đặt lại thành công. Tất cả sessions bị revoke.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">400</span><div><div class="status-name">ERR_TOKEN_INVALID</div><div class="status-desc">Token sai, đã dùng, đã revoke, hoặc hết hạn (>1h).</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">400</span><div><div class="status-name">ERR_PASSWORD_MISMATCH</div><div class="status-desc">new_password và confirm_password không khớp.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">422</span><div><div class="status-name">ERR_PASSWORD_WEAK</div><div class="status-desc">Mật khẩu mới không đủ phức tạp.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">422</span><div><div class="status-name">ERR_PASSWORD_SAME_AS_OLD</div><div class="status-desc">Mật khẩu mới trùng với mật khẩu hiện tại.</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ CHAPTER 6: CHANGE PASSWORD ═══════════════ -->
+    <div class="section">
+      <div class="section-title"><span class="icon">🔄</span> Chương 6 — Đổi Mật Khẩu
+        <span class="tag tag-auth">🔐 JWT Required</span>
+        <span class="tag tag-db">users • refresh_tokens</span>
+        <span class="tag tag-email">Email Alert</span>
+      </div>
+      <div class="section-desc">User tự đổi MK khi đã đăng nhập. Yêu cầu xác nhận MK cũ. Sau khi đổi thành công, revoke toàn bộ sessions. Có flow đặc biệt cho must_change_password=true.</div>
+
+      <div id="cp-change" class="endpoint">
+        <div class="endpoint-header" onclick="toggle(this)">
+          <span class="method-badge method-patch">PATCH</span>
+          <span class="endpoint-path">/auth/change-password</span>
+          <span class="endpoint-summary">Đổi mật khẩu (yêu cầu MK cũ)</span>
+          <span class="auth-required">🔐 JWT Required</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab(this,'overview')">Overview</div>
+            <div class="tab" onclick="switchTab(this,'request')">Request</div>
+            <div class="tab" onclick="switchTab(this,'response')">Response</div>
+            <div class="tab" onclick="switchTab(this,'db')">DB Logic</div>
+            <div class="tab" onclick="switchTab(this,'errors')">Errors</div>
+          </div>
+          <div class="tab-content active" data-tab="overview">
+            <p class="desc">Đổi mật khẩu khi user đã đăng nhập. Phải xác nhận mật khẩu cũ đúng. Sau thành công: revoke tất cả session, gửi email bảo mật, client redirect /login.</p>
+            <div class="flow">
+              <div class="flow-step s1"><div class="step-num">1</div><div class="step-actor">Client</div><div class="step-action">PATCH + JWT</div></div>
+              <div class="flow-arrow">›</div>
+              <div class="flow-step s2"><div class="step-num">2</div><div class="step-actor">Server</div><div class="step-action">Verify JWT + Validate</div></div>
+              <div class="flow-arrow">›</div>
+              <div class="flow-step s3"><div class="step-num">3</div><div class="step-actor">Server</div><div class="step-action">bcrypt verify old PW</div></div>
+              <div class="flow-arrow">›</div>
+              <div class="flow-step s4"><div class="step-num">4</div><div class="step-actor">Server</div><div class="step-action">UPDATE + Revoke all</div></div>
+              <div class="flow-arrow">›</div>
+              <div class="flow-step s5"><div class="step-num">5</div><div class="step-actor">Client</div><div class="step-action">Redirect /login</div></div>
+            </div>
+            <div class="security-note"><span class="icon">🔒</span><div class="text"><strong>must_change_password:</strong> Nếu JWT claim <code>must_change_password=true</code>, endpoint này vẫn hoạt động bình thường. Sau khi đổi thành công, server SET <code>must_change_password=false</code> để mở khoá toàn bộ hệ thống.<br><strong>Note:</strong> Access Token cũ vẫn valid đến hết TTL 15 phút vì JWT stateless. Client phải tự xóa token và redirect.</div></div>
+          </div>
+          <div class="tab-content" data-tab="request">
+            <h3 class="sub">Headers</h3>
+            <table><tr><th>Header</th><th>Required</th><th>Mô tả</th></tr>
+              <tr><td><code>Authorization</code></td><td><span class="required">✓</span></td><td>Bearer &lt;access_token&gt;</td></tr>
+            </table>
+            <h3 class="sub">Request Body</h3>
+            <table><tr><th>Field</th><th>Type</th><th>Required</th><th>Validate</th><th>Mô tả</th></tr>
+              <tr><td><code>current_password</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>non-empty</td><td>Mật khẩu hiện tại</td></tr>
+              <tr><td><code>new_password</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>≥8 ký tự, HOA+thường+số, ≠ current</td><td>Mật khẩu mới</td></tr>
+              <tr><td><code>confirm_password</code></td><td><span class="type-badge">string</span></td><td><span class="required">✓</span></td><td>== new_password</td><td>Xác nhận MK mới</td></tr>
+            </table>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              <pre><code>PATCH /api/v1/auth/change-password
+Authorization: Bearer eyJhbGci...
+
+{
+  <span class="json-key">"current_password"</span>: <span class="json-str">"OldPass123"</span>,
+  <span class="json-key">"new_password"</span>: <span class="json-str">"NewSecure456"</span>,
+  <span class="json-key">"confirm_password"</span>: <span class="json-str">"NewSecure456"</span>
+}</code></pre></div>
+          </div>
+          <div class="tab-content" data-tab="response">
+            <div class="code-wrapper"><pre><code><span class="json-comment">// 200 OK</span>
+{
+  <span class="json-key">"success"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"message"</span>: <span class="json-str">"Mật khẩu đã được cập nhật. Vui lòng đăng nhập lại."</span>,
+    <span class="json-key">"sessions_revoked"</span>: <span class="json-num">3</span>  <span class="json-comment">// số thiết bị bị logout</span>
+  }
+}
+
+<span class="json-comment">// 403 — Sai MK cũ</span>
+{
+  <span class="json-key">"success"</span>: <span class="json-bool">false</span>,
+  <span class="json-key">"error_code"</span>: <span class="json-str">"ERR_WRONG_CURRENT_PASSWORD"</span>,
+  <span class="json-key">"message"</span>: <span class="json-str">"Mật khẩu hiện tại không đúng"</span>
+}</code></pre></div>
+          </div>
+          <div class="tab-content" data-tab="db">
+            <div class="db-flow">
+              <div class="db-step"><div class="db-step-num">1</div><div class="db-step-content"><div class="db-step-title">Verify JWT — extract user_id</div><div class="db-step-sql">payload = jwt.verify(token, PUBLIC_KEY)
+user_id = payload.user_id</div></div></div>
+              <div class="db-step"><div class="db-step-num">2</div><div class="db-step-content"><div class="db-step-title">Validate input</div><div class="db-step-sql">new_password == confirm_password → 400
+password_strength check → 422
+new_password != current_password (preliminary — before DB check)</div></div></div>
+              <div class="db-step"><div class="db-step-num">3</div><div class="db-step-content"><div class="db-step-title">Get current password hash</div><div class="db-step-sql">SELECT password_hash FROM users WHERE id=<span style="color:#FAB387">$uid</span>;</div></div></div>
+              <div class="db-step"><div class="db-step-num">4</div><div class="db-step-content"><div class="db-step-title">Verify current password</div><div class="db-step-sql">valid = await bcrypt.compare(current_password, password_hash)
+IF !valid → 403 ERR_WRONG_CURRENT_PASSWORD</div></div></div>
+              <div class="db-step"><div class="db-step-num">5</div><div class="db-step-content"><div class="db-step-title">Verify not same as old</div><div class="db-step-sql">same = await bcrypt.compare(new_password, password_hash)
+IF same → 422 ERR_PASSWORD_SAME_AS_OLD</div></div></div>
+              <div class="db-step"><div class="db-step-num">6</div><div class="db-step-content"><div class="db-step-title">Hash new password</div><div class="db-step-sql">new_hash = await bcrypt.hash(new_password, 12)</div></div></div>
+              <div class="db-step txn"><div class="txn-label">BEGIN TRANSACTION</div>
+                <div class="db-step"><div class="db-step-num">7</div><div class="db-step-content"><div class="db-step-title">UPDATE users</div><div class="db-step-sql">UPDATE users SET password_hash=<span style="color:#FAB387">$new_hash</span>, must_change_password=false, updated_at=NOW()
+WHERE id=<span style="color:#FAB387">$uid</span>;</div></div></div>
+                <div class="db-step"><div class="db-step-num">8</div><div class="db-step-content"><div class="db-step-title">Revoke ALL refresh tokens</div><div class="db-step-sql">UPDATE refresh_tokens SET revoked=true, revoked_at=NOW()
+WHERE user_id=<span style="color:#FAB387">$uid</span> AND revoked=false
+RETURNING COUNT(*) AS sessions_revoked;</div></div></div>
+                <div class="db-step"><div class="db-step-num">9</div><div class="db-step-content"><div class="db-step-title">INSERT audit_log</div><div class="db-step-sql">INSERT INTO audit_logs (action, actor_id, ip_address, user_agent, created_at)
+VALUES ('PASSWORD_CHANGED', <span style="color:#FAB387">$uid</span>, <span style="color:#FAB387">$ip</span>, <span style="color:#FAB387">$ua</span>, NOW());</div></div></div>
+              </div>
+              <div class="db-step"><div class="db-step-num">10</div><div class="db-step-content"><div class="db-step-title">Push SSE to all active connections</div><div class="db-step-sql">sseService.broadcast(user_id, { type: 'SESSION_EXPIRED', reason: 'password_changed' })</div><div class="db-step-note">Tất cả tab/thiết bị đang online nhận event và redirect /login</div></div></div>
+              <div class="db-step"><div class="db-step-num">11</div><div class="db-step-content"><div class="db-step-title">Send security alert email async</div><div class="db-step-sql">emailQueue.add({ to: email, type: 'PASSWORD_CHANGED_ALERT', changed_at: NOW(), ip: $ip })</div></div></div>
+            </div>
+          </div>
+          <div class="tab-content" data-tab="errors">
+            <div class="status-list">
+              <div class="status-item status-2xx"><span class="status-code">200</span><div><div class="status-name">Success</div><div class="status-desc">Đổi MK thành công. Sessions revoke. Client xóa tokens và redirect /login.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">400</span><div><div class="status-name">ERR_VALIDATION</div><div class="status-desc">Thiếu field hoặc confirm_password không khớp.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">401</span><div><div class="status-name">ERR_UNAUTHORIZED</div><div class="status-desc">Access Token missing, invalid, hoặc expired.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">403</span><div><div class="status-name">ERR_WRONG_CURRENT_PASSWORD</div><div class="status-desc">Mật khẩu hiện tại không đúng.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">422</span><div><div class="status-name">ERR_PASSWORD_WEAK</div><div class="status-desc">MK mới không đủ phức tạp.</div></div></div>
+              <div class="status-item status-4xx"><span class="status-code">422</span><div><div class="status-name">ERR_PASSWORD_SAME_AS_OLD</div><div class="status-desc">MK mới trùng với MK hiện tại.</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATABASE SCHEMA -->
+    <div id="db-schema" class="section">
+      <div class="section-title"><span class="icon">🗄️</span> Database Schema — Auth Tables</div>
+      
+      <div class="db-table-header">TABLE: users (cột liên quan Auth)</div>
+      <div class="db-table-wrap"><table>
+        <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Default</th><th>Mô tả</th></tr>
+        <tr><td><span class="col-pk">id</span></td><td>UUID</td><td>PRIMARY KEY</td><td>gen_random_uuid()</td><td>Định danh duy nhất</td></tr>
+        <tr><td>email</td><td>VARCHAR(255)</td><td><span class="col-unique">UNIQUE NOT NULL</span></td><td>—</td><td>Email lowercase, indexed</td></tr>
+        <tr><td>username</td><td>VARCHAR(50)</td><td><span class="col-unique">UNIQUE NOT NULL</span></td><td>—</td><td>Username lowercase</td></tr>
+        <tr><td>password_hash</td><td>VARCHAR(255)</td><td>NOT NULL</td><td>—</td><td>bcrypt(pw, 12)</td></tr>
+        <tr><td>role</td><td>user_role ENUM</td><td>NOT NULL</td><td>—</td><td>ADMIN|CREATOR|REVIEWER|APPROVER</td></tr>
+        <tr><td>status</td><td>user_status ENUM</td><td>NOT NULL</td><td>'INACTIVE'</td><td>ACTIVE|INACTIVE|LOCKED</td></tr>
+        <tr><td>email_verified</td><td>BOOLEAN</td><td>NOT NULL</td><td>false</td><td>true sau khi click verify link</td></tr>
+        <tr><td>must_change_password</td><td>BOOLEAN</td><td>NOT NULL</td><td>false</td><td>true khi Admin tạo hộ</td></tr>
+        <tr><td>failed_login_count</td><td>INTEGER</td><td>NOT NULL</td><td>0</td><td>Reset về 0 khi login thành công</td></tr>
+        <tr><td>locked_until</td><td>TIMESTAMPTZ</td><td><span class="col-nullable">NULLABLE</span></td><td>NULL</td><td>Unlock tự động sau TTL</td></tr>
+        <tr><td>last_login_at</td><td>TIMESTAMPTZ</td><td><span class="col-nullable">NULLABLE</span></td><td>NULL</td><td>Cập nhật mỗi lần login thành công</td></tr>
+      </table></div>
+
+      <div class="db-table-header">TABLE: refresh_tokens</div>
+      <div class="db-table-wrap"><table>
+        <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Default</th><th>Mô tả</th></tr>
+        <tr><td><span class="col-pk">id</span></td><td>UUID</td><td>PRIMARY KEY</td><td>gen_random_uuid()</td><td>—</td></tr>
+        <tr><td><span class="col-fk">user_id</span></td><td>UUID</td><td>FK → users.id</td><td>—</td><td>Chủ sở hữu token</td></tr>
+        <tr><td>token_hash</td><td>VARCHAR(64)</td><td><span class="col-unique">UNIQUE NOT NULL</span></td><td>—</td><td>SHA-256(raw_token). Chỉ lưu hash.</td></tr>
+        <tr><td>expires_at</td><td>TIMESTAMPTZ</td><td>NOT NULL</td><td>—</td><td>NOW() + 7d hoặc 30d</td></tr>
+        <tr><td>revoked</td><td>BOOLEAN</td><td>NOT NULL</td><td>false</td><td>true sau logout</td></tr>
+        <tr><td>revoked_at</td><td>TIMESTAMPTZ</td><td><span class="col-nullable">NULLABLE</span></td><td>NULL</td><td>Timestamp khi revoke</td></tr>
+        <tr><td>device_info</td><td>JSONB</td><td><span class="col-nullable">NULLABLE</span></td><td>NULL</td><td>{browser, os, ip} — hiển thị trong Profile</td></tr>
+        <tr><td>created_at</td><td>TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>—</td></tr>
+      </table></div>
+
+      <div class="db-table-header">TABLE: email_verifications</div>
+      <div class="db-table-wrap"><table>
+        <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Default</th><th>Mô tả</th></tr>
+        <tr><td><span class="col-pk">id</span></td><td>UUID</td><td>PRIMARY KEY</td><td>gen_random_uuid()</td><td>—</td></tr>
+        <tr><td><span class="col-fk">user_id</span></td><td>UUID</td><td>FK → users.id</td><td>—</td><td>User cần verify</td></tr>
+        <tr><td>token_hash</td><td>VARCHAR(64)</td><td><span class="col-unique">UNIQUE NOT NULL</span></td><td>—</td><td>SHA-256(raw_token)</td></tr>
+        <tr><td>expires_at</td><td>TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW() + 24h</td><td>TTL link xác nhận</td></tr>
+        <tr><td>used</td><td>BOOLEAN</td><td>NOT NULL</td><td>false</td><td>true sau khi click link</td></tr>
+        <tr><td>used_at</td><td>TIMESTAMPTZ</td><td><span class="col-nullable">NULLABLE</span></td><td>NULL</td><td>Timestamp khi dùng</td></tr>
+        <tr><td>revoked</td><td>BOOLEAN</td><td>NOT NULL</td><td>false</td><td>true khi resend tạo token mới</td></tr>
+        <tr><td>created_at</td><td>TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>—</td></tr>
+      </table></div>
+
+      <div class="db-table-header">TABLE: password_reset_tokens</div>
+      <div class="db-table-wrap"><table>
+        <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Default</th><th>Mô tả</th></tr>
+        <tr><td><span class="col-pk">id</span></td><td>UUID</td><td>PRIMARY KEY</td><td>gen_random_uuid()</td><td>—</td></tr>
+        <tr><td><span class="col-fk">user_id</span></td><td>UUID</td><td>FK → users.id</td><td>—</td><td>User yêu cầu reset</td></tr>
+        <tr><td>token_hash</td><td>VARCHAR(64)</td><td><span class="col-unique">UNIQUE NOT NULL</span></td><td>—</td><td>SHA-256(raw_token)</td></tr>
+        <tr><td>expires_at</td><td>TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW() + 1h</td><td>TTL 1 giờ</td></tr>
+        <tr><td>used</td><td>BOOLEAN</td><td>NOT NULL</td><td>false</td><td>true sau khi đổi MK thành công</td></tr>
+        <tr><td>used_at</td><td>TIMESTAMPTZ</td><td><span class="col-nullable">NULLABLE</span></td><td>NULL</td><td>—</td></tr>
+        <tr><td>revoked</td><td>BOOLEAN</td><td>NOT NULL</td><td>false</td><td>true khi tạo token mới (forgot lần 2)</td></tr>
+        <tr><td>request_ip</td><td>INET</td><td><span class="col-nullable">NULLABLE</span></td><td>NULL</td><td>IP đã yêu cầu reset</td></tr>
+        <tr><td>created_at</td><td>TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>—</td></tr>
+      </table></div>
+
+      <h3 class="sub">Indexes</h3>
+      <div class="code-wrapper"><pre><code><span class="sql-comment">-- users</span>
+CREATE UNIQUE INDEX idx_users_email ON users(lower(email)) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX idx_users_username ON users(lower(username)) WHERE deleted_at IS NULL;
+
+<span class="sql-comment">-- refresh_tokens</span>
+CREATE UNIQUE INDEX idx_rt_token_hash ON refresh_tokens(token_hash);
+CREATE INDEX idx_rt_user_id ON refresh_tokens(user_id, revoked, expires_at);
+
+<span class="sql-comment">-- email_verifications</span>
+CREATE INDEX idx_ev_user_id ON email_verifications(user_id, created_at DESC);
+
+<span class="sql-comment">-- password_reset_tokens</span>
+CREATE UNIQUE INDEX idx_prt_token_hash ON password_reset_tokens(token_hash);
+CREATE INDEX idx_prt_user_id ON password_reset_tokens(user_id, created_at DESC);</code></pre></div>
+    </div>
+
+    <!-- ERROR CODES -->
+    <div id="error-codes" class="section">
+      <div class="section-title"><span class="icon">⚠️</span> Error Codes — Auth Module</div>
+      <table>
+        <tr><th>HTTP</th><th>Error Code</th><th>Endpoint</th><th>Mô tả</th></tr>
+        <tr><td>400</td><td><code>ERR_VALIDATION</code></td><td>All POST</td><td>Thiếu field bắt buộc, sai format dữ liệu</td></tr>
+        <tr><td>400</td><td><code>ERR_PASSWORD_MISMATCH</code></td><td>register, reset, change</td><td>confirm_password không khớp</td></tr>
+        <tr><td>400</td><td><code>ERR_TOKEN_INVALID</code></td><td>verify-email, reset</td><td>Token sai, hết hạn, đã dùng, hoặc revoked</td></tr>
+        <tr><td>401</td><td><code>ERR_UNAUTHORIZED</code></td><td>change-password, logout</td><td>Missing/invalid/expired JWT</td></tr>
+        <tr><td>401</td><td><code>ERR_INVALID_CREDENTIALS</code></td><td>login</td><td>Sai username/password (không tiết lộ field nào)</td></tr>
+        <tr><td>401</td><td><code>ERR_TOKEN_EXPIRED</code></td><td>refresh</td><td>Refresh token đã hết hạn</td></tr>
+        <tr><td>403</td><td><code>ERR_ACCOUNT_INACTIVE</code></td><td>login</td><td>Tài khoản chưa kích hoạt</td></tr>
+        <tr><td>403</td><td><code>ERR_EMAIL_NOT_VERIFIED</code></td><td>login</td><td>Email chưa xác nhận</td></tr>
+        <tr><td>403</td><td><code>ERR_WRONG_CURRENT_PASSWORD</code></td><td>change-password</td><td>Mật khẩu hiện tại không đúng</td></tr>
+        <tr><td>403</td><td><code>ERR_MUST_CHANGE_PASSWORD</code></td><td>All other endpoints</td><td>Phải đổi MK trước khi dùng hệ thống</td></tr>
+        <tr><td>409</td><td><code>ERR_EMAIL_EXISTS</code></td><td>register</td><td>Email đã tồn tại</td></tr>
+        <tr><td>409</td><td><code>ERR_USERNAME_EXISTS</code></td><td>register</td><td>Username đã tồn tại</td></tr>
+        <tr><td>422</td><td><code>ERR_PASSWORD_WEAK</code></td><td>register, reset, change</td><td>Mật khẩu không đủ phức tạp</td></tr>
+        <tr><td>422</td><td><code>ERR_PASSWORD_SAME_AS_OLD</code></td><td>reset, change</td><td>Mật khẩu mới trùng với cũ</td></tr>
+        <tr><td>423</td><td><code>ERR_ACCOUNT_LOCKED</code></td><td>login</td><td>Khóa tạm thời. Kèm unlock_at.</td></tr>
+        <tr><td>429</td><td><code>ERR_RATE_LIMIT</code></td><td>All</td><td>Vượt giới hạn request. Kèm retry_after.</td></tr>
+        <tr><td>500</td><td><code>ERR_INTERNAL</code></td><td>All</td><td>Lỗi server không xác định</td></tr>
+        <tr><td>503</td><td><code>ERR_EMAIL_SERVICE_DOWN</code></td><td>register, forgot</td><td>SMTP lỗi. Action đã thực hiện trong DB.</td></tr>
+      </table>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+function toggle(header) {
+  const endpoint = header.parentElement;
+  endpoint.classList.toggle('open');
+}
+
+function switchTab(tab, tabName) {
+  const body = tab.closest('.endpoint-body');
+  body.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  body.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  tab.classList.add('active');
+  body.querySelector(`.tab-content[data-tab="${tabName}"]`)?.classList.add('active');
+}
+
+function scrollTo(id) {
+  const el = document.getElementById(id);
+  if (el) { el.scrollIntoView({behavior:'smooth', block:'start'}); }
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+
+function copyCode(btn) {
+  const pre = btn.parentElement.querySelector('pre');
+  const text = pre.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// Open first endpoint in each section by default
+document.querySelectorAll('.endpoint:first-of-type').forEach(ep => ep.classList.add('open'));
+
+// Fix tab-content data-tab mapping
+document.querySelectorAll('.endpoint-body').forEach(body => {
+  const tabs = body.querySelectorAll('.tab');
+  const contents = body.querySelectorAll('.tab-content');
+  tabs.forEach((tab, i) => {
+    tab.onclick = function() {
+      tabs.forEach(t => t.classList.remove('active'));
+      contents.forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      if (contents[i]) contents[i].classList.add('active');
+    };
+  });
+});
+</script>
+</body>
+</html>

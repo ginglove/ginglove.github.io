@@ -105,6 +105,19 @@ const COURSE_CONFIG = [
         ]
     },
     {
+        lessonId: "apidocs",
+        lessonTitle: "API Docs for all lesson",
+        pin: "2525",
+        categories: [
+            {
+                sectionTitle: "API Docs Lesson 25",
+                links: [
+                    { name: "API_DOCS", url: "API_DOCS.html" }
+                ]
+            }
+        ]
+    },    
+    {
         lessonId: "privateTrainingS1",
         lessonTitle: "Private Training S1",
         pin: "2026",
