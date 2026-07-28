@@ -1,0 +1,2775 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buổi 3: API Testing Nâng cao & Chuỗi Giao dịch</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f17;
+            --card-bg: #111622;
+            --primary-color: #58a6ff;
+            --accent-color: #00f0ff;
+            --success-color: #39d353;
+            --danger-color: #f85149;
+            --text-color: #c9d1d9;
+            --text-bright: #f0f6fc;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(88, 166, 255, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(0, 240, 255, 0.05) 0px, transparent 50%);
+        }
+
+        .slide-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide {
+            display: none;
+            width: 92%;
+            max-width: 1180px;
+            height: 82vh;
+            background-color: var(--card-bg);
+            border-radius: 24px;
+            padding: 22px 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 240, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text-bright);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .logo span {
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .slide-title {
+            font-size: 1.3rem;
+            color: var(--text-bright);
+            font-weight: 700;
+        }
+
+        .slide-content {
+            flex-grow: 1;
+            font-size: 0.98rem;
+            line-height: 1.45;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 10px;
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: #8b949e;
+            flex-shrink: 0;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-bright);
+            padding: 8px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn:hover {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: #0b0f17;
+            border-color: transparent;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            right: 5%;
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .quiz-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .quiz-option {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 10px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.92rem;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-option:hover:not(.disabled) {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.08);
+            transform: translateX(4px);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--success-color) !important;
+            background: rgba(57, 211, 83, 0.08) !important;
+            color: #7eff93 !important;
+            box-shadow: 0 0 15px rgba(57, 211, 83, 0.1);
+        }
+
+        .quiz-option.incorrect {
+            border-color: var(--danger-color) !important;
+            background: rgba(248, 81, 73, 0.08) !important;
+            color: #ff8e8a !important;
+            box-shadow: 0 0 15px rgba(248, 81, 73, 0.1);
+        }
+
+        .quiz-option.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .quiz-option i {
+            font-size: 1rem;
+        }
+
+        .quiz-feedback {
+            margin-top: 10px;
+            font-weight: 500;
+            display: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            line-height: 1.4;
+            backdrop-filter: blur(10px);
+            border-style: solid;
+            border-width: 1px;
+            animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-card {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.01) 0%, rgba(255, 255, 255, 0.03) 100%);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            max-width: 650px;
+            margin: 10px auto;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .score-display {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 10px 0;
+            filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.2));
+        }
+
+        .badge-rating {
+            display: inline-block;
+            padding: 6px 20px;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .tab-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--text-color);
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 0.85rem;
+        }
+
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: #0b0f17;
+            font-weight: bold;
+            box-shadow: 0 0 12px rgba(88, 166, 255, 0.2);
+            border-color: transparent;
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px;
+            border-radius: 14px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .highlight {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        pre {
+            background: #070a10;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.06);
+            overflow-x: auto;
+            color: #e6edf3;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.82rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .badge {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .progress-bar-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: #111622;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .intro-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            text-align: center;
+            padding: 5px 0;
+        }
+
+        .game-status-bar {
+            display: inline-flex;
+            gap: 12px;
+            margin: 0 auto 10px auto;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 5px 15px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            align-self: center;
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--accent-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.5; }
+        }
+
+        .intro-title {
+            font-size: 2.2rem;
+            background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            filter: drop-shadow(0 0 12px rgba(0,240,255,0.1));
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .intro-subtitle {
+            font-size: 1.05rem;
+            color: #8b949e;
+            max-width: 750px;
+            margin: 0 auto 15px auto;
+            line-height: 1.4;
+        }
+
+        .intro-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .intro-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.01) 100%);
+            padding: 12px 15px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .intro-card h4 {
+            font-size: 0.95rem;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .intro-card p {
+            font-size: 0.8rem;
+            color: #8b949e;
+            line-height: 1.35;
+        }
+
+        .start-alert {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            padding: 6px 14px;
+            border-radius: 10px;
+            color: var(--accent-color);
+            font-size: 0.8rem;
+            font-weight: 600;
+            animation: bounce 2s infinite;
+            align-self: center;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        ul.list-modern {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        ul.list-modern li {
+            position: relative;
+            padding-left: 15px;
+            margin-bottom: 6px;
+            font-size: 0.88rem;
+            color: #8b949e;
+        }
+
+        ul.list-modern li::before {
+            content: "✦";
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+        }
+
+        .lifecycle-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.01);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 15px 25px;
+            margin-bottom: 12px;
+        }
+
+        .flow-node {
+            text-align: center;
+            flex: 1;
+            padding: 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.04);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .flow-node.active-node {
+            background: rgba(0, 240, 255, 0.05);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);
+        }
+
+        .flow-arrow {
+            color: rgba(255,255,255,0.2);
+            font-size: 1rem;
+            padding: 0 10px;
+        }
+
+        .sandbox-container {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 15px;
+        }
+
+        .interactive-json-key {
+            cursor: pointer;
+            color: #ff79c6;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .interactive-json-key:hover {
+            color: var(--accent-color);
+            background: rgba(0, 240, 255, 0.08);
+            border-radius: 4px;
+            padding: 0 4px;
+        }
+
+        pre::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        pre::-webkit-scrollbar-track {
+            background: #070a10;
+        }
+        pre::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="slide-container">
+
+        <div class="slide active">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div>Lobby // Session_03</div>
+            </div>
+            <div class="slide-content" style="overflow: hidden;">
+                <div class="intro-container">
+                    <div class="game-status-bar">
+                        <span><span class="pulse-dot"></span> STATUS: ONLINE</span>
+                        <span>|</span>
+                        <span>DIFFICULTY: INTERMEDIATE</span>
+                        <span>|</span>
+                        <span>QUEST: E2E TESTING</span>
+                    </div>
+                    
+                    <h1 class="intro-title">
+                        API TESTING NÂNG CAO & CHUỖI GIAO DỊCH
+                    </h1>
+
+                    <p class="intro-subtitle">
+                        Nâng cấp kỹ năng kiểm thử. Vượt qua giới hạn thủ công và làm chủ luồng <span class="highlight">Chaining Automation</span> sử dụng Postman Script thực tế.
+                    </p>
+
+                    <div class="intro-grid">
+                        <div class="intro-card">
+                            <h4 class="highlight"><i class="fa-solid fa-bullseye"></i> NHIỆM VỤ</h4>
+                            <p>Tự tay viết mã Script, thiết kế Assertions logic nghiệp vụ và xử lý đồng bộ hóa dữ liệu thông minh giữa các API.</p>
+                        </div>
+                        <div class="intro-card">
+                            <h4 class="highlight"><i class="fa-solid fa-flask"></i> MÔI TRƯỜNG</h4>
+                            <p>Thực chiến mượt mà trên ReqRes API - Môi trường REST API dữ liệu thật, ổn định và không cần đăng ký tài khoản.</p>
+                        </div>
+                        <div class="intro-card" style="border-color: rgba(57, 211, 83, 0.15);">
+                            <h4 style="color: var(--success-color);"><i class="fa-solid fa-graduation-cap"></i> CHUẨN ĐẦU RA</h4>
+                            <p>Làm chủ chuỗi giao dịch E2E, viết assertions chuyên sâu, tự tin trả lời phỏng vấn ở vị trí Junior+/Mid-level.</p>
+                        </div>
+                    </div>
+
+                    <div class="start-alert">
+                        <i class="fa-solid fa-play"></i> NHẤN PHÍM "MŨI TÊN PHẢI" ĐỂ BẮT ĐẦU QUIZ
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>IT Learn Studio</span>
+                <span>Slide 1 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q1</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">HTTP Methods</span> Khi muốn <span class="highlight">LẤY</span> thông tin danh sách sản phẩm từ server, bạn nên dùng HTTP method nào?</p>
+                <div class="quiz-container" data-question="1">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. POST', 'Hụt rồi! POST thường dùng để khởi tạo dữ liệu mới nha.', 1)">
+                        <span>A. POST</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B. GET', 'Quá đỉnh! GET sinh ra chính xác là để đọc và truy vấn dữ liệu.', 1)">
+                        <span>B. GET</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C. PUT', 'Sai lệch một tí! PUT dùng để thay thế hay cập nhật toàn bộ resource.', 1)">
+                        <span>C. PUT</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. DELETE', 'Ối kìa! DELETE là lệnh xoá dữ liệu mà!', 1)">
+                        <span>D. DELETE</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-1"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 2 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q2</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">Status Codes</span> Server trả về status code <span class="highlight">401</span>. Điều đó có nghĩa là gì?</p>
+                <div class="quiz-container" data-question="2">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. Request thành công', 'Không đúng rồi! Thành công phải là 2xx cơ.', 2)">
+                        <span>A. Request thành công</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'B. Dữ liệu không tìm thấy (Not Found)', 'Suýt đúng! Không tìm thấy là lỗi 404 huyền thoại nha.', 2)">
+                        <span>B. Dữ liệu không tìm thấy (Not Found)</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'C. Chưa xác thực / Token không hợp lệ (Unauthorized)', 'Chuẩn cơm mẹ nấu! 401 Unauthorized có nghĩa là chưa đăng nhập hoặc token sai/hết hạn.', 2)">
+                        <span>C. Chưa xác thực / Token không hợp lệ (Unauthorized)</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. Lỗi phía server (Internal Server Error)', 'Nhầm rồi nè! Lỗi server phải đầu 5 (ví dụ 500) nha.', 2)">
+                        <span>D. Lỗi phía server (Internal Server Error)</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-2"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 3 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q3</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">Authentication</span> Trong Postman, bạn cần gọi API yêu cầu xác thực bằng Bearer Token. Token cần được đặt ở đâu?</p>
+                <div class="quiz-container" data-question="3">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. Trong URL của request (query param)', 'Sai rùi! Đưa token lên URL cực kỳ kém an toàn và sai chuẩn.', 3)">
+                        <span>A. Trong URL của request (query param)</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'B. Trong tab Body', 'Hụt mất rồi! Bearer token thường được gửi qua Header chứ không đặt trong Body.', 3)">
+                        <span>B. Trong tab Body</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'C. Trong tab Headers, với key Authorization: Bearer <token>', 'Quá chuẩn! Gửi qua Header Authorization là chuẩn xác thực Bearer Token phổ biến nhất.', 3)">
+                        <span>C. Trong tab Headers, với key Authorization: Bearer &lt;token&gt;</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. Trong tab Params', 'Chưa chính xác! Params là dành cho query parameter trên URL.', 3)">
+                        <span>D. Trong tab Params</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-3"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 4 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q4</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 8px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">JSON Format</span> Đoạn JSON dưới đây có lỗi gì?</p>
+                <pre style="margin-bottom: 10px;">{ "name": "Nguyen Van A", "age": 25, "email": "test@gmail.com" }</pre>
+                <div class="quiz-container" data-question="4">
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'A. JSON hợp lệ, không có lỗi', 'Đỉnh của chóp! JSON này chuẩn từng milimet, không tì vết!', 4)">
+                        <span>A. JSON hợp lệ, không có lỗi</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'B. Thiếu dấu ngoặc kép ở name', 'Nhìn kỹ lại xem nào! `\"name\"` đã có đủ dấu ngoặc kép rồi nha.', 4)">
+                        <span>B. Thiếu dấu ngoặc kép ở `name`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C. Số 25 phải để trong dấu ngoặc kép', 'Nhầm rồi bạn ơi! Kiểu dữ liệu số (Number) trong JSON KHÔNG cần ngoặc kép.', 4)">
+                        <span>C. Số `25` phải để trong dấu ngoặc kép</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. Không được dùng dấu phẩy ở cuối object', 'Ủa đâu có dấu phẩy dư nào ở cuối đâu nè!', 4)">
+                        <span>D. Không được dùng dấu phẩy ở cuối object</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-4"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 5 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q5</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 8px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">JSONPath</span> API trả về response sau. Muốn lấy giá trị <span class="highlight">"VCB"</span> thì dùng cú pháp nào?</p>
+                <pre style="margin-bottom: 10px;">{ "bank": { "code": "VCB", "name": "Vietcombank" } }</pre>
+                <div class="quiz-container" data-question="5">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. response.code', 'Sai rồi nè! Đi thế là bị nhảy cóc mất trường `bank` rồi!', 5)">
+                        <span>A. `response.code`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B. response.bank.code', 'Mượt thế nhờ! Đi từ ngoài vào trong: `bank` rồi đến `code` là hoàn toàn chính xác.', 5)">
+                        <span>B. `response.bank.code`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C. response[bank][code]', 'Suýt trúng! Viết đúng chuẩn JS phải là `response[\"bank\"][\"code\"]` chứ thiếu ngoặc kép là lỗi ngay!', 5)">
+                        <span>C. `response[bank][code]`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. response.VCB', 'Sai quá sai! `VCB` là value, đâu phải là key (tên trường) đâu nè.', 5)">
+                        <span>D. `response.VCB`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-5"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 6 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q6</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">PUT vs PATCH</span> Sự khác nhau chính giữa <span class="highlight">PUT</span> và <span class="highlight">PATCH</span> là gì?</p>
+                <div class="quiz-container" data-question="6">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. PUT và PATCH hoàn toàn giống nhau', 'Sai rồi nha! Hai phương thức này có mục đích sử dụng khác nhau rõ rệt.', 6)">
+                        <span>A. PUT và PATCH hoàn toàn giống nhau</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B. PUT cập nhật toàn bộ, PATCH chỉ cập nhật một phần', 'Chuẩn đét! PUT thay thế toàn bộ resource, còn PATCH chỉ update đè các trường chỉ định.', 6)">
+                        <span>B. PUT cập nhật toàn bộ resource, PATCH chỉ cập nhật một phần</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C. PUT dùng để xóa, PATCH dùng để tạo mới', 'Ối hỏng rồi! Xoá là DELETE, tạo mới là POST cơ mà!', 6)">
+                        <span>C. PUT dùng để xóa, PATCH dùng để tạo mới</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. PUT cần token, PATCH không cần token', 'Sai lệch hoàn toàn! Việc cần token hay không phụ thuộc vào thiết kế API Auth chứ không phải Method.', 6)">
+                        <span>D. PUT cần token, PATCH không cần token</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-6"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 7 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q7</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">Tư duy Tester</span> Server trả về status <span class="highlight">200</span> nhưng body response có <span class="highlight">"status": "error"</span>. Bạn nên báo cáo kết quả này thế nào?</p>
+                <div class="quiz-container" data-question="7">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. PASS - vì status là 200', 'Sai rùi! Đừng bị đánh lừa bởi status 200 khi body đang báo lỗi nghiệp vụ rõ ràng.', 7)">
+                        <span>A. PASS — vì status code là 200</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'B. PASS - vì server phản hồi', 'Nhầm to rồi! Có phản hồi nhưng lỗi logic thì vẫn là test hỏng nha.', 7)">
+                        <span>B. PASS — vì server có phản hồi</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'C. FAIL - status 200 nhưng logic lỗi', 'Đỉnh cao tư duy Tester! Server phản hồi 200 nhưng nghiệp vụ lỗi thì mâu thuẫn, phải báo FAIL để check thêm!', 7)">
+                        <span>C. FAIL — status code 200 nhưng business logic báo lỗi, cần investigate thêm</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. Hỏi dev', 'Hơi thiếu chủ động rồi! Hãy tự phân tích lỗi trước khi đem đi hỏi dev nhé.', 7)">
+                        <span>D. Không chắc, cần hỏi developer</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-7"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 8 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q8</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">Cấu trúc Test Case</span> Một test case chuẩn cần có những thành phần nào? (Chọn đáp án <span class="highlight">đầy đủ nhất</span>)</p>
+                <div class="quiz-container" data-question="8">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. Các bước và Kết quả thực tế', 'Thiếu nhiều lắm nha! Làm sao biết điều kiện ban đầu hay kết quả mong đợi?', 8)">
+                        <span>A. Chỉ cần: Các bước thực hiện và Kết quả thực tế</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'B. Test case ID và Kết quả mong đợi', 'Hụt rồi! Thiếu các bước thực hiện thì làm sao tester khác tái hiện được?', 8)">
+                        <span>B. Chỉ cần: Test case ID và Kết quả mong đợi</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'C. Đầy đủ ID, Tiêu đề, Precondition, Các bước...', 'Rất xuất sắc! Đây là cấu trúc hoàn hảo của một test case chuyên nghiệp giúp quản lý và thực thi chuẩn chỉnh.', 8)">
+                        <span>C. Test case ID, Tiêu đề, Precondition, Các bước, Kết quả mong đợi, Kết quả thực tế, Pass/Fail</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. Tiêu đề và Kết quả mong đợi', 'Vẫn sơ sài quá, chưa đủ thông tin cho một test case mẫu mực đâu.', 8)">
+                        <span>D. Chỉ cần: Tiêu đề và Kết quả mong đợi</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-8"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 9 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q9</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">Boundary Value Analysis</span> Chức năng đăng nhập yêu cầu password từ <span class="highlight">8 đến 20 ký tự</span>. Theo kỹ thuật Boundary Value Analysis (BVA), bạn cần test những giá trị nào?</p>
+                <div class="quiz-container" data-question="9">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. Chỉ test đúng 10 ký tự', 'Sai rùi! 10 ký tự nằm giữa khoảng, không phải là test giá trị biên nha.', 9)">
+                        <span>A. Chỉ test đúng 10 ký tự (ở giữa khoảng hợp lệ)</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B. Test các giá trị: 7, 8, 9, 19, 20, 21', 'Quá siêu! Áp dụng đúng BVA là phải test tại biên (8, 20) và sát sạt hai bên biên (7, 9, 19, 21)!', 9)">
+                        <span>B. Test các giá trị: 7, 8, 9, 19, 20, 21 ký tự</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C. Test tất cả từ 1 đến 25 ký tự', 'Tốn thời gian quá! Test thế này bị dư thừa và cực kỳ mất công sức.', 9)">
+                        <span>C. Test tất cả từ 1 đến 25 ký tự</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. Chỉ test 8 và 20 ký tự', 'Suýt trúng! Chỉ test đúng hai điểm mốc 8 và 20 là chưa đủ các điểm lân cận.', 9)">
+                        <span>D. Chỉ test 8 và 20 ký tự (đúng 2 giá trị biên)</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-9"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 10 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q10</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">Retest vs Regression</span> Developer vừa fix bug `#123 "Không gửi được email xác nhận đơn hàng"`. Bạn nên làm gì tiếp theo?</p>
+                <div class="quiz-container" data-question="10">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. Chỉ test lại đúng bug #123', 'Chưa đủ nha! Lỡ may dev sửa email chỗ này làm hỏng email chỗ khác thì sao?', 10)">
+                        <span>A. Chỉ test lại đúng bug #123 là xong</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'B. Báo PASS luôn', 'Không bao giờ được tin dev tuyệt đối! Phải kiểm tra thực tế trên môi trường test!', 10)">
+                        <span>B. Báo PASS luôn vì developer đã fix và tự kiểm tra rồi</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'C. Retest rồi Regression Test các tính năng liên quan', 'Không lệch đi đâu được! Vừa retest xác nhận fix lỗi, vừa regression test để đảm bảo các tính năng liên quan không bị ảnh hưởng.', 10)">
+                        <span>C. Test lại bug #123 (retest) rồi test thêm các chức năng liên quan đến email để đảm bảo fix này không gây lỗi mới (regression test)</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. Không cần test', 'Quá mạo hiểm! Lỗi trôi nổi lên Production là tester phải chịu trách nhiệm đó nha.', 10)">
+                        <span>D. Không cần test vì developer đã cam đoan fix xong</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-10"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 11 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Báo Cáo Thành Tích Pre-Check Quiz</div>
+            </div>
+            <div class="slide-content" style="display: flex; flex-direction: column; justify-content: flex-start; overflow-y: auto;">
+                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 14px; align-items: start;">
+                    <div class="result-card" style="margin: 0; padding: 16px;">
+                        <h3 style="color: var(--text-bright); font-size: 1rem; margin-bottom: 4px;">KẾT QUẢ ĐÁNH GIÁ</h3>
+                        <div class="score-display" id="quizScore" style="font-size: 3rem; margin: 6px 0;">0/10</div>
+                        <div class="badge-rating" id="scoreBadge" style="background: var(--primary-color); color: #0b0f17; margin-bottom: 8px; font-size: 0.78rem;">Đang tính điểm...</div>
+                        <p style="line-height: 1.4; font-size: 0.82rem; color: #8b949e;" id="scoreEvaluation">Hoàn thành 10 câu hỏi để nhận phân tích chi tiết.</p>
+                    </div>
+                    <div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;" id="topicBreakdown">
+                            <div class="topic-row" data-topic="api-basics" style="background: rgba(255,255,255,0.01); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                    <span style="font-size:0.76rem; font-weight:700; color:var(--text-bright);"><i class="fa-solid fa-globe"></i> API Cơ Bản</span>
+                                    <span id="score-api-basics" style="font-size:0.7rem; font-weight:700; color:#8b949e;">—</span>
+                                </div>
+                                <div style="font-size:0.68rem; color:#8b949e; line-height:1.3;">
+                                    <span style="color:#555;">Q1: HTTP Methods | Q6: PUT vs PATCH</span>
+                                </div>
+                                <div id="suggest-api-basics" style="font-size:0.68rem; margin-top:3px; display:none; line-height:1.3;"></div>
+                            </div>
+                            <div class="topic-row" data-topic="status-auth" style="background: rgba(255,255,255,0.01); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                    <span style="font-size:0.76rem; font-weight:700; color:var(--text-bright);"><i class="fa-solid fa-shield-halved"></i> Status Code & Auth</span>
+                                    <span id="score-status-auth" style="font-size:0.7rem; font-weight:700; color:#8b949e;">—</span>
+                                </div>
+                                <div style="font-size:0.68rem; color:#8b949e; line-height:1.3;">
+                                    <span style="color:#555;">Q2: Status Codes | Q3: Bearer Token</span>
+                                </div>
+                                <div id="suggest-status-auth" style="font-size:0.68rem; margin-top:3px; display:none; line-height:1.3;"></div>
+                            </div>
+                            <div class="topic-row" data-topic="json-path" style="background: rgba(255,255,255,0.01); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                    <span style="font-size:0.76rem; font-weight:700; color:var(--text-bright);"><i class="fa-solid fa-code"></i> JSON & JSONPath</span>
+                                    <span id="score-json-path" style="font-size:0.7rem; font-weight:700; color:#8b949e;">—</span>
+                                </div>
+                                <div style="font-size:0.68rem; color:#8b949e; line-height:1.3;">
+                                    <span style="color:#555;">Q4: JSON Format | Q5: JSONPath Syntax</span>
+                                </div>
+                                <div id="suggest-json-path" style="font-size:0.68rem; margin-top:3px; display:none; line-height:1.3;"></div>
+                            </div>
+                            <div class="topic-row" data-topic="tester-mindset" style="background: rgba(255,255,255,0.01); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                    <span style="font-size:0.76rem; font-weight:700; color:var(--text-bright);"><i class="fa-solid fa-brain"></i> Tư Duy Tester</span>
+                                    <span id="score-tester-mindset" style="font-size:0.7rem; font-weight:700; color:#8b949e;">—</span>
+                                </div>
+                                <div style="font-size:0.68rem; color:#8b949e; line-height:1.3;">
+                                    <span style="color:#555;">Q7: Logic 200 vs Error | Q8: Test Case Structure</span>
+                                </div>
+                                <div id="suggest-tester-mindset" style="font-size:0.68rem; margin-top:3px; display:none; line-height:1.3;"></div>
+                            </div>
+                            <div class="topic-row" data-topic="techniques" style="background: rgba(255,255,255,0.01); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); grid-column: 1 / -1;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                    <span style="font-size:0.76rem; font-weight:700; color:var(--text-bright);"><i class="fa-solid fa-flask"></i> Kỹ Thuật Kiểm Thử</span>
+                                    <span id="score-techniques" style="font-size:0.7rem; font-weight:700; color:#8b949e;">—</span>
+                                </div>
+                                <div style="font-size:0.68rem; color:#8b949e; line-height:1.3;">
+                                    <span style="color:#555;">Q9: Boundary Value Analysis | Q10: Retest vs Regression</span>
+                                </div>
+                                <div id="suggest-techniques" style="font-size:0.68rem; margin-top:3px; display:none; line-height:1.3;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="learningPath" style="margin-top: 10px; background: rgba(0,240,255,0.03); border: 1px solid rgba(0,240,255,0.1); border-radius: 10px; padding: 10px 14px; display: none;">
+                    <h4 style="font-size: 0.82rem; color: var(--accent-color); margin-bottom: 6px;"><i class="fa-solid fa-road"></i> Lộ Trình Học Tập Đề Xuất Cho Bạn</h4>
+                    <div id="learningPathContent" style="font-size: 0.76rem; color: #8b949e; line-height: 1.4;"></div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phân tích chi tiết theo từng nhóm kiến thức</span>
+                <span>Slide 12 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 1.0.1a — Tại Sao Phải Học API Testing?</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.92rem; color: #8b949e; margin-bottom: 12px; text-align: center;">
+                    API Testing là kỹ năng <span class="highlight">bắt buộc</span> cho mọi Tester muốn tiến xa trong nghề. Đây là lý do:
+                </p>
+                <div class="grid-2" style="margin-bottom: 10px;">
+                    <div style="background: rgba(255,255,255,0.01); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.95rem;"><i class="fa-solid fa-clock-rotate-left"></i> Shift-Left Testing</h4>
+                        <p style="font-size: 0.8rem; color: #8b949e; line-height: 1.4;">Kiểm thử ngay khi Backend vừa xong, <strong>không cần chờ UI</strong>. Phát hiện lỗi ở giai đoạn Development giảm chi phí sửa gấp <span class="highlight">10-100 lần</span> so với Production.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.95rem;"><i class="fa-solid fa-bolt"></i> Tốc Độ & Độ Tin Cậy</h4>
+                        <p style="font-size: 0.8rem; color: #8b949e; line-height: 1.4;">Test API chạy nhanh hơn UI gấp <span class="highlight">10-100 lần</span>. Kiểm tra trực tiếp Business Logic tầng Backend mà không phụ thuộc vào rendering, DOM, hay trình duyệt.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.95rem;"><i class="fa-solid fa-shield-halved"></i> Bảo Mật Hệ Thống</h4>
+                        <p style="font-size: 0.8rem; color: #8b949e; line-height: 1.4;">Phát hiện lỗ hổng <strong>SQL Injection, XSS, Broken Auth, Mass Assignment</strong> ngay tại tầng Backend. Chặn đứng payload nguy hiểm trước khi bị khai thác.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.95rem;"><i class="fa-solid fa-plug"></i> Tích Hợp & Microservices</h4>
+                        <p style="font-size: 0.8rem; color: #8b949e; line-height: 1.4;">Kiểm tra giao tiếp giữa các Microservices, third-party APIs, Payment Gateways. Đảm bảo hệ thống hoạt động <strong>đồng bộ end-to-end</strong>.</p>
+                    </div>
+                </div>
+                <div style="background: rgba(0,240,255,0.03); border: 1px solid rgba(0,240,255,0.1); border-radius: 12px; padding: 12px 16px; text-align: center;">
+                    <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.92rem;"><i class="fa-solid fa-triangle-exclamation"></i> Kim Tự Tháp Testing (Mike Cohn)</h4>
+                    <div style="display: flex; justify-content: center; align-items: flex-end; gap: 4px; margin-top: 6px;">
+                        <div style="background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 6px 6px 0 0; width: 100px; height: 40px; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700; color:var(--danger-color);">UI Tests<br><span style="font-weight:400; font-size:0.6rem;">Chậm, đắt, ít</span></div>
+                        <div style="background: rgba(0,240,255,0.12); border: 1px solid rgba(0,240,255,0.3); border-radius: 6px 6px 0 0; width: 160px; height: 55px; display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:700; color:var(--accent-color);">API / Service Tests<br><span style="font-weight:400; font-size:0.6rem;">ROI cao nhất ← BẠN Ở ĐÂY</span></div>
+                        <div style="background: rgba(57,211,83,0.12); border: 1px solid rgba(57,211,83,0.3); border-radius: 6px 6px 0 0; width: 220px; height: 70px; display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:700; color:var(--success-color);">Unit Tests<br><span style="font-weight:400; font-size:0.6rem;">Nhanh, rẻ, nhiều</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 1: Nhập môn // Tại Sao API Testing?</span>
+                <span>Slide 13 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 1.0.1b — Tại Sao Chọn Postman?</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.92rem; color: #8b949e; margin-bottom: 10px; text-align: center;">
+                    Postman là công cụ API Testing <span class="highlight" style="color:var(--success-color);">phổ biến nhất thế giới</span> (30M+ users). Đây là lý do nó thống trị:
+                </p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 style="color:var(--success-color); margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-desktop"></i> UI/UX Trực Quan</h4>
+                        <p style="font-size: 0.76rem; color: #8b949e; line-height: 1.35;">Chọn HTTP Method bằng dropdown. Nhóm requests theo Collection & Folder. Workspace phân quyền cho team.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 style="color:var(--success-color); margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-code"></i> Javascript Sandbox</h4>
+                        <p style="font-size: 0.76rem; color: #8b949e; line-height: 1.35;">Engine V8 chạy Pre-request & Tests Script. Thư viện sẵn: Chai.js, Lodash, CryptoJS, Moment.js. Tự động hóa mọi thứ.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 style="color:var(--success-color); margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-sliders"></i> Environment & Variables</h4>
+                        <p style="font-size: 0.76rem; color: #8b949e; line-height: 1.35;">5 cấp biến: Global → Collection → Environment → Data → Local. Đổi Dev/Staging/UAT chỉ 1 click.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 style="color:var(--success-color); margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-gears"></i> CI/CD & Newman</h4>
+                        <p style="font-size: 0.76rem; color: #8b949e; line-height: 1.35;">Export Collection → chạy CLI bằng Newman → Jenkins / GitLab CI / GitHub Actions. Báo cáo HTML/JUnit tự động.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 style="color:var(--success-color); margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-users"></i> Team Collaboration</h4>
+                        <p style="font-size: 0.76rem; color: #8b949e; line-height: 1.35;">Chia sẻ Collection qua Workspace. Fork & Merge giống Git. Comment trực tiếp trên từng request.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 style="color:var(--success-color); margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-book-open"></i> Auto Documentation</h4>
+                        <p style="font-size: 0.76rem; color: #8b949e; line-height: 1.35;">API Docs tự sinh từ Collection. Import/Export Swagger & OpenAPI. Publish docs online cho team dùng.</p>
+                    </div>
+                </div>
+                <div style="background: rgba(0,240,255,0.03); border: 1px solid rgba(0,240,255,0.1); border-radius: 10px; padding: 10px 14px;">
+                    <h4 style="font-size: 0.82rem; color: var(--accent-color); margin-bottom: 6px;"><i class="fa-solid fa-map-signs"></i> Postman sẽ đồng hành cùng bạn trong suốt buổi học</h4>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap; font-size: 0.72rem;">
+                        <span style="background: rgba(57,211,83,0.1); color: var(--success-color); padding: 3px 8px; border-radius: 6px; font-weight: 600;">Slide 17: Setup Environment</span>
+                        <span style="background: rgba(57,211,83,0.1); color: var(--success-color); padding: 3px 8px; border-radius: 6px; font-weight: 600;">Slide 18: Script Lifecycle</span>
+                        <span style="background: rgba(57,211,83,0.1); color: var(--success-color); padding: 3px 8px; border-radius: 6px; font-weight: 600;">Slide 19: 6 Lệnh Vàng</span>
+                        <span style="background: rgba(57,211,83,0.1); color: var(--success-color); padding: 3px 8px; border-radius: 6px; font-weight: 600;">Slide 21: Chaining E2E</span>
+                        <span style="background: rgba(57,211,83,0.1); color: var(--success-color); padding: 3px 8px; border-radius: 6px; font-weight: 600;">Slide 23: Thực Hành</span>
+                        <span style="background: rgba(57,211,83,0.1); color: var(--success-color); padding: 3px 8px; border-radius: 6px; font-weight: 600;">Slide 25: Postman Cheat Sheet</span>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 1: Nhập môn // Tại Sao Postman?</span>
+                <span>Slide 14 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 1.0.1b — API Cơ Bản: Toàn Cảnh Trước Khi Thực Chiến</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.88rem; color: #8b949e; margin-bottom: 8px; text-align: center;">
+                    Trước khi mở Postman, hãy nắm chắc <span class="highlight">5 trụ cột</span> của bất kỳ API nào. Đây là nền tảng để bạn hiểu mọi thao tác tiếp theo.
+                </p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-globe"></i> 1. HTTP Methods — Ngôn Ngữ Giao Tiếp Với Server</h4>
+                        <table style="width:100%; border-collapse:collapse; font-size:0.72rem; color:#8b949e;">
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px 0; width:60px;"><span class="highlight">GET</span></td><td><strong>Đọc</strong> dữ liệu — Không gửi Body — Idempotent (gọi 100 lần vẫn giống nhau)</td></tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px 0;"><span class="highlight">POST</span></td><td><strong>Tạo mới</strong> — Gửi Body JSON — Không idempotent (mỗi lần tạo 1 bản ghi mới)</td></tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px 0;"><span class="highlight">PUT</span></td><td><strong>Thay toàn bộ</strong> — Gửi full object — Idempotent — Thiếu field = field bị xoá</td></tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px 0;"><span class="highlight">PATCH</span></td><td><strong>Sửa 1 phần</strong> — Chỉ gửi field cần sửa — Các field khác giữ nguyên</td></tr>
+                            <tr><td style="padding:3px 0;"><span class="highlight">DELETE</span></td><td><strong>Xoá</strong> — Thường chỉ cần ID trên URL — Response thường 204 No Content</td></tr>
+                        </table>
+                        <div style="margin-top:6px; font-size:0.68rem; color:#555; padding:4px 8px; background:rgba(248,81,73,0.03); border-radius:6px; border:1px dashed rgba(248,81,73,0.1);">
+                            <span style="color:var(--danger-color);">⚠️ Nhầm lẫn #1 của newbie:</span> PUT gửi thiếu field → server hiểu là xoá field đó. PATCH mới chỉ sửa field gửi lên.
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-signal"></i> 2. Status Code — Server Trả Lời Bằng Số</h4>
+                        <div style="font-size:0.72rem; color:#8b949e; line-height:1.4;">
+                            <p><span style="color:var(--success-color); font-weight:700;">2xx — Thành công:</span></p>
+                            <p style="padding-left:8px; font-size:0.7rem;"><strong>200</strong> OK (GET/PUT thành công) | <strong>201</strong> Created (POST tạo xong) | <strong>204</strong> No Content (DELETE xong, không trả body)</p>
+                            <p style="margin-top:3px;"><span style="color:#e6c01c; font-weight:700;">4xx — Lỗi do Client (bạn sai):</span></p>
+                            <p style="padding-left:8px; font-size:0.7rem;"><strong>400</strong> Bad Request (body sai format) | <strong>401</strong> Unauthorized (chưa login / token hết hạn) | <strong>403</strong> Forbidden (đã login nhưng không đủ quyền) | <strong>404</strong> Not Found (URL sai hoặc resource không tồn tại) | <strong>422</strong> Unprocessable (data hợp lệ nhưng logic sai)</p>
+                            <p style="margin-top:3px;"><span style="color:var(--danger-color); font-weight:700;">5xx — Lỗi do Server (họ sai):</span></p>
+                            <p style="padding-left:8px; font-size:0.7rem;"><strong>500</strong> Internal Error | <strong>502</strong> Bad Gateway | <strong>503</strong> Service Unavailable</p>
+                        </div>
+                        <div style="margin-top:6px; font-size:0.68rem; color:#555; padding:4px 8px; background:rgba(248,81,73,0.03); border-radius:6px; border:1px dashed rgba(248,81,73,0.1);">
+                            <span style="color:var(--danger-color);">⚠️ Nhầm lẫn #2:</span> 401 ≠ 403. 401 = chưa xác thực (chưa login). 403 = đã xác thực nhưng không có quyền.
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-file-code"></i> 3. Request & Response — Cấu Trúc Mỗi Lần Giao Tiếp</h4>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.72rem; color:#8b949e;">
+                            <div style="background:#070a10; padding:8px; border-radius:6px; font-family:monospace; font-size:0.68rem; color:#e6edf3;">
+                                <span style="color:var(--accent-color); font-weight:700;">REQUEST gồm:</span><br>
+                                ① Method: POST<br>
+                                ② URL: /api/login<br>
+                                ③ Headers: Content-Type<br>
+                                ④ Body: {"email":"...","password":"..."}
+                            </div>
+                            <div style="background:#070a10; padding:8px; border-radius:6px; font-family:monospace; font-size:0.68rem; color:#e6edf3;">
+                                <span style="color:var(--success-color); font-weight:700;">RESPONSE gồm:</span><br>
+                                ① Status: 200 OK<br>
+                                ② Headers: Content-Type<br>
+                                ③ Body: {"token":"QpwL5..."}<br>
+                                ④ Time: 245ms
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-key"></i> 4. Authentication — Cơ Chế Xác Thực</h4>
+                        <div style="font-size:0.72rem; color:#8b949e; line-height:1.35;">
+                            <p><span class="highlight">Bearer Token</span> — Phổ biến nhất trong REST API:</p>
+                            <p style="padding-left:8px; font-size:0.7rem;">1. Client gửi <code>POST /login</code> với credentials → nhận <code>token</code></p>
+                            <p style="padding-left:8px; font-size:0.7rem;">2. Mọi request sau đính kèm: <code>Authorization: Bearer &lt;token&gt;</code></p>
+                            <p style="padding-left:8px; font-size:0.7rem;">3. Token hết hạn → gọi refresh hoặc login lại</p>
+                            <p style="margin-top:4px;"><span class="highlight">JSON (JavaScript Object Notation):</span></p>
+                            <p style="padding-left:8px; font-size:0.7rem;">• Key luôn trong <code>"ngoặc kép"</code> — String cũng dùng ngoặc kép (không dùng nháy đơn)</p>
+                            <p style="padding-left:8px; font-size:0.7rem;">• Number, Boolean (<code>true/false</code>), <code>null</code>: không cần ngoặc</p>
+                            <p style="padding-left:8px; font-size:0.7rem;">• Truy cập nested: <code>res.data.email</code> — đi từ ngoài vào trong theo tên key</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 1: Nhập môn // API Cơ Bản Toàn Cảnh</span>
+                <span>Slide 15 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 1.0.2 — Quy Trình API Testing & Postman Trong Từng Bước</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.88rem; color: #8b949e; margin-bottom: 10px; text-align: center;">
+                    API Testing tuân theo quy trình <span class="highlight">7 bước chuẩn ISTQB</span>. Postman hỗ trợ trực tiếp ở các bước được đánh dấu <span style="color:var(--success-color); font-weight:700;"><i class="fa-solid fa-check-circle"></i></span>:
+                </p>
+
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <div style="display: grid; grid-template-columns: 36px 1.1fr 1.4fr; gap: 10px; align-items: center; background: rgba(57,211,83,0.04); padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.12);">
+                        <div style="text-align:center;"><span style="background:var(--success-color); color:#0b0f17; font-weight:900; border-radius:50%; width:26px; height:26px; display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem;">1</span></div>
+                        <div>
+                            <strong style="color:var(--text-bright); font-size:0.85rem;">Phân tích yêu cầu API</strong>
+                            <p style="font-size:0.72rem; color:#8b949e; margin-top:2px;">Đọc API Docs/Swagger, xác định endpoints, methods, request/response schema, business rules.</p>
+                        </div>
+                        <div style="font-size:0.72rem; color:#8b949e; display:flex; align-items:center; gap:6px;">
+                            <span style="color:var(--success-color);"><i class="fa-solid fa-check-circle"></i></span>
+                            <span><span class="highlight" style="color:var(--success-color);">Postman:</span> Import Swagger/OpenAPI trực tiếp → tự sinh Collection với đầy đủ endpoints, params, examples. Dùng Documentation view để đọc API spec ngay trong Postman.</span>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 36px 1.1fr 1.4fr; gap: 10px; align-items: center; background: rgba(255,255,255,0.01); padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="text-align:center;"><span style="background:var(--primary-color); color:#0b0f17; font-weight:900; border-radius:50%; width:26px; height:26px; display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem;">2</span></div>
+                        <div>
+                            <strong style="color:var(--text-bright); font-size:0.85rem;">Thiết kế Test Cases</strong>
+                            <p style="font-size:0.72rem; color:#8b949e; margin-top:2px;">Viết test cases (Happy Path + Negative + Edge Cases) dựa trên BVA, Equivalence Partitioning.</p>
+                        </div>
+                        <div style="font-size:0.72rem; color:#8b949e;">
+                            <span style="color:#8b949e;"><i class="fa-regular fa-circle"></i></span>
+                            <span style="margin-left:6px;"><span class="highlight">Ngoài Postman:</span> Dùng Excel, TestRail, hoặc Zephyr để quản lý test case. Postman không phải công cụ quản lý test case.</span>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 36px 1.1fr 1.4fr; gap: 10px; align-items: center; background: rgba(57,211,83,0.04); padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.12);">
+                        <div style="text-align:center;"><span style="background:var(--success-color); color:#0b0f17; font-weight:900; border-radius:50%; width:26px; height:26px; display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem;">3</span></div>
+                        <div>
+                            <strong style="color:var(--text-bright); font-size:0.85rem;">Thiết lập môi trường</strong>
+                            <p style="font-size:0.72rem; color:#8b949e; margin-top:2px;">Cấu hình base URL, credentials, tokens, biến môi trường cho Dev/Staging/UAT.</p>
+                        </div>
+                        <div style="font-size:0.72rem; color:#8b949e; display:flex; align-items:center; gap:6px;">
+                            <span style="color:var(--success-color);"><i class="fa-solid fa-check-circle"></i></span>
+                            <span><span class="highlight" style="color:var(--success-color);">Postman:</span> Tạo Environment (Dev/Staging/UAT) với Variables. Chuyển đổi môi trường chỉ bằng 1 click dropdown mà không sửa request nào.</span>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 36px 1.1fr 1.4fr; gap: 10px; align-items: center; background: rgba(57,211,83,0.04); padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.12);">
+                        <div style="text-align:center;"><span style="background:var(--success-color); color:#0b0f17; font-weight:900; border-radius:50%; width:26px; height:26px; display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem;">4</span></div>
+                        <div>
+                            <strong style="color:var(--text-bright); font-size:0.85rem;">Thực thi Test</strong>
+                            <p style="font-size:0.72rem; color:#8b949e; margin-top:2px;">Gửi request, kiểm tra response, chạy assertions tự động, chaining dữ liệu giữa các API.</p>
+                        </div>
+                        <div style="font-size:0.72rem; color:#8b949e; display:flex; align-items:center; gap:6px;">
+                            <span style="color:var(--success-color);"><i class="fa-solid fa-check-circle"></i></span>
+                            <span><span class="highlight" style="color:var(--success-color);">Postman:</span> Send Request → Tests Script (Assertions) → Pre-request Script (Chaining). Collection Runner chạy toàn bộ suite tự động.</span>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 36px 1.1fr 1.4fr; gap: 10px; align-items: center; background: rgba(57,211,83,0.04); padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.12);">
+                        <div style="text-align:center;"><span style="background:var(--success-color); color:#0b0f17; font-weight:900; border-radius:50%; width:26px; height:26px; display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem;">5</span></div>
+                        <div>
+                            <strong style="color:var(--text-bright); font-size:0.85rem;">Phân tích kết quả</strong>
+                            <p style="font-size:0.72rem; color:#8b949e; margin-top:2px;">Đọc kết quả PASS/FAIL, kiểm tra response body, status code, headers, response time.</p>
+                        </div>
+                        <div style="font-size:0.72rem; color:#8b949e; display:flex; align-items:center; gap:6px;">
+                            <span style="color:var(--success-color);"><i class="fa-solid fa-check-circle"></i></span>
+                            <span><span class="highlight" style="color:var(--success-color);">Postman:</span> Test Results tab hiển thị PASS/FAIL từng assertion. Console log (<code>Ctrl+Alt+C</code>) debug chi tiết request/response.</span>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 36px 1.1fr 1.4fr; gap: 10px; align-items: center; background: rgba(255,255,255,0.01); padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="text-align:center;"><span style="background:var(--primary-color); color:#0b0f17; font-weight:900; border-radius:50%; width:26px; height:26px; display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem;">6</span></div>
+                        <div>
+                            <strong style="color:var(--text-bright); font-size:0.85rem;">Báo cáo Bug</strong>
+                            <p style="font-size:0.72rem; color:#8b949e; margin-top:2px;">Log bug vào hệ thống quản lý (Jira, Redmine) với evidence: request, response, expected vs actual.</p>
+                        </div>
+                        <div style="font-size:0.72rem; color:#8b949e;">
+                            <span style="color:#8b949e;"><i class="fa-regular fa-circle"></i></span>
+                            <span style="margin-left:6px;"><span class="highlight">Ngoài Postman:</span> Dùng Jira/Redmine. Tuy nhiên Postman hỗ trợ export request + response làm evidence đính kèm bug report.</span>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 36px 1.1fr 1.4fr; gap: 10px; align-items: center; background: rgba(57,211,83,0.04); padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.12);">
+                        <div style="text-align:center;"><span style="background:var(--success-color); color:#0b0f17; font-weight:900; border-radius:50%; width:26px; height:26px; display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem;">7</span></div>
+                        <div>
+                            <strong style="color:var(--text-bright); font-size:0.85rem;">Regression & CI/CD</strong>
+                            <p style="font-size:0.72rem; color:#8b949e; margin-top:2px;">Chạy lại bộ test sau mỗi lần fix bug hoặc deploy, tích hợp vào pipeline tự động.</p>
+                        </div>
+                        <div style="font-size:0.72rem; color:#8b949e; display:flex; align-items:center; gap:6px;">
+                            <span style="color:var(--success-color);"><i class="fa-solid fa-check-circle"></i></span>
+                            <span><span class="highlight" style="color:var(--success-color);">Postman:</span> Newman CLI chạy Collection trong Jenkins/GitLab CI/GitHub Actions. Xuất báo cáo HTML/JUnit tự động sau mỗi build.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 1: Nhập môn API & Postman // Quy Trình Testing</span>
+                <span>Slide 16 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 1.0.3 — Thuật Ngữ Cốt Lõi Trong Postman</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.9rem; color: #8b949e; margin-bottom: 10px; text-align: center;">
+                    Trước khi bắt tay vào thực hành, hãy nắm vững <span class="highlight">7 khái niệm nền tảng</span> mà bạn sẽ gặp liên tục trong suốt buổi học:
+                </p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div style="background: rgba(255,255,255,0.01); padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 style="font-size: 0.88rem; margin-bottom: 4px;"><span class="highlight"><i class="fa-solid fa-folder-open"></i> Collection</span></h4>
+                        <p style="font-size: 0.78rem; color: #8b949e; line-height: 1.35;">Thư mục chứa nhóm các requests liên quan. Tương tự <strong>Test Suite</strong> trong kiểm thử — gom tất cả API của 1 module/feature vào 1 nơi. Có thể chạy toàn bộ bằng Collection Runner.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 style="font-size: 0.88rem; margin-bottom: 4px;"><span class="highlight"><i class="fa-solid fa-paper-plane"></i> Request</span></h4>
+                        <p style="font-size: 0.78rem; color: #8b949e; line-height: 1.35;">Một lời gọi HTTP đến server gồm: <strong>Method</strong> (GET/POST/PUT/DELETE), <strong>URL</strong>, <strong>Headers</strong>, và <strong>Body</strong> (nếu có). Tương tự 1 dòng trong bảng test case — mỗi request = 1 hành động cần kiểm tra.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 style="font-size: 0.88rem; margin-bottom: 4px;"><span class="highlight"><i class="fa-solid fa-reply"></i> Response</span></h4>
+                        <p style="font-size: 0.78rem; color: #8b949e; line-height: 1.35;">Kết quả server trả về gồm: <strong>Status Code</strong> (200, 401, 404...), <strong>Headers</strong>, <strong>Body</strong> (thường là JSON), và <strong>Response Time</strong>. Đây chính là đối tượng mà Tester cần verify (kiểm tra Expected vs Actual).</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 style="font-size: 0.88rem; margin-bottom: 4px;"><span class="highlight"><i class="fa-solid fa-globe"></i> Environment</span></h4>
+                        <p style="font-size: 0.78rem; color: #8b949e; line-height: 1.35;">Bộ biến (key-value) đại diện cho 1 môi trường cụ thể (Dev/Staging/UAT/Production). Cho phép cùng 1 Collection chạy trên nhiều môi trường chỉ bằng cách đổi Environment — không sửa request.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 style="font-size: 0.88rem; margin-bottom: 4px;"><span class="highlight"><i class="fa-solid fa-code"></i> Variable <code style="font-size:0.7rem;">{{tên_biến}}</code></span></h4>
+                        <p style="font-size: 0.78rem; color: #8b949e; line-height: 1.35;">Giá trị động được thay thế lúc runtime. Viết trong cặp <code>{{ }}</code>. Dùng để tránh hard-code: <code>{{base_url}}</code>, <code>{{token}}</code>. Biến có 5 cấp ưu tiên: Global → Collection → Environment → Data → Local.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 style="font-size: 0.88rem; margin-bottom: 4px;"><span class="highlight"><i class="fa-solid fa-vial"></i> Assertion (Test)</span></h4>
+                        <p style="font-size: 0.78rem; color: #8b949e; line-height: 1.35;">Câu lệnh kiểm tra tự động trong tab <strong>Tests</strong>: so sánh giá trị thực tế (Actual) với giá trị mong đợi (Expected). Nếu khớp → <span style="color:var(--success-color);">PASS</span>, nếu sai → <span style="color:var(--danger-color);">FAIL</span>. Viết bằng Chai.js syntax.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 style="font-size: 0.88rem; margin-bottom: 4px;"><span class="highlight"><i class="fa-solid fa-link"></i> Chaining</span></h4>
+                        <p style="font-size: 0.78rem; color: #8b949e; line-height: 1.35;">Kỹ thuật nối các requests lại với nhau: output của request A (VD: token) tự động trở thành input của request B. Đây là nền tảng để xây dựng luồng test <strong>End-to-End</strong> hoàn chỉnh không cần copy-paste tay.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 1: Nhập môn API & Postman // Thuật Ngữ</span>
+                <span>Slide 17 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 1.0.2b — Environments & Variables Trong Postman: Hiểu Sâu Trước Khi Dùng</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.88rem; color: #8b949e; margin-bottom: 8px; text-align: center;">
+                    Environment & Variable là <span class="highlight">xương sống</span> của mọi bộ test bền vững. Hiểu rõ trước khi bắt tay cấu hình.
+                </p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-globe"></i> Environment Là Gì?</h4>
+                        <div style="font-size: 0.74rem; color: #8b949e; line-height: 1.4;">
+                            <p>Một <strong>bộ biến key-value</strong> đại diện cho 1 môi trường cụ thể. Mỗi dự án thực tế có nhiều môi trường:</p>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top:6px; font-size:0.68rem;">
+                                <div style="background:#070a10; padding:6px 8px; border-radius:6px; border-left:3px solid var(--success-color);">
+                                    <strong style="color:var(--success-color);">DEV</strong><br>base_url = localhost:3000
+                                </div>
+                                <div style="background:#070a10; padding:6px 8px; border-radius:6px; border-left:3px solid var(--accent-color);">
+                                    <strong style="color:var(--accent-color);">STAGING</strong><br>base_url = staging.api.com
+                                </div>
+                                <div style="background:#070a10; padding:6px 8px; border-radius:6px; border-left:3px solid #e6c01c;">
+                                    <strong style="color:#e6c01c;">UAT</strong><br>base_url = uat.api.com
+                                </div>
+                                <div style="background:#070a10; padding:6px 8px; border-radius:6px; border-left:3px solid var(--danger-color);">
+                                    <strong style="color:var(--danger-color);">PROD</strong><br>base_url = api.company.com
+                                </div>
+                            </div>
+                            <p style="margin-top:6px;"><span class="highlight">Lợi ích cốt lõi:</span> Cùng 1 Collection, chỉ đổi Environment → chạy trên môi trường khác mà <strong>không sửa bất kỳ request nào</strong>.</p>
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-code"></i> Variable Là Gì? — Cú Pháp <code style="font-size:0.75rem;">{{tên_biến}}</code></h4>
+                        <div style="font-size: 0.74rem; color: #8b949e; line-height: 1.4;">
+                            <p>Giá trị động được <strong>thay thế lúc runtime</strong>. Viết trong cặp <code>{{ }}</code>. Dùng để tránh hard-code.</p>
+                            <div style="background:#070a10; padding:8px; border-radius:6px; margin-top:6px; font-family:monospace; font-size:0.68rem; color:#e6edf3;">
+                                <span style="color:#8b949e;">// Thay vì hard-code:</span><br>
+                                <span style="color:var(--danger-color);">❌</span> https://reqres.in/api/users/2<br><br>
+                                <span style="color:#8b949e;">// Dùng biến:</span><br>
+                                <span style="color:var(--success-color);">✅</span> {{base_url}}/users/{{user_id}}
+                            </div>
+                            <p style="margin-top:6px;"><span class="highlight">Tại sao quan trọng?</span></p>
+                            <p style="font-size:0.7rem;">• Đổi 1 biến → cập nhật <strong>tất cả</strong> requests cùng lúc<br>• Không bao giờ quên sửa URL khi đổi môi trường<br>• Token, user_id tự động truyền giữa các requests (Chaining)</p>
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-layer-group"></i> 5 Cấp Độ Ưu Tiên Biến (Scope)</h4>
+                        <div style="font-size: 0.72rem; color: #8b949e; line-height: 1.35;">
+                            <p style="margin-bottom:4px;">Khi cùng tên biến tồn tại ở nhiều cấp, Postman dùng <strong>cấp thấp nhất</strong> (gần request nhất):</p>
+                            <div style="display:flex; flex-direction:column; gap:3px; font-size:0.68rem;">
+                                <div style="background:#070a10; padding:5px 10px; border-radius:4px; display:flex; justify-content:space-between;">
+                                    <span><strong style="color:#8b949e;">5.</strong> <span style="color:var(--accent-color);">Global</span></span><span style="color:#555;">Chia sẻ tất cả workspace — ít dùng</span>
+                                </div>
+                                <div style="background:#070a10; padding:5px 10px; border-radius:4px; display:flex; justify-content:space-between;">
+                                    <span><strong style="color:#8b949e;">4.</strong> <span style="color:var(--primary-color);">Collection</span></span><span style="color:#555;">Gắn vào 1 Collection cụ thể</span>
+                                </div>
+                                <div style="background:#070a10; padding:5px 10px; border-radius:4px; display:flex; justify-content:space-between; border:1px solid rgba(57,211,83,0.2);">
+                                    <span><strong style="color:#8b949e;">3.</strong> <span style="color:var(--success-color);">Environment ⭐</span></span><span style="color:#555;">Phổ biến nhất — bạn sẽ dùng nhiều nhất</span>
+                                </div>
+                                <div style="background:#070a10; padding:5px 10px; border-radius:4px; display:flex; justify-content:space-between;">
+                                    <span><strong style="color:#8b949e;">2.</strong> <span style="color:#e6c01c;">Data</span></span><span style="color:#555;">Từ file CSV/JSON khi chạy Runner</span>
+                                </div>
+                                <div style="background:#070a10; padding:5px 10px; border-radius:4px; display:flex; justify-content:space-between;">
+                                    <span><strong style="color:#8b949e;">1.</strong> <span style="color:var(--danger-color);">Local (pm.variables)</span></span><span style="color:#555;">Chỉ sống trong 1 request — ưu tiên cao nhất</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-eye"></i> Initial Value vs Current Value</h4>
+                        <div style="font-size: 0.72rem; color: #8b949e; line-height: 1.35;">
+                            <table style="width:100%; border-collapse:collapse; font-size:0.7rem;">
+                                <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+                                    <td style="padding:4px 0; width:45%;"><span class="highlight">Initial Value</span></td>
+                                    <td>Giá trị <strong>chia sẻ với team</strong> khi Export/Sync. Ai cũng thấy.</td>
+                                </tr>
+                                <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+                                    <td style="padding:4px 0;"><span class="highlight">Current Value</span></td>
+                                    <td>Giá trị <strong>chỉ trên máy bạn</strong>. Không đồng bộ lên cloud.</td>
+                                </tr>
+                            </table>
+                            <div style="margin-top:8px; padding:6px 8px; background:rgba(248,81,73,0.04); border:1px dashed rgba(248,81,73,0.15); border-radius:6px; font-size:0.68rem;">
+                                <span style="color:var(--danger-color); font-weight:700;"><i class="fa-solid fa-skull-crossbones"></i> Nguyên tắc bảo mật:</span><br>
+                                • <strong>KHÔNG BAO GIỜ</strong> đặt password, token, API key vào <strong>Initial Value</strong> khi làm nhóm<br>
+                                • Dùng <code>Initial Value</code> cho: base_url, username (public data)<br>
+                                • Dùng <code>Current Value</code> cho: password, token, secret key<br>
+                                • Script dùng <code>pm.environment.set()</code> → ghi vào <strong>Current Value</strong>
+                            </div>
+                            <div style="margin-top:6px; padding:4px 8px; background:rgba(0,240,255,0.03); border-radius:6px; font-size:0.68rem; border:1px solid rgba(0,240,255,0.08);">
+                                <span class="highlight"><i class="fa-solid fa-eye"></i> Quick Look:</span> Click biểu tượng <strong>mắt (Eye icon)</strong> góc trên phải để xem nhanh tất cả biến đang active và giá trị hiện tại.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 1: Nhập môn // Environments & Variables</span>
+                <span>Slide 18 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 1.0.3 — Quy trình Thiết lập Môi trường Postman Chuẩn QA Lead</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.92rem; color: #8b949e; margin-bottom: 10px; text-align: center;">
+                    Muốn bộ test chạy ổn định, bền bỉ và không bị gãy khi đổi môi trường (Dev/Staging/UAT), hãy thiết lập theo 3 bước sau:
+                </p>
+                <div class="intro-grid" style="margin-bottom: 10px;">
+                    <div class="intro-card" style="border-color: rgba(0, 240, 255, 0.15);">
+                        <h4 class="highlight"><i class="fa-solid fa-folder-plus"></i> BƯỚC 1: COLLECTION</h4>
+                        <p style="font-size: 0.76rem; line-height: 1.35; color: #8b949e;">
+                            Tạo Collection <strong>ReqRes_E2E_Chain</strong>.
+                            <br>• Tạo thư mục <strong>"Happy Path"</strong> cho kịch bản chuẩn và <strong>"Negative Tests"</strong> cho bẻ gãy luồng.
+                            <br>• Đặt tên request theo chuẩn: <code>[Method] Mô tả ngắn</code> (VD: <code>[POST] Login</code>, <code>[GET] Get User</code>).
+                            <br>• Thêm Description cho Collection: ghi rõ mục đích, API base URL, và danh sách accounts test.
+                        </p>
+                    </div>
+                    <div class="intro-card" style="border-color: rgba(57, 211, 83, 0.15);">
+                        <h4 style="color: var(--success-color);"><i class="fa-solid fa-globe"></i> BƯỚC 2: ENVIRONMENT</h4>
+                        <p style="font-size: 0.76rem; line-height: 1.35; color: #8b949e;">
+                            Tạo Environment <strong>ReqRes-Practice</strong>.
+                            <br>• <strong>Biến cố định (Initial Value):</strong> <code>base_url</code> = <code>https://reqres.in/api</code>, <code>email</code> = <code>eve.holt@reqres.in</code>, <code>password</code> = <code>cityslicka</code>.
+                            <br>• <strong>Biến trung chuyển (để trống):</strong> <code>token</code>, <code>user_id</code>, <code>created_user_id</code> — sẽ được Script tự động gán giá trị khi chạy.
+                            <br>• <strong>Lưu ý:</strong> Initial Value = chia sẻ team. Current Value = chỉ máy bạn. Không bao giờ đặt password/token vào Initial Value khi làm việc nhóm.
+                        </p>
+                    </div>
+                    <div class="intro-card" style="border-color: rgba(248, 81, 73, 0.15);">
+                        <h4 style="color: var(--danger-color);"><i class="fa-solid fa-triangle-exclamation"></i> BƯỚC 3: ACTIVE & USE</h4>
+                        <p style="font-size: 0.76rem; line-height: 1.35; color: #8b949e;">
+                            Kích hoạt Environment tại <strong>dropdown góc trên cùng bên phải</strong> màn hình Postman.
+                            <br>• Thay toàn bộ hard-code URL thành: <code>{{base_url}}</code>. VD: <code>{{base_url}}/auth/login</code>.
+                            <br>• Hover vào biến <code>{{...}}</code> để xem giá trị hiện tại — nếu hiện <strong style="color:var(--danger-color);">màu đỏ</strong> nghĩa là biến chưa được khai báo hoặc Environment chưa active.
+                            <br>• Kiểm tra nhanh: Mở <strong>Eye icon</strong> (Quick Look) để xem toàn bộ biến đang active.
+                        </p>
+                    </div>
+                </div>
+                <div style="background: rgba(0, 240, 255, 0.03); border: 1px dashed rgba(0, 240, 255, 0.15); padding: 8px 14px; border-radius: 10px; font-size: 0.78rem; color: #8b949e; text-align: center;">
+                    <span class="highlight"><i class="fa-solid fa-lightbulb"></i> Pro Tip:</span> Tạo thêm Environment <strong>ReqRes-Staging</strong> với <code>base_url</code> khác để tập thói quen chuyển đổi môi trường. Collection Runner sẽ chạy cùng test suite trên cả 2 môi trường mà không cần sửa bất kỳ request nào.
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 1: Nhập môn API & Postman // Setup Chuẩn</span>
+                <span>Slide 19 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 1.1 — Vòng Đời Thực Thi Script Trong Postman</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.92rem; color: #8b949e; margin-bottom: 10px; text-align: center;">
+                    Mỗi request trong Postman luôn tuân thủ nghiêm ngặt 4 giai đoạn. Click vào <span class="highlight">Pre-request</span> hoặc <span class="highlight">Tests</span> để xem chi tiết:
+                </p>
+
+                <div class="lifecycle-flow">
+                    <div class="flow-node active-node" style="cursor: pointer;" onclick="highlightLifecycle('pre')">
+                        <i class="fa-solid fa-gears"></i> Pre-request Script<br><span style="font-size:0.75rem; font-weight:normal;">(Trang bị)</span>
+                    </div>
+                    <div class="flow-arrow"><i class="fa-solid fa-angles-right"></i></div>
+                    <div class="flow-node">
+                        <i class="fa-solid fa-paper-plane"></i> Send Request<br><span style="font-size:0.75rem; font-weight:normal;">(Gửi đi)</span>
+                    </div>
+                    <div class="flow-arrow"><i class="fa-solid fa-angles-right"></i></div>
+                    <div class="flow-node">
+                        <i class="fa-solid fa-server"></i> Server Response<br><span style="font-size:0.75rem; font-weight:normal;">(Phản hồi)</span>
+                    </div>
+                    <div class="flow-arrow"><i class="fa-solid fa-angles-right"></i></div>
+                    <div class="flow-node active-node" style="cursor: pointer;" onclick="highlightLifecycle('test')">
+                        <i class="fa-solid fa-list-check"></i> Tests Script<br><span style="font-size:0.75rem; font-weight:normal;">(Xác minh)</span>
+                    </div>
+                </div>
+
+                <div class="grid-2" style="margin-top: 8px;">
+                    <div id="lifecycle-pre-desc" style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <span class="badge">Pre-request = Precondition</span>
+                        <p style="font-size: 0.82rem; color: #8b949e; margin-top: 6px; line-height: 1.35;">
+                            Chạy <span class="highlight">TRƯỚC</span> khi request bay lên Server. Chuyên dùng để:
+                            <br>• Sinh dữ liệu động: timestamp, UUID, hash, random number.
+                            <br>• Gán/cập nhật biến Environment trước lúc gửi request.
+                            <br>• Tính toán giá trị phái sinh: HMAC signature, checksum, encrypted payload.
+                            <br>• Gọi API phụ trợ (pm.sendRequest) để lấy token hoặc seed data.
+                        </p>
+                        <div style="background: #070a10; padding: 8px; border-radius: 6px; margin-top: 6px; font-family: monospace; font-size: 0.72rem; color: #e6edf3;">
+                            <span style="color:#8b949e;">// VD: Sinh timestamp trước khi gửi</span><br>
+                            pm.environment.set("timestamp",<br>&nbsp;&nbsp;new Date().toISOString());
+                        </div>
+                    </div>
+                    <div id="lifecycle-test-desc" style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <span class="badge" style="border-color: var(--success-color); color: var(--success-color);">Tests = Expected Result</span>
+                        <p style="font-size: 0.82rem; color: #8b949e; margin-top: 6px; line-height: 1.35;">
+                            Chạy <span class="highlight" style="color: var(--success-color);">SAU</span> khi đã nhận Response về máy. Chuyên dùng để:
+                            <br>• Parse JSON response: <code>pm.response.json()</code>.
+                            <br>• Viết Assertions kiểm tra status code, body, headers, response time.
+                            <br>• Trích xuất dữ liệu (token, ID) lưu vào Environment cho request tiếp theo (Chaining).
+                            <br>• Điều khiển luồng chạy: <code>postman.setNextRequest()</code> để nhảy request.
+                        </p>
+                        <div style="background: #070a10; padding: 8px; border-radius: 6px; margin-top: 6px; font-family: monospace; font-size: 0.72rem; color: #e6edf3;">
+                            <span style="color:#8b949e;">// VD: Lưu token cho request sau</span><br>
+                            const res = pm.response.json();<br>
+                            pm.environment.set("token", res.token);
+                        </div>
+                    </div>
+                </div>
+                <div style="background: rgba(248, 81, 73, 0.03); border: 1px dashed rgba(248, 81, 73, 0.15); padding: 6px 12px; border-radius: 8px; font-size: 0.76rem; color: #8b949e; margin-top: 6px;">
+                    <span style="color: var(--danger-color); font-weight: 700;"><i class="fa-solid fa-triangle-exclamation"></i> Thứ tự thực thi khi dùng Collection Runner:</span> Collection Pre-req → Folder Pre-req → Request Pre-req → <strong>Send</strong> → Request Tests → Folder Tests → Collection Tests. Script ở cấp cao hơn chạy trước và áp dụng cho mọi request con bên trong.
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 1: Javascript & JSONPath // Vòng Đời</span>
+                <span>Slide 20 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 1.2 — 6 Lệnh Javascript Vàng & "Bẫy Lỗi" Newbie</div>
+            </div>
+            <div class="slide-content">
+                <div class="tab-container" id="p12-tabs">
+                    <button class="tab-btn active" onclick="switchNestedTab(event, 'p12-cmds', 'p12-tabs')">6 Lệnh Vàng</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'p12-traps', 'p12-tabs')">Bẫy Lỗi Kinh Điển</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'p12-extra', 'p12-tabs')">Lệnh Nâng Cao</button>
+                </div>
+
+                <div id="p12-cmds" class="tab-content active">
+                    <div class="grid-2">
+                        <div>
+                            <span class="badge" style="margin-bottom: 4px;">Nhóm 1: Đọc & Ghi Dữ Liệu</span>
+                            <pre style="max-height: none; font-size: 0.72rem; line-height: 1.25;">
+// 1. Parse response → Object (BẮT BUỘC dòng đầu)
+const res = pm.response.json();
+
+// 2. Log debug ra Console (Mở: Ctrl+Alt+C)
+console.log("Full Response:", res);
+console.log("Token:", res.token);
+
+// 3. Set biến vào Environment (lưu xuyên request)
+pm.environment.set("user_id", res.data.id);
+pm.environment.set("token", res.token);</pre>
+                            <div style="margin-top: 6px; font-size: 0.7rem; color: #8b949e; line-height: 1.3; padding: 6px 8px; background: rgba(0,240,255,0.03); border-radius: 6px; border: 1px solid rgba(0,240,255,0.08);">
+                                <span class="highlight"><i class="fa-solid fa-circle-info"></i> Ghi nhớ:</span><br>
+                                • <code>pm.response.json()</code> chuyển raw body → JS Object<br>
+                                • <code>console.log/warn/error/info</code> đều dùng được<br>
+                                • <code>set()</code> lưu giá trị tồn tại xuyên suốt các request
+                            </div>
+                        </div>
+                        <div>
+                            <span class="badge" style="margin-bottom: 4px;">Nhóm 2: Đọc Biến & Viết Assertions</span>
+                            <pre style="max-height: none; font-size: 0.72rem; line-height: 1.25;">
+// 4. Get biến Environment (đọc từ request trước)
+// ⚠️ Luôn trả về STRING → ép kiểu nếu so sánh số
+const uId = Number(pm.environment.get("user_id"));
+const token = pm.environment.get("token");
+
+// 5. Viết Assertion nghiệp vụ (Chai.js BDD)
+pm.test("Verify user ID khớp", () => {
+    pm.expect(res.id).to.equal(1);
+    pm.expect(res.id).to.be.a("number");
+});
+
+// 6. Kiểm tra Status Code & Response Time
+pm.test("Status is 200", () => {
+    pm.response.to.have.status(200);
+});
+pm.test("Response < 2s", () => {
+    pm.expect(pm.response.responseTime).to.be.below(2000);
+});</pre>
+                            <div style="margin-top: 6px; font-size: 0.7rem; color: #8b949e; line-height: 1.3; padding: 6px 8px; background: rgba(0,240,255,0.03); border-radius: 6px; border: 1px solid rgba(0,240,255,0.08);">
+                                <span class="highlight"><i class="fa-solid fa-circle-info"></i> Ghi nhớ:</span><br>
+                                • <code>get()</code> luôn trả về <strong>String</strong> → dùng <code>Number()</code> khi cần so sánh số<br>
+                                • <code>pm.test()</code> tạo test case hiện trong Test Results<br>
+                                • <code>pm.expect()</code> là assertion Chai.js (BDD syntax)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="p12-traps" class="tab-content">
+                    <div class="grid-2">
+                        <div style="background: rgba(248, 81, 73, 0.03); border: 1px dashed rgba(248, 81, 73, 0.2); padding: 12px; border-radius: 14px;">
+                            <h4 style="color: var(--danger-color); margin-bottom: 6px; font-weight: 700; font-size: 0.9rem;"><i class="fa-solid fa-skull-crossbones"></i> Bẫy #1: Quên Parse JSON</h4>
+                            <p style="font-size: 0.78rem; color: #8b949e; line-height: 1.35; margin-bottom: 6px;">
+                                Dùng trực tiếp <code style="color: var(--danger-color);">pm.response</code> mà quên <code>.json()</code> → trả về <strong>undefined</strong>.
+                            </p>
+                            <div style="background: #070a10; padding: 8px; border-radius: 6px; font-size: 0.72rem; font-family: monospace;">
+                                <span style="color: var(--danger-color);">// ❌ SAI: undefined</span><br>
+                                pm.environment.set("token", pm.response.token);<br><br>
+                                <span style="color: var(--success-color);">// ✅ ĐÚNG:</span><br>
+                                const res = pm.response.json();<br>
+                                pm.environment.set("token", res.token);
+                            </div>
+                        </div>
+                        <div style="background: rgba(248, 81, 73, 0.03); border: 1px dashed rgba(248, 81, 73, 0.2); padding: 12px; border-radius: 14px;">
+                            <h4 style="color: var(--danger-color); margin-bottom: 6px; font-weight: 700; font-size: 0.9rem;"><i class="fa-solid fa-skull-crossbones"></i> Bẫy #2: So sánh sai kiểu dữ liệu</h4>
+                            <p style="font-size: 0.78rem; color: #8b949e; line-height: 1.35; margin-bottom: 6px;">
+                                <code>pm.environment.get()</code> luôn trả về <strong>String</strong>. So sánh strict với Number sẽ <strong>FAIL</strong>.
+                            </p>
+                            <div style="background: #070a10; padding: 8px; border-radius: 6px; font-size: 0.72rem; font-family: monospace;">
+                                <span style="color: var(--danger-color);">// ❌ SAI: "1" !== 1 (string vs number)</span><br>
+                                pm.expect(res.id).to.equal(pm.environment.get("user_id"));<br><br>
+                                <span style="color: var(--success-color);">// ✅ ĐÚNG: Ép kiểu trước khi so sánh</span><br>
+                                pm.expect(res.id).to.equal(<br>&nbsp;&nbsp;Number(pm.environment.get("user_id")));
+                            </div>
+                        </div>
+                        <div style="background: rgba(248, 81, 73, 0.03); border: 1px dashed rgba(248, 81, 73, 0.2); padding: 12px; border-radius: 14px;">
+                            <h4 style="color: var(--danger-color); margin-bottom: 6px; font-weight: 700; font-size: 0.9rem;"><i class="fa-solid fa-skull-crossbones"></i> Bẫy #3: Assertion ngoài pm.test()</h4>
+                            <p style="font-size: 0.78rem; color: #8b949e; line-height: 1.35; margin-bottom: 6px;">
+                                Viết <code>pm.expect()</code> ngoài <code>pm.test()</code> → lỗi sẽ crash toàn bộ script, không hiện trong Test Results.
+                            </p>
+                            <div style="background: #070a10; padding: 8px; border-radius: 6px; font-size: 0.72rem; font-family: monospace;">
+                                <span style="color: var(--danger-color);">// ❌ SAI: Crash script nếu fail</span><br>
+                                pm.expect(res.id).to.equal(1);<br><br>
+                                <span style="color: var(--success-color);">// ✅ ĐÚNG: Bọc trong pm.test()</span><br>
+                                pm.test("Check ID", () => {<br>
+                                &nbsp;&nbsp;pm.expect(res.id).to.equal(1);<br>
+                                });
+                            </div>
+                        </div>
+                        <div style="background: rgba(248, 81, 73, 0.03); border: 1px dashed rgba(248, 81, 73, 0.2); padding: 12px; border-radius: 14px;">
+                            <h4 style="color: var(--danger-color); margin-bottom: 6px; font-weight: 700; font-size: 0.9rem;"><i class="fa-solid fa-skull-crossbones"></i> Bẫy #4: Nhầm set() vs get()</h4>
+                            <p style="font-size: 0.78rem; color: #8b949e; line-height: 1.35; margin-bottom: 6px;">
+                                Ghi đè biến quan trọng bằng <code>set()</code> thay vì đọc bằng <code>get()</code> → mất dữ liệu chaining.
+                            </p>
+                            <div style="background: #070a10; padding: 8px; border-radius: 6px; font-size: 0.72rem; font-family: monospace;">
+                                <span style="color: var(--danger-color);">// ❌ SAI: Ghi đè token = undefined!</span><br>
+                                pm.environment.set("token", res.token);<br>
+                                <span style="color:#8b949e;">// (res không có field "token")</span><br><br>
+                                <span style="color: var(--success-color);">// ✅ ĐÚNG: Kiểm tra trước khi set</span><br>
+                                if (res.token) {<br>
+                                &nbsp;&nbsp;pm.environment.set("token", res.token);<br>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="p12-extra" class="tab-content">
+                    <div class="grid-2">
+                        <div>
+                            <span class="badge" style="margin-bottom: 4px;">Kiểm Soát Luồng & Header</span>
+                            <pre style="max-height: none; font-size: 0.72rem; line-height: 1.25;">
+// 7. Kiểm tra Header response
+pm.test("Content-Type là JSON", () => {
+    pm.expect(pm.response.headers.get("Content-Type"))
+      .to.include("application/json");
+});
+
+// 8. JSON Schema Validation
+const schema = {
+    type: "object",
+    required: ["id", "email", "first_name", "last_name"]
+};
+pm.test("Response đúng schema", () => {
+    pm.response.to.have.jsonSchema(schema);
+});
+
+// 9. Điều khiển luồng Collection Runner
+postman.setNextRequest("R3: Create User");
+postman.setNextRequest(null); // DỪNG</pre>
+                        </div>
+                        <div>
+                            <span class="badge" style="margin-bottom: 4px;">Request Phụ & Biến Động</span>
+                            <pre style="max-height: none; font-size: 0.72rem; line-height: 1.25;">
+// 10. Gửi request phụ trong Pre-request
+pm.sendRequest({
+    url: "https://reqres.in/api/login",
+    method: "POST",
+    header: {"Content-Type":"application/json"},
+    body: { mode: "raw", raw: JSON.stringify({
+        email: "eve.holt@reqres.in",
+        password: "cityslicka"
+    })}
+}, (err, response) => {
+    const token = response.json().token;
+    pm.environment.set("token", token);
+});
+
+// 11. Biến động có sẵn (không cần code)
+// {{$timestamp}}  → Unix timestamp
+// {{$randomInt}}  → Số ngẫu nhiên 0-1000
+// {{$guid}}       → UUID v4 ngẫu nhiên</pre>
+                        </div>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 0.7rem; color: #8b949e; line-height: 1.3; padding: 6px 10px; background: rgba(0,240,255,0.03); border-radius: 6px; border: 1px solid rgba(0,240,255,0.08);">
+                        <span class="highlight"><i class="fa-solid fa-circle-info"></i> Khi nào dùng:</span>
+                        <strong>#7-8</strong>: Validate contract API (đảm bảo response không đổi cấu trúc).
+                        <strong>#9</strong>: Xây luồng điều kiện (if login fail → skip các request sau).
+                        <strong>#10</strong>: Lấy token tự động trong Pre-request mà không cần request riêng.
+                        <strong>#11</strong>: Tạo dữ liệu unique mỗi lần chạy (tránh trùng lặp).
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 1: Javascript & JSONPath // Lệnh Vàng</span>
+                <span>Slide 21 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 1.3 — Bản Đồ JSONPath Thực Chiến</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.9rem; color: #8b949e; margin-bottom: 10px;">
+                    Hãy <span class="highlight">click chuột</span> vào các Key màu hồng của Response Login bên trái để thấy cú pháp lấy dữ liệu JS chuẩn xác:
+                </p>
+                <div class="sandbox-container">
+                    <div style="background: #070a10; padding: 15px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); font-family: monospace; font-size: 0.8rem; line-height: 1.4;">
+                        {<br>
+                        &nbsp;&nbsp;"<span class="interactive-json-key" onclick="revealPath('id', 'res.id // Lấy ra: 2')">id</span>": 2,<br>
+                        &nbsp;&nbsp;"<span class="interactive-json-key" onclick="revealPath('email', 'res.email // Lấy ra: janet.weaver@reqres.in')">email</span>": "janet.weaver@reqres.in",<br>
+                        &nbsp;&nbsp;"<span class="interactive-json-key" onclick="revealPath('first_name', 'res.first_name // Lấy ra: Janet')">first_name</span>": "Janet",<br>
+                        &nbsp;&nbsp;"<span class="interactive-json-key" onclick="revealPath('last_name', 'res.last_name // Lấy ra: Weaver')">last_name</span>": "Weaver",<br>
+                        &nbsp;&nbsp;"<span class="interactive-json-key" onclick="revealPath('avatar', 'res.avatar // Lấy ra URL ảnh đại diện')">avatar</span>": "https://reqres.in/img/faces/2-image.jpg",<br>
+                        &nbsp;&nbsp;"<span class="interactive-json-key" onclick="revealPath('support', 'res.support.text // Lấy ra chuỗi hỗ trợ')">support</span>": {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;"<span class="interactive-json-key" onclick="revealPath('support.url', 'res.support.url // Lấy ra: https://contentcaddy.io')">url</span>": "https://contentcaddy.io"<br>
+                        &nbsp;&nbsp;}<br>
+                        }
+                    </div>
+                    <div style="display: flex; flex-direction: column; justify-content: center; gap: 12px;">
+                        <div style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.06); padding: 15px; border-radius: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center; text-align: center;">
+                            <span class="badge" style="align-self: center; margin-bottom: 5px;">Cú pháp JS tương ứng</span>
+                            <div id="jsonPathDisplay" style="font-family: 'Courier New', monospace; font-size: 0.9rem; color: var(--accent-color); font-weight: bold;">
+                                Hãy click vào key bên trái!
+                            </div>
+                        </div>
+                        <div style="background: rgba(57, 211, 83, 0.02); border: 1px dashed rgba(57, 211, 83, 0.15); padding: 10px; border-radius: 12px; font-size: 0.8rem;">
+                            <span class="highlight" style="color: var(--success-color);"><i class="fa-solid fa-code"></i> Tip: Ghép Chuỗi Tên Đầy Đủ</span>
+                            <br><code style="font-family: monospace;">const fullName = res.first_name + " " + res.last_name;</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 1: Javascript & JSONPath // Bản Đồ</span>
+                <span>Slide 22 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 2 — Chaining Requests: Chuỗi 4 Request E2E</div>
+            </div>
+            <div class="slide-content">
+                <div class="tab-container" id="p2-tabs">
+                    <button class="tab-btn active" onclick="switchNestedTab(event, 'p2-r1', 'p2-tabs')">R1: POST /login</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'p2-r2', 'p2-tabs')">R2: GET /users?page=2</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'p2-r3', 'p2-tabs')">R3: POST /users</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'p2-r4', 'p2-tabs')">R4: PUT /users/{{user_id}}</button>
+                </div>
+
+                <div id="p2-r1" class="tab-content active">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <h4 class="highlight">R1: Đăng nhập nhận Token</h4>
+                        <span class="badge" style="background-color: var(--success-color); color: #0b0f17; border-color: transparent;">POST</span>
+                    </div>
+                    <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 6px;">URL: <code class="highlight">{{base_url}}/login</code> &nbsp;|&nbsp; Body: <code class="highlight">{"email": "{{email}}", "password": "{{password}}"}</code></p>
+                    <pre>
+const res = pm.response.json();
+if (res.token) {
+    pm.environment.set("token", res.token);
+    console.log("✅ Đã lưu token:", res.token);
+}
+pm.test("[Login] Status 200", () => { pm.response.to.have.status(200); });
+pm.test("[Login] Có token trả về", () => { pm.expect(res.token).to.be.a("string"); });
+pm.test("[Login] Token không rỗng", () => { pm.expect(res.token.length).to.be.above(0); });</pre>
+                </div>
+
+                <div id="p2-r2" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <h4 class="highlight">R2: Lấy danh sách Users & Lưu user_id đầu tiên</h4>
+                        <span class="badge" style="background-color: var(--primary-color); color: #0b0f17; border-color: transparent;">GET</span>
+                    </div>
+                    <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 6px;">URL: <code class="highlight">{{base_url}}/users?page=2</code></p>
+                    <pre>
+const res = pm.response.json();
+pm.test("[ListUsers] Status 200", () => { pm.response.to.have.status(200); });
+pm.test("[ListUsers] data là array", () => { pm.expect(res.data).to.be.an("array"); });
+pm.test("[ListUsers] Có ít nhất 1 user", () => {
+    pm.expect(res.data.length).to.be.above(0);
+});
+if (res.data && res.data.length > 0) {
+    pm.environment.set("user_id", res.data[0].id);
+    pm.environment.set("user_email", res.data[0].email);
+    console.log("✅ Đã lưu user_id =", res.data[0].id);
+}</pre>
+                </div>
+
+                <div id="p2-r3" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <h4 class="highlight">R3: Tạo User Mới (Simulate Create)</h4>
+                        <span class="badge" style="background-color: var(--success-color); color: #0b0f17; border-color: transparent;">POST</span>
+                    </div>
+                    <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 6px;">URL: <code class="highlight">{{base_url}}/users</code> &nbsp;|&nbsp; Body: <code class="highlight">{"name": "QA Tester", "job": "automation engineer"}</code></p>
+                    <pre>
+const res = pm.response.json();
+if (res.id) {
+    pm.environment.set("created_user_id", res.id);
+    pm.environment.set("created_at", res.createdAt);
+}
+pm.test("[CreateUser] Status 201", () => { pm.response.to.have.status(201); });
+pm.test("[CreateUser] Tên khớp input", () => {
+    pm.expect(res.name).to.equal("QA Tester");
+});
+pm.test("[CreateUser] Có createdAt timestamp", () => {
+    pm.expect(res.createdAt).to.be.a("string");
+});</pre>
+                </div>
+
+                <div id="p2-r4" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <h4 class="highlight">R4: Cập nhật User — đối chiếu dữ liệu sau khi sửa</h4>
+                        <span class="badge" style="background-color: #e6c01c; color: #0b0f17; border-color: transparent;">PUT</span>
+                    </div>
+                    <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 6px;">URL động: <code class="highlight">{{base_url}}/users/{{user_id}}</code> &nbsp;|&nbsp; Body: <code class="highlight">{"name": "QA Lead", "job": "senior tester"}</code></p>
+                    <pre>
+const res = pm.response.json();
+pm.test("[UpdateUser] Status 200", () => { pm.response.to.have.status(200); });
+pm.test("[UpdateUser] Tên đã cập nhật", () => {
+    pm.expect(res.name).to.equal("QA Lead");
+});
+pm.test("[UpdateUser] Job đã cập nhật", () => {
+    pm.expect(res.job).to.equal("senior tester");
+});
+pm.test("[UpdateUser] Có updatedAt timestamp", () => {
+    pm.expect(res.updatedAt).to.be.a("string");
+});</pre>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>00:20 – 00:50 // Chaining dữ liệu tự động giữa 4 APIs không cần copy-paste tay</span>
+                <span>Slide 23 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 3 — Viết Assertions: Từ Cơ bản đến Thực chiến</div>
+            </div>
+            <div class="slide-content">
+                <div class="tab-container" id="p3-tabs">
+                    <button class="tab-btn active" onclick="switchNestedTab(event, 'p3-sub1', 'p3-tabs')">3.1 Tư Duy Assertion</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'p3-sub2', 'p3-tabs')">3.2 Thư Viện Chai.js</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'p3-sub3', 'p3-tabs')">3.3 Negative Tests</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'p3-sub4', 'p3-tabs')">3.4 Ví Dụ ReqRes</button>
+                </div>
+
+                <div id="p3-sub1" class="tab-content active">
+                    <h4 class="highlight" style="margin-bottom: 6px;">4 Câu hỏi cốt lõi trước khi viết một Assertion</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px;">
+                        <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                            <span class="badge">1. Kiểm Tra Cái Gì?</span>
+                            <p style="font-size: 0.76rem; color: #8b949e; margin-top: 4px; line-height:1.3;">Không chỉ status code! Phải kiểm tra: <strong>cấu trúc dữ liệu</strong> (có đủ field?), <strong>kiểu dữ liệu</strong> (id là number?), <strong>giá trị</strong> (email đúng format?), <strong>logic nghiệp vụ</strong> (tổng tiền > 0?).</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                            <span class="badge">2. Mức Độ Ảnh Hưởng?</span>
+                            <p style="font-size: 0.76rem; color: #8b949e; margin-top: 4px; line-height:1.3;">Nếu fail → nghiệp vụ có gãy không? VD: sai token → chặn toàn bộ flow = <span style="color:var(--danger-color);">Critical</span>. Sai avatar URL → UI lỗi nhỏ = <span style="color:#e6c01c;">Minor</span>.</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                            <span class="badge">3. Giá Trị Cứng Hay Động?</span>
+                            <p style="font-size: 0.76rem; color: #8b949e; margin-top: 4px; line-height:1.3;">So sánh <code>.to.equal(2)</code> = cứng (dễ gãy khi data thay đổi). So sánh <code>.to.be.a("number")</code> = mềm (bền hơn). Chọn cứng cho ID/token, mềm cho cấu trúc.</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                            <span class="badge">4. Happy vs Negative?</span>
+                            <p style="font-size: 0.76rem; color: #8b949e; margin-top: 4px; line-height:1.3;">Happy: API trả đúng data khi input đúng. Negative: API trả <strong>đúng lỗi</strong> khi input sai. Cả 2 đều cần assertion. Negative test PASS = server xử lý lỗi đúng cách.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="p3-sub2" class="tab-content">
+                    <h4 class="highlight" style="margin-bottom: 4px;">Bảng tra cứu Chai.js BDD — Copy & Dùng Ngay</h4>
+                    <div class="grid-2">
+                        <div>
+                            <span class="badge" style="margin-bottom:2px;">Nhóm 1: Kiểu Dữ Liệu & Tồn Tại</span>
+                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2;">
+// Kiểm tra kiểu
+pm.expect(res.id).to.be.a("number");
+pm.expect(res.first_name).to.be.a("string");
+pm.expect(res.data).to.be.an("array");
+pm.expect(res.support).to.be.an("object");
+
+// Kiểm tra tồn tại
+pm.expect(res).to.have.property("token");
+pm.expect(res.token).to.exist;
+pm.expect(res.token).to.not.be.null;
+pm.expect(res.token).to.not.be.empty;
+pm.expect(res.token).to.not.be.undefined;</pre>
+                        </div>
+                        <div>
+                            <span class="badge" style="margin-bottom:2px;">Nhóm 2: So Sánh Giá Trị</span>
+                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2;">
+// Bằng chính xác (strict ===)
+pm.expect(res.data.id).to.equal(2);
+pm.expect(res.name).to.equal("QA Tester");
+
+// Lớn hơn / Nhỏ hơn / Khoảng
+pm.expect(res.total).to.be.above(0);
+pm.expect(res.per_page).to.be.at.most(12);
+pm.expect(res.page).to.be.within(1, 10);
+
+// Chứa / Nằm trong
+pm.expect(res.email).to.include("@");
+pm.expect(["1","2"]).to.include(String(res.page));</pre>
+                        </div>
+                        <div>
+                            <span class="badge" style="margin-bottom:2px;">Nhóm 3: Cấu Trúc & Mảng</span>
+                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2;">
+// Độ dài mảng
+pm.expect(res.data).to.have.lengthOf(6);
+pm.expect(res.data).to.have.lengthOf.at.least(1);
+pm.expect(res.data).to.not.be.empty;
+
+// Nested property
+pm.expect(res).to.have.nested.property("data[0].id");
+pm.expect(res.data[0]).to.have.all.keys(
+    "id","email","first_name","last_name","avatar");</pre>
+                        </div>
+                        <div>
+                            <span class="badge" style="margin-bottom:2px;">Nhóm 4: Regex & Nâng Cao</span>
+                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2;">
+// Regex format
+pm.expect(res.email).to.match(
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+pm.expect(res.avatar).to.match(/\.jpg$/);
+pm.expect(res.createdAt).to.match(
+    /^\d{4}-\d{2}-\d{2}T/);
+
+// Response time & Headers
+pm.expect(pm.response.responseTime).to.be.below(2000);
+pm.expect(pm.response.headers.get("Content-Type"))
+    .to.include("application/json");</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="p3-sub3" class="tab-content">
+                    <h4 class="highlight" style="margin-bottom: 6px;">Negative Test: API trả lỗi đúng = PASS ✅</h4>
+                    <p style="font-size:0.76rem; color:#8b949e; margin-bottom:6px;">Mục đích: Đảm bảo server <strong>từ chối đúng cách</strong> khi nhận input sai — không crash, không lộ data, trả đúng status code.</p>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+                        <div style="background:rgba(248,81,73,0.03); padding:8px; border-radius:10px; border:1px dashed rgba(248,81,73,0.15);">
+                            <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-01: Sai Password</span>
+                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2; margin-top:4px;">POST {{base_url}}/login
+{"email":"eve.holt@reqres.in","password":"wrong"}
+
+const res = pm.response.json();
+pm.test("Status 400", () =>
+    pm.response.to.have.status(400));
+pm.test("Có error message", () =>
+    pm.expect(res.error).to.exist);
+pm.test("Không trả token", () =>
+    pm.expect(res).to.not.have.property("token"));</pre>
+                        </div>
+                        <div style="background:rgba(248,81,73,0.03); padding:8px; border-radius:10px; border:1px dashed rgba(248,81,73,0.15);">
+                            <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-02: Thiếu Field</span>
+                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2; margin-top:4px;">POST {{base_url}}/register
+{"email":"eve.holt@reqres.in"}
+
+const res = pm.response.json();
+pm.test("Status 400", () =>
+    pm.response.to.have.status(400));
+pm.test("Báo thiếu password", () =>
+    pm.expect(res.error).to.include("Missing"));</pre>
+                        </div>
+                        <div style="background:rgba(248,81,73,0.03); padding:8px; border-radius:10px; border:1px dashed rgba(248,81,73,0.15);">
+                            <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-03: User Không Tồn Tại</span>
+                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2; margin-top:4px;">GET {{base_url}}/users/999
+
+const res = pm.response.json();
+pm.test("Status 404", () =>
+    pm.response.to.have.status(404));
+pm.test("Body rỗng (không lộ data)", () =>
+    pm.expect(Object.keys(res).length).to.equal(0));</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="p3-sub4" class="tab-content">
+                    <h4 class="highlight" style="margin-bottom: 6px;">Ví Dụ Thực Tế: Assertions cho ReqRes API</h4>
+                    <div class="grid-2">
+                        <div>
+                            <span class="badge" style="border-color:var(--success-color); color:var(--success-color); margin-bottom:2px;">POST /login — Assertions Đầy Đủ</span>
+                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2;">
+const res = pm.response.json();
+
+pm.test("Status 200", () =>
+    pm.response.to.have.status(200));
+pm.test("Có token", () =>
+    pm.expect(res.token).to.be.a("string"));
+pm.test("Token không rỗng", () =>
+    pm.expect(res.token.length).to.be.above(0));
+pm.test("Content-Type là JSON", () =>
+    pm.expect(pm.response.headers.get("Content-Type"))
+      .to.include("json"));
+pm.test("Response < 2s", () =>
+    pm.expect(pm.response.responseTime).to.be.below(2000));</pre>
+                        </div>
+                        <div>
+                            <span class="badge" style="border-color:var(--primary-color); color:var(--primary-color); margin-bottom:2px;">GET /users?page=2 — Assertions Đầy Đủ</span>
+                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2;">
+const res = pm.response.json();
+
+pm.test("Status 200", () =>
+    pm.response.to.have.status(200));
+pm.test("page = 2", () =>
+    pm.expect(res.page).to.equal(2));
+pm.test("data là array 6 phần tử", () =>
+    pm.expect(res.data).to.have.lengthOf(6));
+pm.test("Mỗi user có đủ fields", () => {
+    res.data.forEach(u => {
+        pm.expect(u).to.have.all.keys(
+            "id","email","first_name","last_name","avatar");
+    });
+});
+pm.test("Email đúng format", () =>
+    pm.expect(res.data[0].email).to.match(/@/));</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>00:50 – 01:10 // Chuyển hóa tư duy viết assertion ý nghĩa cho logic nghiệp vụ</span>
+                <span>Slide 24 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Bài Tập Thực Hành — ReqRes API Chaining E2E</div>
+            </div>
+            <div class="slide-content">
+                <div class="tab-container" id="pLab-tabs">
+                    <button class="tab-btn active" onclick="switchNestedTab(event, 'pLab-api', 'pLab-tabs')">API Docs & Endpoints</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'pLab-chain', 'pLab-tabs')">Bài Tập Chaining E2E</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'pLab-neg', 'pLab-tabs')">Bài Tập Negative Test</button>
+                </div>
+
+                <div id="pLab-api" class="tab-content active">
+                    <div style="background: rgba(0,240,255,0.03); border: 1px solid rgba(0,240,255,0.12); padding: 8px 12px; border-radius: 8px; margin-bottom: 8px; font-size: 0.78rem;">
+                        <span class="highlight"><i class="fa-solid fa-book"></i> Base URL:</span> <code style="color:#e6edf3; font-weight:700;">https://reqres.in/api</code> &nbsp;|&nbsp;
+                        <span class="highlight">Docs:</span> <code style="color:#e6edf3;">https://reqres.in</code> &nbsp;|&nbsp;
+                        <span class="highlight">Account test:</span> <code style="color:#e6edf3;">eve.holt@reqres.in / cityslicka</code> &nbsp;|&nbsp;
+                        <span class="highlight">Free:</span> <code style="color:#e6edf3;">250 req/ngày</code>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                            <span class="badge" style="background:rgba(57,211,83,0.1); border-color:var(--success-color); color:var(--success-color);">AUTH — Đăng Ký & Đăng Nhập</span>
+                            <pre style="max-height:none; font-size:0.66rem; line-height:1.2; margin-top:4px;">POST /api/register
+Body: {"email":"eve.holt@reqres.in","password":"pistol"}
+→ 200: { "id": 4, "token": "QpwL5tke4Pnpja7X4" }
+→ 400 (thiếu password): { "error": "Missing password" }
+→ 400 (email lạ): { "error": "...not defined" }
+
+POST /api/login
+Body: {"email":"eve.holt@reqres.in","password":"cityslicka"}
+→ 200: { "token": "QpwL5tke4Pnpja7X4" }
+→ 400 (sai): { "error": "user not found" }
+→ 400 (thiếu field): { "error": "Missing email or username" }</pre>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                            <span class="badge" style="background:rgba(88,166,255,0.1); border-color:var(--primary-color); color:var(--primary-color);">USERS — Đọc Danh Sách & Chi Tiết</span>
+                            <pre style="max-height:none; font-size:0.66rem; line-height:1.2; margin-top:4px;">GET /api/users?page=2
+→ 200: { page:2, per_page:6, total:12, total_pages:2,
+  data: [{ id, email, first_name, last_name, avatar }],
+  support: { url, text } }
+
+GET /api/users/2
+→ 200: { data: { id:2, email:"janet.weaver@reqres.in",
+  first_name:"Janet", last_name:"Weaver",
+  avatar:"https://reqres.in/img/faces/2-image.jpg" } }
+
+GET /api/users/999
+→ 404: {} (empty body — user không tồn tại)</pre>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                            <span class="badge" style="background:rgba(0,240,255,0.1); border-color:var(--accent-color); color:var(--accent-color);">USERS — Tạo, Sửa, Xoá (CRUD)</span>
+                            <pre style="max-height:none; font-size:0.66rem; line-height:1.2; margin-top:4px;">POST /api/users
+Body: {"name":"morpheus","job":"leader"}
+→ 201: { name, job, id:"903", createdAt:"2024-..." }
+
+PUT /api/users/2  (thay toàn bộ)
+Body: {"name":"morpheus","job":"zion resident"}
+→ 200: { name, job, updatedAt:"2024-..." }
+
+PATCH /api/users/2  (sửa 1 phần)
+Body: {"job":"new job"}
+→ 200: { job:"new job", updatedAt }
+
+DELETE /api/users/2
+→ 204: (No Content — không có body)</pre>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                            <span class="badge" style="background:rgba(248,81,73,0.1); border-color:var(--danger-color); color:var(--danger-color);">RESOURCES & DELAYED RESPONSE</span>
+                            <pre style="max-height:none; font-size:0.66rem; line-height:1.2; margin-top:4px;">GET /api/unknown  (danh sách resources)
+→ 200: { data: [{ id, name:"cerulean", year:2000,
+  color:"#98B2D1", pantone_value:"15-4020" }] }
+
+GET /api/unknown/2  (1 resource)
+→ 200: { data: { id, name, year, color, pantone_value } }
+
+GET /api/users?delay=3  (giả lập API chậm)
+→ 200 (sau 3 giây): { page, data:[...] }
+  Dùng để test: pm.expect(pm.response.responseTime)
+    .to.be.below(5000);
+⚠️ Lưu ý: Write operations được mô phỏng (simulate)
+  — data không thực sự lưu lại trên server.</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pLab-chain" class="tab-content">
+                    <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.92rem;"><i class="fa-solid fa-route"></i> Bài Tập: Xây Chuỗi 5 Request E2E Hoàn Chỉnh</h4>
+                    <p style="font-size: 0.78rem; color: #8b949e; margin-bottom: 8px;">Copy từng request vào Postman, viết Tests Script cho mỗi bước. Chạy Collection Runner để xác nhận toàn bộ chuỗi PASS:</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                            <span class="badge" style="background:rgba(57,211,83,0.1); border-color:var(--success-color); color:var(--success-color);">R1</span> <strong style="color:var(--text-bright); font-size:0.82rem;">POST /api/login</strong>
+                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2; margin-top:4px;">// Body
+{"email":"{{email}}","password":"{{password}}"}
+
+// Tests Script — Viết trong tab Tests
+const res = pm.response.json();
+pm.test("Status 200", () => pm.response.to.have.status(200));
+pm.test("Có token", () => pm.expect(res.token).to.exist);
+pm.test("Token là string", () => pm.expect(res.token).to.be.a("string"));
+if (res.token) {
+    pm.environment.set("token", res.token);
+}</pre>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                            <span class="badge" style="background:rgba(88,166,255,0.1); border-color:var(--primary-color); color:var(--primary-color);">R2</span> <strong style="color:var(--text-bright); font-size:0.82rem;">GET /api/users?page=2</strong>
+                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2; margin-top:4px;">// Tests Script
+const res = pm.response.json();
+pm.test("Status 200", () => pm.response.to.have.status(200));
+pm.test("page = 2", () => pm.expect(res.page).to.equal(2));
+pm.test("data có 6 users", () => {
+    pm.expect(res.data).to.have.lengthOf(6);
+});
+pm.test("Mỗi user có email", () => {
+    pm.expect(res.data[0].email).to.match(/@/);
+});
+if (res.data && res.data.length > 0) {
+    pm.environment.set("user_id", res.data[0].id);
+}</pre>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                            <span class="badge" style="background:rgba(0,240,255,0.1); border-color:var(--accent-color); color:var(--accent-color);">R3</span> <strong style="color:var(--text-bright); font-size:0.82rem;">POST /api/users</strong>
+                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2; margin-top:4px;">// Body
+{"name":"QA Tester","job":"automation engineer"}
+
+// Tests Script
+const res = pm.response.json();
+pm.test("Status 201 Created", () => pm.response.to.have.status(201));
+pm.test("Tên khớp input", () => {
+    pm.expect(res.name).to.equal("QA Tester");
+});
+pm.test("Có id & createdAt", () => {
+    pm.expect(res.id).to.exist;
+    pm.expect(res.createdAt).to.be.a("string");
+});
+pm.environment.set("created_user_id", res.id);</pre>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                            <span class="badge" style="background:rgba(248,81,73,0.1); border-color:var(--danger-color); color:var(--danger-color);">R4-R5</span> <strong style="color:var(--text-bright); font-size:0.82rem;">PUT User + DELETE User</strong>
+                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2; margin-top:4px;">// R4: PUT /api/users/{{user_id}}
+// Body: {"name":"QA Lead","job":"senior tester"}
+const res = pm.response.json();
+pm.test("Status 200", () => pm.response.to.have.status(200));
+pm.test("Tên đã update", () =>
+    pm.expect(res.name).to.equal("QA Lead"));
+pm.test("Có updatedAt", () =>
+    pm.expect(res.updatedAt).to.be.a("string"));
+
+// R5: DELETE /api/users/{{user_id}}
+pm.test("Status 204 No Content", () =>
+    pm.response.to.have.status(204));
+pm.test("Body rỗng", () =>
+    pm.expect(pm.response.text()).to.be.empty);</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pLab-neg" class="tab-content">
+                    <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.92rem;"><i class="fa-solid fa-shield-halved"></i> Bài Tập: 6 Negative Test Cases Thực Tế</h4>
+                    <p style="font-size: 0.78rem; color: #8b949e; margin-bottom: 8px;">Tạo folder <strong>"Negative Tests"</strong> trong Collection. Mỗi test case bên dưới = 1 request riêng biệt:</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                        <div style="background: rgba(248,81,73,0.03); padding: 10px; border-radius: 10px; border: 1px dashed rgba(248,81,73,0.15);">
+                            <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-01</span>
+                            <p style="font-size:0.72rem; color:var(--text-bright); margin:4px 0 2px; font-weight:600;">Login — Sai Password</p>
+                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2;">POST /api/login
+{"email":"eve.holt@reqres.in","password":"wrong"}
+// Expected: 400 + error message
+const res = pm.response.json();
+pm.test("Status 400", () =>
+  pm.response.to.have.status(400));
+pm.test("Có error", () =>
+  pm.expect(res.error).to.exist);
+pm.test("Không trả token", () =>
+  pm.expect(res).to.not.have.property("token"));</pre>
+                        </div>
+                        <div style="background: rgba(248,81,73,0.03); padding: 10px; border-radius: 10px; border: 1px dashed rgba(248,81,73,0.15);">
+                            <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-02</span>
+                            <p style="font-size:0.72rem; color:var(--text-bright); margin:4px 0 2px; font-weight:600;">Register — Thiếu Password</p>
+                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2;">POST /api/register
+{"email":"eve.holt@reqres.in"}
+// Expected: 400 + "Missing password"
+const res = pm.response.json();
+pm.test("Status 400", () =>
+  pm.response.to.have.status(400));
+pm.test("Báo thiếu password", () =>
+  pm.expect(res.error).to.include("Missing"));</pre>
+                        </div>
+                        <div style="background: rgba(248,81,73,0.03); padding: 10px; border-radius: 10px; border: 1px dashed rgba(248,81,73,0.15);">
+                            <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-03</span>
+                            <p style="font-size:0.72rem; color:var(--text-bright); margin:4px 0 2px; font-weight:600;">Register — Email Không Hợp Lệ</p>
+                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2;">POST /api/register
+{"email":"random@xyz.com","password":"abc123"}
+// Expected: 400 (email not in whitelist)
+const res = pm.response.json();
+pm.test("Status 400", () =>
+  pm.response.to.have.status(400));
+pm.test("Có error message", () =>
+  pm.expect(res.error).to.be.a("string"));</pre>
+                        </div>
+                        <div style="background: rgba(248,81,73,0.03); padding: 10px; border-radius: 10px; border: 1px dashed rgba(248,81,73,0.15);">
+                            <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-04</span>
+                            <p style="font-size:0.72rem; color:var(--text-bright); margin:4px 0 2px; font-weight:600;">User Không Tồn Tại</p>
+                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2;">GET /api/users/999
+// Expected: 404 + empty body
+const res = pm.response.json();
+pm.test("Status 404", () =>
+  pm.response.to.have.status(404));
+pm.test("Body rỗng", () =>
+  pm.expect(Object.keys(res).length).to.equal(0));</pre>
+                        </div>
+                        <div style="background: rgba(248,81,73,0.03); padding: 10px; border-radius: 10px; border: 1px dashed rgba(248,81,73,0.15);">
+                            <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-05</span>
+                            <p style="font-size:0.72rem; color:var(--text-bright); margin:4px 0 2px; font-weight:600;">Login — Body Hoàn Toàn Rỗng</p>
+                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2;">POST /api/login
+Body: {}
+// Expected: 400 + Missing email/username
+const res = pm.response.json();
+pm.test("Status 400", () =>
+  pm.response.to.have.status(400));
+pm.test("Báo thiếu email", () =>
+  pm.expect(res.error).to.include("Missing"));</pre>
+                        </div>
+                        <div style="background: rgba(248,81,73,0.03); padding: 10px; border-radius: 10px; border: 1px dashed rgba(248,81,73,0.15);">
+                            <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-06</span>
+                            <p style="font-size:0.72rem; color:var(--text-bright); margin:4px 0 2px; font-weight:600;">Delayed Response — Timeout</p>
+                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2;">GET /api/users?delay=5
+// Expected: 200 nhưng chậm > 3s
+const res = pm.response.json();
+pm.test("Status 200", () =>
+  pm.response.to.have.status(200));
+pm.test("Response > 3s (delayed)", () =>
+  pm.expect(pm.response.responseTime).to.be.above(3000));
+pm.test("Data vẫn hợp lệ", () =>
+  pm.expect(res.data).to.be.an("array"));</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Bài Tập Thực Hành // ReqRes API — https://reqres.in</span>
+                <span>Slide 25 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Tổng Kết — Kiến Thức API Cốt Lõi Cần Nhớ</div>
+            </div>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.92rem;"><i class="fa-solid fa-globe"></i> HTTP Methods (CRUD)</h4>
+                        <div style="font-size: 0.76rem; color: #8b949e; line-height: 1.4;">
+                            <table style="width:100%; border-collapse: collapse; font-size: 0.74rem;">
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                                    <td style="padding: 3px 0;"><span class="highlight">GET</span></td><td>Đọc dữ liệu (Read)</td><td style="color:#8b949e;">Không có Body</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                                    <td style="padding: 3px 0;"><span class="highlight">POST</span></td><td>Tạo mới (Create)</td><td style="color:#8b949e;">Có Body JSON</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                                    <td style="padding: 3px 0;"><span class="highlight">PUT</span></td><td>Cập nhật toàn bộ (Replace)</td><td style="color:#8b949e;">Gửi full object</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                                    <td style="padding: 3px 0;"><span class="highlight">PATCH</span></td><td>Cập nhật 1 phần (Update)</td><td style="color:#8b949e;">Chỉ gửi field cần sửa</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 3px 0;"><span class="highlight">DELETE</span></td><td>Xoá (Delete)</td><td style="color:#8b949e;">Thường chỉ cần ID</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.92rem;"><i class="fa-solid fa-signal"></i> Status Code Phải Thuộc</h4>
+                        <div style="font-size: 0.74rem; color: #8b949e; line-height: 1.4;">
+                            <p><span style="color:var(--success-color); font-weight:700;">2xx — Thành công:</span></p>
+                            <p style="padding-left:8px;">200 OK | 201 Created | 204 No Content</p>
+                            <p style="margin-top:4px;"><span style="color:var(--accent-color); font-weight:700;">3xx — Redirect:</span></p>
+                            <p style="padding-left:8px;">301 Moved | 302 Found | 304 Not Modified</p>
+                            <p style="margin-top:4px;"><span style="color:#e6c01c; font-weight:700;">4xx — Lỗi Client:</span></p>
+                            <p style="padding-left:8px;">400 Bad Request | 401 Unauthorized | 403 Forbidden | 404 Not Found | 422 Unprocessable</p>
+                            <p style="margin-top:4px;"><span style="color:var(--danger-color); font-weight:700;">5xx — Lỗi Server:</span></p>
+                            <p style="padding-left:8px;">500 Internal Error | 502 Bad Gateway | 503 Service Unavailable</p>
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.92rem;"><i class="fa-solid fa-key"></i> Authentication</h4>
+                        <div style="font-size: 0.74rem; color: #8b949e; line-height: 1.4;">
+                            <p><span class="highlight">Bearer Token</span> — Gửi trong Header:</p>
+                            <code style="font-size:0.7rem; color:#e6edf3;">Authorization: Bearer &lt;token&gt;</code>
+                            <p style="margin-top:6px;"><span class="highlight">Luồng xác thực chuẩn:</span></p>
+                            <p style="padding-left:8px;">1. POST /login → nhận token<br>2. Đính token vào Header mọi request sau<br>3. Token hết hạn → gọi refresh hoặc login lại</p>
+                            <p style="margin-top:6px;"><span style="color:var(--danger-color);">401</span> = Token sai/hết hạn &nbsp;|&nbsp; <span style="color:var(--danger-color);">403</span> = Không đủ quyền</p>
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.92rem;"><i class="fa-solid fa-file-code"></i> JSON & Request/Response</h4>
+                        <div style="font-size: 0.74rem; color: #8b949e; line-height: 1.4;">
+                            <p><span class="highlight">Request gồm:</span> Method + URL + Headers + Body</p>
+                            <p><span class="highlight">Response gồm:</span> Status Code + Headers + Body + Time</p>
+                            <p style="margin-top:6px;"><span class="highlight">JSON Rules:</span></p>
+                            <p style="padding-left:8px;">• Key luôn trong <code>"ngoặc kép"</code><br>• String dùng <code>"ngoặc kép"</code> (không dùng nháy đơn)<br>• Number, Boolean, null: không cần ngoặc<br>• Không trailing comma ở phần tử cuối</p>
+                            <p style="margin-top:6px;"><span class="highlight">JSONPath:</span> <code>res.bank.code</code> — đi từ ngoài vào trong theo tên key</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Tổng Kết Kiến Thức // API Fundamentals</span>
+                <span>Slide 26 / 27</span>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Tổng Kết — Postman Cheat Sheet Thực Chiến</div>
+            </div>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.92rem;"><i class="fa-solid fa-code"></i> Script Commands Cốt Lõi</h4>
+                        <pre style="max-height: none; font-size: 0.7rem; line-height: 1.25;">
+// Parse response (luôn là dòng đầu tiên)
+const res = pm.response.json();
+
+// Lưu biến cho request sau (Chaining)
+pm.environment.set("token", res.token);
+pm.environment.set("user_id", res.data.id);
+
+// Đọc biến (⚠️ luôn trả về String)
+const id = Number(pm.environment.get("user_id"));
+
+// Assertions cơ bản
+pm.test("Status 200", () => {
+    pm.response.to.have.status(200);
+});
+pm.test("Has token", () => {
+    pm.expect(res.token).to.exist;
+    pm.expect(res.token).to.be.a("string");
+});
+
+// Debug
+console.log("Response:", res);</pre>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.92rem;"><i class="fa-solid fa-list-check"></i> Assertions Thường Dùng</h4>
+                        <pre style="max-height: none; font-size: 0.7rem; line-height: 1.25;">
+// Kiểu dữ liệu
+pm.expect(res.id).to.be.a("number");
+pm.expect(res.name).to.be.a("string");
+pm.expect(res.products).to.be.an("array");
+
+// Giá trị & Logic
+pm.expect(res.total).to.be.above(0);
+pm.expect(res.total).to.equal(expectedTotal);
+pm.expect(res.discount).to.be.at.most(res.total);
+
+// Cấu trúc & Tồn tại
+pm.expect(res).to.have.property("email");
+pm.expect(res.items).to.have.lengthOf.at.least(1);
+
+// Regex & Format
+pm.expect(res.email).to.match(/@.+\..+/);
+
+// Enum / Danh sách cho phép
+pm.expect(["male","female"]).to.include(res.gender);
+
+// Response time
+pm.expect(pm.response.responseTime).to.be.below(2000);</pre>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.92rem;"><i class="fa-solid fa-link"></i> Chaining E2E Flow</h4>
+                        <div style="font-size: 0.74rem; color: #8b949e; line-height: 1.4;">
+                            <p style="margin-bottom: 4px;"><span class="highlight">Quy trình 4 bước nhớ suốt đời:</span></p>
+                            <p style="padding-left: 8px;">
+                                <strong style="color:var(--accent-color);">R1</strong> Login → lưu <code>token</code><br>
+                                <strong style="color:var(--accent-color);">R2</strong> List Users → lưu <code>user_id</code><br>
+                                <strong style="color:var(--accent-color);">R3</strong> Create User → lưu <code>created_user_id</code><br>
+                                <strong style="color:var(--accent-color);">R4</strong> Update User → đối chiếu dữ liệu R3
+                            </p>
+                            <p style="margin-top: 6px;"><span class="highlight">Nguyên tắc vàng:</span></p>
+                            <p style="padding-left: 8px; font-size: 0.72rem;">
+                                • Luôn kiểm tra <code>if (res.field)</code> trước khi <code>set()</code><br>
+                                • Dùng <code>Number()</code> khi get() so sánh với số<br>
+                                • Mỗi request: verify status + verify business logic<br>
+                                • Collection Runner chạy theo thứ tự từ trên xuống
+                            </p>
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.92rem;"><i class="fa-solid fa-triangle-exclamation"></i> Checklist Trước Khi Chạy Test</h4>
+                        <div style="font-size: 0.74rem; color: #8b949e; line-height: 1.5;">
+                            <p><input type="checkbox" disabled> Environment đã <strong>Active</strong> (không còn biến đỏ)</p>
+                            <p><input type="checkbox" disabled> URL dùng <code>{{base_url}}</code> thay vì hard-code</p>
+                            <p><input type="checkbox" disabled> Body JSON hợp lệ (dùng Postman Beautify kiểm tra)</p>
+                            <p><input type="checkbox" disabled> Headers có <code>Content-Type: application/json</code></p>
+                            <p><input type="checkbox" disabled> Token request dùng <code>{{token}}</code></p>
+                            <p><input type="checkbox" disabled> Tests tab có assertion (không chạy "mù")</p>
+                            <p><input type="checkbox" disabled> Console mở sẵn (<code>Ctrl+Alt+C</code>) để debug</p>
+                            <p><input type="checkbox" disabled> Collection Runner: chọn đúng Environment + đúng Folder</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Tổng Kết Kiến Thức // Postman Cheat Sheet</span>
+                <span>Slide 27 / 27</span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="controls">
+        <button class="nav-btn" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Trước</button>
+        <button class="nav-btn" onclick="nextSlide()">Sau <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const progressBar = document.getElementById('progressBar');
+
+        const userAnswers = {
+            1: { answered: false, correct: false },
+            2: { answered: false, correct: false },
+            3: { answered: false, correct: false },
+            4: { answered: false, correct: false },
+            5: { answered: false, correct: false },
+            6: { answered: false, correct: false },
+            7: { answered: false, correct: false },
+            8: { answered: false, correct: false },
+            9: { answered: false, correct: false },
+            10: { answered: false, correct: false }
+        };
+
+        const correctGreetings = [
+            "Đỉnh chóp! 🌟 ", "Mượt thế nhờ! 😎 ", "Hết nước chấm! 🔥 ", "Đúng boong luôn! 🎯 ", "Out trình thực sự! 🚀 "
+        ];
+
+        const incorrectGreetings = [
+            "Úi, suýt soát! 🧐 ", "Không sao nè, thử lại nha! 💪 ", "Hơi lệch tủ tí thôi, tự tin lên! 🚀 ", "Ối, nhầm tí xíu! ⚡ ", "Cú này trượt nhẹ rồi! 🧩 "
+        ];
+
+        function getRandomGreeting(isCorrect) {
+            const arr = isCorrect ? correctGreetings : incorrectGreetings;
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function showSlide(index) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (index + slides.length) % slides.length;
+            slides[currentSlide].classList.add('active');
+            updateProgressBar();
+
+            if (currentSlide === 11) {
+                calculateFinalScore();
+            }
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        function updateProgressBar() {
+            const percentage = ((currentSlide + 1) / slides.length) * 100;
+            progressBar.style.width = percentage + '%';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        function submitAnswer(element, isCorrect, optionText, baseFeedback, qId) {
+            if (userAnswers[qId].answered) return;
+
+            const container = element.parentElement;
+            const options = container.querySelectorAll('.quiz-option');
+            const feedback = document.getElementById(`feedback-${qId}`);
+
+            options.forEach(opt => {
+                opt.classList.add('disabled');
+            });
+
+            userAnswers[qId].answered = true;
+            userAnswers[qId].correct = isCorrect;
+
+            const greeting = getRandomGreeting(isCorrect);
+
+            if (isCorrect) {
+                element.classList.add('correct');
+                element.querySelector('i').className = 'fa-solid fa-circle-check';
+                feedback.style.display = 'block';
+                feedback.style.background = 'rgba(57, 211, 83, 0.08)';
+                feedback.style.color = '#7eff93';
+                feedback.style.borderColor = 'rgba(57, 211, 83, 0.3)';
+                feedback.innerHTML = `<i class="fa-solid fa-circle-check"></i> &nbsp; <strong>${greeting}</strong> ${baseFeedback}`;
+            } else {
+                element.classList.add('incorrect');
+                element.querySelector('i').className = 'fa-solid fa-circle-xmark';
+                
+                options.forEach(opt => {
+                    if (opt.getAttribute('onclick').includes('true')) {
+                        opt.classList.add('correct');
+                        opt.querySelector('i').className = 'fa-solid fa-circle-check';
+                    }
+                });
+
+                feedback.style.display = 'block';
+                feedback.style.background = 'rgba(248, 81, 73, 0.08)';
+                feedback.style.color = '#ff8e8a';
+                feedback.style.borderColor = 'rgba(248, 81, 73, 0.3)';
+                feedback.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> &nbsp; <strong>${greeting}</strong> ${baseFeedback}`;
+            }
+        }
+
+        const topicMap = {
+            'api-basics':      { questions: [1, 6], label: 'API Cơ Bản' },
+            'status-auth':     { questions: [2, 3], label: 'Status Code & Auth' },
+            'json-path':       { questions: [4, 5], label: 'JSON & JSONPath' },
+            'tester-mindset':  { questions: [7, 8], label: 'Tư Duy Tester' },
+            'techniques':      { questions: [9, 10], label: 'Kỹ Thuật Kiểm Thử' }
+        };
+
+        const topicSuggestions = {
+            'api-basics': {
+                fail: '⚠️ Cần ôn lại: GET/POST/PUT/PATCH/DELETE là gì, khi nào dùng. PUT thay toàn bộ, PATCH sửa 1 phần.',
+                slideRef: '📍 Xem: Slide 13 (Why API Testing) → Slide 15 (API Cơ Bản) → Slide 17 (Thuật ngữ) → Slide 26 (API Summary)',
+                color: 'var(--danger-color)'
+            },
+            'status-auth': {
+                fail: '⚠️ Cần ôn lại: 2xx=OK, 4xx=Client lỗi, 5xx=Server lỗi. 401=chưa xác thực, 403=không đủ quyền. Token gửi qua Header Authorization.',
+                slideRef: '📍 Xem: Slide 15 (API Cơ Bản) → Slide 18 (Env & Variables) → Slide 26 (API Summary)',
+                color: 'var(--danger-color)'
+            },
+            'json-path': {
+                fail: '⚠️ Cần ôn lại: JSON key luôn trong "ngoặc kép", số không cần ngoặc. Truy cập nested: res.data.email (từ ngoài vào trong).',
+                slideRef: '📍 Xem: Slide 22 (JSONPath Bản Đồ) → Slide 26 (API Summary: JSON)',
+                color: 'var(--danger-color)'
+            },
+            'tester-mindset': {
+                fail: '⚠️ Cần ôn lại: Status 200 + body error = FAIL (logic lỗi). Test case chuẩn cần: ID, Tiêu đề, Precondition, Steps, Expected, Actual, Pass/Fail.',
+                slideRef: '📍 Xem: Slide 24 (Assertions: Tư Duy) → Slide 25 (Practice: Negative Tests)',
+                color: 'var(--danger-color)'
+            },
+            'techniques': {
+                fail: '⚠️ Cần ôn lại: BVA = test tại biên và sát biên (7,8,9,19,20,21). Sau fix bug: Retest bug đó + Regression test các tính năng liên quan.',
+                slideRef: '📍 Xem: Slide 16 (Quy Trình Testing) → Slide 26 (API Summary)',
+                color: 'var(--danger-color)'
+            }
+        };
+
+        function calculateFinalScore() {
+            let totalCorrect = 0;
+            let totalAnswered = 0;
+
+            for (let i = 1; i <= 10; i++) {
+                if (userAnswers[i].answered) {
+                    totalAnswered++;
+                    if (userAnswers[i].correct) totalCorrect++;
+                }
+            }
+
+            const scoreDisplay = document.getElementById('quizScore');
+            const scoreBadge = document.getElementById('scoreBadge');
+            const scoreEvaluation = document.getElementById('scoreEvaluation');
+
+            scoreDisplay.innerText = `${totalCorrect}/10`;
+
+            if (totalAnswered < 10) {
+                scoreBadge.innerText = "CHƯA HOÀN THÀNH ⚠️";
+                scoreBadge.style.background = "#e6c01c";
+                scoreBadge.style.color = "#000";
+                scoreEvaluation.innerHTML = `Mới hoàn thành <span class="highlight">${totalAnswered}/10</span> câu. Quay lại hoàn tất để nhận phân tích chi tiết!`;
+            } else if (totalCorrect >= 9) {
+                scoreBadge.innerText = "CHIẾN THẦN API 👑";
+                scoreBadge.style.background = "var(--success-color)";
+                scoreBadge.style.color = "#0b0f17";
+                scoreEvaluation.innerHTML = `<strong>Kiến thức siêu vững!</strong> Bay thẳng sang thực chiến Chaining nâng cao!`;
+            } else if (totalCorrect >= 7) {
+                scoreBadge.innerText = "TAY CHƠI HỆ CHIẾN ⚡";
+                scoreBadge.style.background = "var(--accent-color)";
+                scoreBadge.style.color = "#0b0f17";
+                scoreEvaluation.innerHTML = `<strong>Gần sẵn sàng!</strong> Xem gợi ý bên phải để bổ sung kiến thức còn thiếu.`;
+            } else if (totalCorrect >= 5) {
+                scoreBadge.innerText = "ẨN SỐ TIỀM NĂNG 🌱";
+                scoreBadge.style.background = "var(--primary-color)";
+                scoreBadge.style.color = "#0b0f17";
+                scoreEvaluation.innerHTML = `<strong>Cần bổ sung!</strong> Tập trung vào các mục <span style="color:var(--danger-color);">đỏ</span> bên phải.`;
+            } else {
+                scoreBadge.innerText = "TÂN BINH ĐANG LÊN 🛡️";
+                scoreBadge.style.background = "var(--danger-color)";
+                scoreBadge.style.color = "#fff";
+                scoreEvaluation.innerHTML = `<strong>Đừng lo!</strong> Lộ trình bên dưới sẽ giúp bạn nạp lại kiến thức từ đầu.`;
+            }
+
+            let weakTopics = [];
+            let strongTopics = [];
+
+            for (const [topicKey, topicData] of Object.entries(topicMap)) {
+                const qs = topicData.questions;
+                let correct = 0;
+                let answered = 0;
+                qs.forEach(q => {
+                    if (userAnswers[q].answered) {
+                        answered++;
+                        if (userAnswers[q].correct) correct++;
+                    }
+                });
+
+                const scoreEl = document.getElementById(`score-${topicKey}`);
+                const suggestEl = document.getElementById(`suggest-${topicKey}`);
+                const rowEl = suggestEl.closest('.topic-row');
+
+                if (answered === 0) {
+                    scoreEl.innerText = '—';
+                    continue;
+                }
+
+                scoreEl.innerText = `${correct}/${qs.length}`;
+
+                if (correct === qs.length) {
+                    scoreEl.style.color = 'var(--success-color)';
+                    rowEl.style.borderColor = 'rgba(57,211,83,0.2)';
+                    rowEl.style.background = 'rgba(57,211,83,0.03)';
+                    suggestEl.style.display = 'block';
+                    suggestEl.innerHTML = `<span style="color:var(--success-color);">✅ Tuyệt vời! Bạn đã nắm vững phần này.</span>`;
+                    strongTopics.push(topicData.label);
+                } else if (correct > 0) {
+                    scoreEl.style.color = '#e6c01c';
+                    rowEl.style.borderColor = 'rgba(230,192,28,0.2)';
+                    rowEl.style.background = 'rgba(230,192,28,0.03)';
+                    suggestEl.style.display = 'block';
+                    const info = topicSuggestions[topicKey];
+                    suggestEl.innerHTML = `<span style="color:#e6c01c;">⚡ Gần đạt — ôn nhanh điểm sai:</span> ${info.fail.replace('⚠️ Cần ôn lại: ', '')}<br><span style="color:#555;">${info.slideRef}</span>`;
+                    weakTopics.push({ label: topicData.label, key: topicKey, severity: 'partial' });
+                } else {
+                    scoreEl.style.color = 'var(--danger-color)';
+                    rowEl.style.borderColor = 'rgba(248,81,73,0.25)';
+                    rowEl.style.background = 'rgba(248,81,73,0.04)';
+                    suggestEl.style.display = 'block';
+                    const info = topicSuggestions[topicKey];
+                    suggestEl.innerHTML = `<span style="color:var(--danger-color);">${info.fail}</span><br><span style="color:#555;">${info.slideRef}</span>`;
+                    weakTopics.push({ label: topicData.label, key: topicKey, severity: 'full' });
+                }
+            }
+
+            const pathEl = document.getElementById('learningPath');
+            const pathContent = document.getElementById('learningPathContent');
+
+            if (totalAnswered >= 10) {
+                pathEl.style.display = 'block';
+
+                if (weakTopics.length === 0) {
+                    pathEl.style.borderColor = 'rgba(57,211,83,0.2)';
+                    pathEl.style.background = 'rgba(57,211,83,0.03)';
+                    pathContent.innerHTML = `
+                        <span style="color:var(--success-color); font-weight:700;">🎯 Bạn đã sẵn sàng 100%!</span> Lộ trình đề xuất:<br>
+                        <span style="color:var(--text-bright);">Slide 13-15</span> (Tổng quan + API Cơ Bản) → <span style="color:var(--text-bright);">Slide 20</span> (Lifecycle) → <span style="color:var(--text-bright);">Slide 21</span> (6 Lệnh Vàng) → <span style="color:var(--text-bright);">Slide 23</span> (Chaining E2E) → <span style="color:var(--text-bright);">Slide 25</span> (Bài Tập Thực Hành)
+                    `;
+                } else {
+                    const fullFails = weakTopics.filter(t => t.severity === 'full');
+                    const partialFails = weakTopics.filter(t => t.severity === 'partial');
+
+                    let pathHTML = '';
+
+                    if (fullFails.length > 0) {
+                        pathHTML += `<span style="color:var(--danger-color); font-weight:700;">🔴 Ưu tiên cao — cần học kỹ:</span> ${fullFails.map(t => t.label).join(', ')}<br>`;
+                    }
+                    if (partialFails.length > 0) {
+                        pathHTML += `<span style="color:#e6c01c; font-weight:700;">🟡 Ôn nhanh — gần đạt:</span> ${partialFails.map(t => t.label).join(', ')}<br>`;
+                    }
+                    if (strongTopics.length > 0) {
+                        pathHTML += `<span style="color:var(--success-color); font-weight:700;">🟢 Đã vững:</span> ${strongTopics.join(', ')}<br>`;
+                    }
+
+                    pathHTML += `<br><span style="color:var(--text-bright); font-weight:600;">📍 Lộ trình đề xuất:</span> `;
+
+                    if (totalCorrect < 5) {
+                        pathHTML += `Slide 13-16 (Tổng quan + API Cơ Bản + Quy trình) → Slide 17-18 (Thuật ngữ + Env & Variables) → Slide 26 (API Summary) — nắm nền tảng trước → Slide 20-22 (Lifecycle + Script + JSONPath) → Slide 23-24 (Chaining + Assertions) → Slide 25 (Thực hành)`;
+                    } else if (totalCorrect < 8) {
+                        pathHTML += `Ôn nhanh các mục <span style="color:var(--danger-color);">đỏ/vàng</span> ở trên → Slide 20 (Lifecycle) → Slide 21 (6 Lệnh Vàng) → Slide 23 (Chaining) → Slide 25 (Thực hành)`;
+                    } else {
+                        pathHTML += `Lướt nhanh mục <span style="color:#e6c01c;">vàng</span> → Bay thẳng Slide 23 (Chaining) → Slide 24 (Assertions nâng cao) → Slide 25 (Thực hành)`;
+                    }
+
+                    pathContent.innerHTML = pathHTML;
+                }
+            }
+        }
+
+        function switchNestedTab(evt, tabId, tabGroupContainerId) {
+            const tabContainer = document.getElementById(tabGroupContainerId);
+            const parentSlide = tabContainer.closest('.slide');
+            const tabContents = parentSlide.querySelectorAll('.tab-content');
+            const tabButtons = tabContainer.querySelectorAll('.tab-btn');
+
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            tabButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            parentSlide.querySelector(`#${tabId}`).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        function highlightLifecycle(type) {
+            const preBox = document.getElementById('lifecycle-pre-desc');
+            const testBox = document.getElementById('lifecycle-test-desc');
+            if (type === 'pre') {
+                preBox.style.borderColor = 'var(--accent-color)';
+                preBox.style.boxShadow = '0 0 10px rgba(0,240,255,0.1)';
+                testBox.style.borderColor = 'rgba(255,255,255,0.05)';
+                testBox.style.boxShadow = 'none';
+            } else {
+                testBox.style.borderColor = 'var(--success-color)';
+                testBox.style.boxShadow = '0 0 10px rgba(57,211,83,0.1)';
+                preBox.style.borderColor = 'rgba(255,255,255,0.05)';
+                preBox.style.boxShadow = 'none';
+            }
+        }
+
+        function revealPath(key, description) {
+            const display = document.getElementById('jsonPathDisplay');
+            display.innerHTML = `<span style="color:#ff79c6;">res.${key}</span><br><span style="font-size:0.8rem; color:#8b949e; font-weight:normal;">${description}</span>`;
+        }
+    </script>
+</body>
+</html>
