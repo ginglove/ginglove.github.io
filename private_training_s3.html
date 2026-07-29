@@ -538,6 +538,40 @@
             padding: 0 4px;
         }
 
+        .slide-footer span:last-child {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .slide-footer span:last-child:hover {
+            color: var(--accent-color);
+        }
+        .slide-picker-dropdown {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 100;
+            min-width: 220px;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.4);
+        }
+        .slide-picker-dropdown.open { display: block; }
+        .slide-picker-item {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            color: var(--text-color);
+            border-radius: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .slide-picker-item:hover { background: rgba(88,166,255,0.1); }
+        .slide-picker-item.current { color: var(--accent-color); font-weight: bold; }
+
         pre::-webkit-scrollbar {
             width: 4px;
             height: 4px;
@@ -548,6 +582,255 @@
         pre::-webkit-scrollbar-thumb {
             background: rgba(255,255,255,0.1);
             border-radius: 4px;
+        }
+
+        /* ===== RESPONSIVE: Tablet ===== */
+        @media (max-width: 1024px) {
+            .slide {
+                padding: 18px 24px;
+                height: 85vh;
+                width: 96%;
+                border-radius: 16px;
+            }
+            .slide-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+                padding-bottom: 8px;
+                margin-bottom: 8px;
+            }
+            .slide-title {
+                font-size: 1.1rem;
+            }
+            .logo {
+                font-size: 1.1rem;
+            }
+            .grid-2 {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            .intro-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            .sandbox-container {
+                grid-template-columns: 1fr;
+            }
+            .controls {
+                bottom: 12px;
+                right: 3%;
+            }
+            .tab-btn {
+                padding: 5px 10px;
+                font-size: 0.78rem;
+            }
+        }
+
+        /* ===== RESPONSIVE: Mobile ===== */
+        @media (max-width: 640px) {
+            body {
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            .slide-container {
+                align-items: flex-start;
+                padding: 8px 0;
+            }
+            .slide {
+                width: 100%;
+                height: auto;
+                min-height: 92vh;
+                border-radius: 0;
+                padding: 14px 16px;
+                overflow-y: auto;
+                overflow-x: hidden;
+                box-shadow: none;
+                border: none;
+            }
+            .slide.active {
+                justify-content: flex-start;
+            }
+            .slide-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 2px;
+                padding-bottom: 6px;
+                margin-bottom: 8px;
+            }
+            .slide-title {
+                font-size: 0.95rem;
+            }
+            .logo {
+                font-size: 1rem;
+            }
+            .slide-content {
+                font-size: 0.88rem;
+                line-height: 1.4;
+                overflow-y: auto;
+                flex-grow: 1;
+            }
+
+            /* Grids → single column */
+            .grid-2,
+            .intro-grid {
+                grid-template-columns: 1fr !important;
+                gap: 8px;
+            }
+            .sandbox-container {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Lifecycle flow → wrap */
+            .lifecycle-flow {
+                flex-wrap: wrap;
+                gap: 6px;
+                padding: 10px 12px;
+            }
+            .flow-node {
+                flex: 1 1 40%;
+                min-width: 120px;
+            }
+            .flow-arrow {
+                display: none;
+            }
+
+            /* Quiz options — bigger touch targets */
+            .quiz-option {
+                padding: 12px 14px;
+                font-size: 0.85rem;
+                min-height: 44px;
+            }
+            .quiz-container {
+                gap: 6px;
+            }
+            .quiz-feedback {
+                font-size: 0.82rem;
+                padding: 10px;
+            }
+
+            /* Tabs — scroll horizontally */
+            .tab-container {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                gap: 6px;
+                padding-bottom: 4px;
+            }
+            .tab-btn {
+                white-space: nowrap;
+                flex-shrink: 0;
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+
+            /* Code blocks */
+            pre {
+                font-size: 0.72rem !important;
+                padding: 10px;
+                max-height: 180px;
+            }
+
+            /* Controls — bottom fixed */
+            .controls {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                justify-content: center;
+                background: var(--bg-color);
+                padding: 8px 16px;
+                border-top: 1px solid rgba(255,255,255,0.06);
+                z-index: 20;
+                gap: 10px;
+            }
+            .nav-btn {
+                padding: 10px 20px;
+                font-size: 0.85rem;
+                flex: 1;
+                justify-content: center;
+            }
+
+            /* Footer */
+            .slide-footer {
+                font-size: 0.7rem;
+                margin-top: 8px;
+                padding-top: 6px;
+                padding-bottom: 50px;
+            }
+
+            /* Intro */
+            .intro-title {
+                font-size: 1.5rem;
+            }
+            .intro-subtitle {
+                font-size: 0.88rem;
+            }
+            .game-status-bar {
+                font-size: 0.65rem;
+                gap: 6px;
+                padding: 4px 10px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .start-alert {
+                font-size: 0.72rem;
+            }
+
+            /* Score display */
+            .score-display {
+                font-size: 2.8rem;
+            }
+            .result-card {
+                padding: 16px;
+            }
+
+            /* Progress bar */
+            .progress-bar-container {
+                height: 4px;
+            }
+
+            /* Force ALL inline grids to single column on mobile */
+            [style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
+            /* Exception: keep step number + content side by side (slide 16) */
+            [style*="grid-template-columns: 36px"] {
+                grid-template-columns: 36px 1fr !important;
+            }
+
+            /* Testing pyramid — stack vertically on mobile */
+            .testing-pyramid {
+                flex-direction: column-reverse !important;
+                align-items: center !important;
+                gap: 3px !important;
+            }
+            .testing-pyramid > div {
+                width: 100% !important;
+                height: auto !important;
+                min-height: 32px !important;
+                border-radius: 6px !important;
+                font-size: 0.62rem !important;
+                padding: 4px 8px !important;
+            }
+
+            /* Slide picker */
+            .slide-picker-dropdown {
+                max-height: 250px;
+                min-width: 180px;
+                right: -10px;
+            }
+        }
+
+        /* ===== Touch device: ensure clickable quiz options ===== */
+        @media (pointer: coarse) {
+            .quiz-option {
+                min-height: 48px;
+                -webkit-tap-highlight-color: rgba(0, 240, 255, 0.1);
+            }
+            .quiz-option span,
+            .quiz-option i {
+                pointer-events: none;
+            }
         }
     </style>
 </head>
@@ -702,9 +985,9 @@
             </div>
             <div class="slide-content">
                 <p style="margin-bottom: 8px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">JSON Format</span> Đoạn JSON dưới đây có lỗi gì?</p>
-                <pre style="margin-bottom: 10px;">{ "name": "Nguyen Van A", "age": 25, "email": "test@gmail.com" }</pre>
+                <pre style="margin-bottom: 10px;">{ "name": "Nguyen Van A", "age": 25, "email": "test@gmail.com", }</pre>
                 <div class="quiz-container" data-question="4">
-                    <div class="quiz-option" onclick="submitAnswer(this, true, 'A. JSON hợp lệ, không có lỗi', 'Đỉnh của chóp! JSON này chuẩn từng milimet, không tì vết!', 4)">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. JSON hợp lệ, không có lỗi', 'Nhìn kỹ lại nào! Có dấu phẩy thừa sau phần tử cuối cùng — JSON chuẩn không chấp nhận trailing comma!', 4)">
                         <span>A. JSON hợp lệ, không có lỗi</span><i class="fa-regular fa-circle"></i>
                     </div>
                     <div class="quiz-option" onclick="submitAnswer(this, false, 'B. Thiếu dấu ngoặc kép ở name', 'Nhìn kỹ lại xem nào! `\"name\"` đã có đủ dấu ngoặc kép rồi nha.', 4)">
@@ -713,8 +996,8 @@
                     <div class="quiz-option" onclick="submitAnswer(this, false, 'C. Số 25 phải để trong dấu ngoặc kép', 'Nhầm rồi bạn ơi! Kiểu dữ liệu số (Number) trong JSON KHÔNG cần ngoặc kép.', 4)">
                         <span>C. Số `25` phải để trong dấu ngoặc kép</span><i class="fa-regular fa-circle"></i>
                     </div>
-                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. Không được dùng dấu phẩy ở cuối object', 'Ủa đâu có dấu phẩy dư nào ở cuối đâu nè!', 4)">
-                        <span>D. Không được dùng dấu phẩy ở cuối object</span><i class="fa-regular fa-circle"></i>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'D. Có dấu phẩy thừa sau phần tử cuối (trailing comma)', 'Chuẩn xác! JSON KHÔNG cho phép trailing comma — dấu phẩy sau phần tử cuối cùng là lỗi cú pháp!', 4)">
+                        <span>D. Có dấu phẩy thừa sau phần tử cuối (trailing comma)</span><i class="fa-regular fa-circle"></i>
                     </div>
                 </div>
                 <div class="quiz-feedback" id="feedback-4"></div>
@@ -1008,7 +1291,7 @@
                 </div>
                 <div style="background: rgba(0,240,255,0.03); border: 1px solid rgba(0,240,255,0.1); border-radius: 12px; padding: 12px 16px; text-align: center;">
                     <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.92rem;"><i class="fa-solid fa-triangle-exclamation"></i> Kim Tự Tháp Testing (Mike Cohn)</h4>
-                    <div style="display: flex; justify-content: center; align-items: flex-end; gap: 4px; margin-top: 6px;">
+                    <div class="testing-pyramid" style="display: flex; justify-content: center; align-items: flex-end; gap: 4px; margin-top: 6px;">
                         <div style="background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 6px 6px 0 0; width: 100px; height: 40px; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700; color:var(--danger-color);">UI Tests<br><span style="font-weight:400; font-size:0.6rem;">Chậm, đắt, ít</span></div>
                         <div style="background: rgba(0,240,255,0.12); border: 1px solid rgba(0,240,255,0.3); border-radius: 6px 6px 0 0; width: 160px; height: 55px; display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:700; color:var(--accent-color);">API / Service Tests<br><span style="font-weight:400; font-size:0.6rem;">ROI cao nhất ← BẠN Ở ĐÂY</span></div>
                         <div style="background: rgba(57,211,83,0.12); border: 1px solid rgba(57,211,83,0.3); border-radius: 6px 6px 0 0; width: 220px; height: 70px; display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:700; color:var(--success-color);">Unit Tests<br><span style="font-weight:400; font-size:0.6rem;">Nhanh, rẻ, nhiều</span></div>
@@ -1423,7 +1706,8 @@
                         <h4 style="color: var(--success-color);"><i class="fa-solid fa-globe"></i> BƯỚC 2: ENVIRONMENT</h4>
                         <p style="font-size: 0.76rem; line-height: 1.35; color: #8b949e;">
                             Tạo Environment <strong>ReqRes-Practice</strong>.
-                            <br>• <strong>Biến cố định (Initial Value):</strong> <code>base_url</code> = <code>https://reqres.in/api</code>, <code>email</code> = <code>eve.holt@reqres.in</code>, <code>password</code> = <code>cityslicka</code>.
+                            <br>• <strong>Biến cố định (Initial Value):</strong> <code>base_url</code> = <code>https://reqres.in/api</code>, <code>email</code> = <code>eve.holt@reqres.in</code>.
+                            <br>• <strong>Biến nhạy cảm (Current Value only):</strong> <code>password</code> = <code>cityslicka</code> — chỉ đặt ở Current Value, KHÔNG đặt vào Initial Value.
                             <br>• <strong>Biến trung chuyển (để trống):</strong> <code>token</code>, <code>user_id</code>, <code>created_user_id</code> — sẽ được Script tự động gán giá trị khi chạy.
                             <br>• <strong>Lưu ý:</strong> Initial Value = chia sẻ team. Current Value = chỉ máy bạn. Không bao giờ đặt password/token vào Initial Value khi làm việc nhóm.
                         </p>
@@ -1533,7 +1817,7 @@
                     <div class="grid-2">
                         <div>
                             <span class="badge" style="margin-bottom: 4px;">Nhóm 1: Đọc & Ghi Dữ Liệu</span>
-                            <pre style="max-height: none; font-size: 0.72rem; line-height: 1.25;">
+                            <pre style="max-height: none; font-size: 0.78rem; line-height: 1.25;">
 // 1. Parse response → Object (BẮT BUỘC dòng đầu)
 const res = pm.response.json();
 
@@ -1553,7 +1837,7 @@ pm.environment.set("token", res.token);</pre>
                         </div>
                         <div>
                             <span class="badge" style="margin-bottom: 4px;">Nhóm 2: Đọc Biến & Viết Assertions</span>
-                            <pre style="max-height: none; font-size: 0.72rem; line-height: 1.25;">
+                            <pre style="max-height: none; font-size: 0.78rem; line-height: 1.25;">
 // 4. Get biến Environment (đọc từ request trước)
 // ⚠️ Luôn trả về STRING → ép kiểu nếu so sánh số
 const uId = Number(pm.environment.get("user_id"));
@@ -1645,20 +1929,21 @@ pm.test("Response < 2s", () => {
                     <div class="grid-2">
                         <div>
                             <span class="badge" style="margin-bottom: 4px;">Kiểm Soát Luồng & Header</span>
-                            <pre style="max-height: none; font-size: 0.72rem; line-height: 1.25;">
+                            <pre style="max-height: none; font-size: 0.78rem; line-height: 1.25;">
 // 7. Kiểm tra Header response
 pm.test("Content-Type là JSON", () => {
     pm.expect(pm.response.headers.get("Content-Type"))
       .to.include("application/json");
 });
 
-// 8. JSON Schema Validation
+// 8. JSON Schema Validation (tv4 — built-in Postman)
 const schema = {
     type: "object",
     required: ["id", "email", "first_name", "last_name"]
 };
 pm.test("Response đúng schema", () => {
-    pm.response.to.have.jsonSchema(schema);
+    const valid = tv4.validate(pm.response.json(), schema);
+    pm.expect(valid).to.be.true;
 });
 
 // 9. Điều khiển luồng Collection Runner
@@ -1667,7 +1952,7 @@ postman.setNextRequest(null); // DỪNG</pre>
                         </div>
                         <div>
                             <span class="badge" style="margin-bottom: 4px;">Request Phụ & Biến Động</span>
-                            <pre style="max-height: none; font-size: 0.72rem; line-height: 1.25;">
+                            <pre style="max-height: none; font-size: 0.78rem; line-height: 1.25;">
 // 10. Gửi request phụ trong Pre-request
 pm.sendRequest({
     url: "https://reqres.in/api/login",
@@ -1720,7 +2005,7 @@ pm.sendRequest({
                         &nbsp;&nbsp;"<span class="interactive-json-key" onclick="revealPath('first_name', 'res.first_name // Lấy ra: Janet')">first_name</span>": "Janet",<br>
                         &nbsp;&nbsp;"<span class="interactive-json-key" onclick="revealPath('last_name', 'res.last_name // Lấy ra: Weaver')">last_name</span>": "Weaver",<br>
                         &nbsp;&nbsp;"<span class="interactive-json-key" onclick="revealPath('avatar', 'res.avatar // Lấy ra URL ảnh đại diện')">avatar</span>": "https://reqres.in/img/faces/2-image.jpg",<br>
-                        &nbsp;&nbsp;"<span class="interactive-json-key" onclick="revealPath('support', 'res.support.text // Lấy ra chuỗi hỗ trợ')">support</span>": {<br>
+                        &nbsp;&nbsp;"<span class="interactive-json-key" onclick="revealPath('support', 'res.support // Đây là object lồng, dùng res.support.url để lấy URL')">support</span>": {<br>
                         &nbsp;&nbsp;&nbsp;&nbsp;"<span class="interactive-json-key" onclick="revealPath('support.url', 'res.support.url // Lấy ra: https://contentcaddy.io')">url</span>": "https://contentcaddy.io"<br>
                         &nbsp;&nbsp;}<br>
                         }
@@ -1748,7 +2033,7 @@ pm.sendRequest({
         <div class="slide">
             <div class="slide-header">
                 <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
-                <div class="slide-title">Phần 2 — Chaining Requests: Chuỗi 4 Request E2E</div>
+                <div class="slide-title">Phần 2 — Chaining Requests: Chuỗi E2E Hoàn Chỉnh</div>
             </div>
             <div class="slide-content">
                 <div class="tab-container" id="p2-tabs">
@@ -1756,6 +2041,8 @@ pm.sendRequest({
                     <button class="tab-btn" onclick="switchNestedTab(event, 'p2-r2', 'p2-tabs')">R2: GET /users?page=2</button>
                     <button class="tab-btn" onclick="switchNestedTab(event, 'p2-r3', 'p2-tabs')">R3: POST /users</button>
                     <button class="tab-btn" onclick="switchNestedTab(event, 'p2-r4', 'p2-tabs')">R4: PUT /users/{{user_id}}</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'p2-r4b', 'p2-tabs')">R4b: PATCH</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'p2-r5', 'p2-tabs')">R5: DELETE</button>
                 </div>
 
                 <div id="p2-r1" class="tab-content active">
@@ -1835,9 +2122,43 @@ pm.test("[UpdateUser] Có updatedAt timestamp", () => {
     pm.expect(res.updatedAt).to.be.a("string");
 });</pre>
                 </div>
+
+                <div id="p2-r4b" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <h4 class="highlight">R4b: Cập nhật một phần — PATCH vs PUT</h4>
+                        <span class="badge" style="background-color: #e6c01c; color: #0b0f17; border-color: transparent;">PATCH</span>
+                    </div>
+                    <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 6px;">URL: <code class="highlight">{{base_url}}/users/{{user_id}}</code> &nbsp;|&nbsp; Body: <code class="highlight">{"job": "qa manager"}</code> (chỉ gửi field cần sửa)</p>
+                    <pre>
+const res = pm.response.json();
+pm.test("[PatchUser] Status 200", () => { pm.response.to.have.status(200); });
+pm.test("[PatchUser] Job đã cập nhật", () => {
+    pm.expect(res.job).to.equal("qa manager");
+});
+pm.test("[PatchUser] Có updatedAt", () => {
+    pm.expect(res.updatedAt).to.be.a("string");
+});
+// PUT gửi toàn bộ object, PATCH chỉ gửi field thay đổi</pre>
+                </div>
+
+                <div id="p2-r5" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <h4 class="highlight">R5: Xóa User — Dọn dẹp dữ liệu</h4>
+                        <span class="badge" style="background-color: var(--danger-color); color: #0b0f17; border-color: transparent;">DELETE</span>
+                    </div>
+                    <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 6px;">URL động: <code class="highlight">{{base_url}}/users/{{created_user_id}}</code></p>
+                    <pre>
+pm.test("[DeleteUser] Status 204", () => { pm.response.to.have.status(204); });
+pm.test("[DeleteUser] Body rỗng", () => {
+    pm.expect(pm.response.text()).to.be.empty;
+});
+
+// Dừng Collection Runner sau request cuối
+postman.setNextRequest(null);</pre>
+                </div>
             </div>
             <div class="slide-footer">
-                <span>00:20 – 00:50 // Chaining dữ liệu tự động giữa 4 APIs không cần copy-paste tay</span>
+                <span>00:20 – 00:50 // Chaining dữ liệu tự động giữa 6 APIs không cần copy-paste tay</span>
                 <span>Slide 23 / 27</span>
             </div>
         </div>
@@ -1882,7 +2203,7 @@ pm.test("[UpdateUser] Có updatedAt timestamp", () => {
                     <div class="grid-2">
                         <div>
                             <span class="badge" style="margin-bottom:2px;">Nhóm 1: Kiểu Dữ Liệu & Tồn Tại</span>
-                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2;">
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25;">
 // Kiểm tra kiểu
 pm.expect(res.id).to.be.a("number");
 pm.expect(res.first_name).to.be.a("string");
@@ -1898,7 +2219,7 @@ pm.expect(res.token).to.not.be.undefined;</pre>
                         </div>
                         <div>
                             <span class="badge" style="margin-bottom:2px;">Nhóm 2: So Sánh Giá Trị</span>
-                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2;">
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25;">
 // Bằng chính xác (strict ===)
 pm.expect(res.data.id).to.equal(2);
 pm.expect(res.name).to.equal("QA Tester");
@@ -1914,7 +2235,7 @@ pm.expect(["1","2"]).to.include(String(res.page));</pre>
                         </div>
                         <div>
                             <span class="badge" style="margin-bottom:2px;">Nhóm 3: Cấu Trúc & Mảng</span>
-                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2;">
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25;">
 // Độ dài mảng
 pm.expect(res.data).to.have.lengthOf(6);
 pm.expect(res.data).to.have.lengthOf.at.least(1);
@@ -1927,7 +2248,7 @@ pm.expect(res.data[0]).to.have.all.keys(
                         </div>
                         <div>
                             <span class="badge" style="margin-bottom:2px;">Nhóm 4: Regex & Nâng Cao</span>
-                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2;">
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25;">
 // Regex format
 pm.expect(res.email).to.match(
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/);
@@ -1949,7 +2270,7 @@ pm.expect(pm.response.headers.get("Content-Type"))
                     <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
                         <div style="background:rgba(248,81,73,0.03); padding:8px; border-radius:10px; border:1px dashed rgba(248,81,73,0.15);">
                             <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-01: Sai Password</span>
-                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2; margin-top:4px;">POST {{base_url}}/login
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25; margin-top:4px;">POST {{base_url}}/login
 {"email":"eve.holt@reqres.in","password":"wrong"}
 
 const res = pm.response.json();
@@ -1962,7 +2283,7 @@ pm.test("Không trả token", () =>
                         </div>
                         <div style="background:rgba(248,81,73,0.03); padding:8px; border-radius:10px; border:1px dashed rgba(248,81,73,0.15);">
                             <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-02: Thiếu Field</span>
-                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2; margin-top:4px;">POST {{base_url}}/register
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25; margin-top:4px;">POST {{base_url}}/register
 {"email":"eve.holt@reqres.in"}
 
 const res = pm.response.json();
@@ -1973,7 +2294,7 @@ pm.test("Báo thiếu password", () =>
                         </div>
                         <div style="background:rgba(248,81,73,0.03); padding:8px; border-radius:10px; border:1px dashed rgba(248,81,73,0.15);">
                             <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-03: User Không Tồn Tại</span>
-                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2; margin-top:4px;">GET {{base_url}}/users/999
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25; margin-top:4px;">GET {{base_url}}/users/999
 
 const res = pm.response.json();
 pm.test("Status 404", () =>
@@ -1989,7 +2310,7 @@ pm.test("Body rỗng (không lộ data)", () =>
                     <div class="grid-2">
                         <div>
                             <span class="badge" style="border-color:var(--success-color); color:var(--success-color); margin-bottom:2px;">POST /login — Assertions Đầy Đủ</span>
-                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2;">
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25;">
 const res = pm.response.json();
 
 pm.test("Status 200", () =>
@@ -2006,7 +2327,7 @@ pm.test("Response < 2s", () =>
                         </div>
                         <div>
                             <span class="badge" style="border-color:var(--primary-color); color:var(--primary-color); margin-bottom:2px;">GET /users?page=2 — Assertions Đầy Đủ</span>
-                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2;">
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25;">
 const res = pm.response.json();
 
 pm.test("Status 200", () =>
@@ -2055,7 +2376,7 @@ pm.test("Email đúng format", () =>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                         <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
                             <span class="badge" style="background:rgba(57,211,83,0.1); border-color:var(--success-color); color:var(--success-color);">AUTH — Đăng Ký & Đăng Nhập</span>
-                            <pre style="max-height:none; font-size:0.66rem; line-height:1.2; margin-top:4px;">POST /api/register
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25; margin-top:4px;">POST /api/register
 Body: {"email":"eve.holt@reqres.in","password":"pistol"}
 → 200: { "id": 4, "token": "QpwL5tke4Pnpja7X4" }
 → 400 (thiếu password): { "error": "Missing password" }
@@ -2069,7 +2390,7 @@ Body: {"email":"eve.holt@reqres.in","password":"cityslicka"}
                         </div>
                         <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
                             <span class="badge" style="background:rgba(88,166,255,0.1); border-color:var(--primary-color); color:var(--primary-color);">USERS — Đọc Danh Sách & Chi Tiết</span>
-                            <pre style="max-height:none; font-size:0.66rem; line-height:1.2; margin-top:4px;">GET /api/users?page=2
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25; margin-top:4px;">GET /api/users?page=2
 → 200: { page:2, per_page:6, total:12, total_pages:2,
   data: [{ id, email, first_name, last_name, avatar }],
   support: { url, text } }
@@ -2084,7 +2405,7 @@ GET /api/users/999
                         </div>
                         <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
                             <span class="badge" style="background:rgba(0,240,255,0.1); border-color:var(--accent-color); color:var(--accent-color);">USERS — Tạo, Sửa, Xoá (CRUD)</span>
-                            <pre style="max-height:none; font-size:0.66rem; line-height:1.2; margin-top:4px;">POST /api/users
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25; margin-top:4px;">POST /api/users
 Body: {"name":"morpheus","job":"leader"}
 → 201: { name, job, id:"903", createdAt:"2024-..." }
 
@@ -2101,7 +2422,7 @@ DELETE /api/users/2
                         </div>
                         <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
                             <span class="badge" style="background:rgba(248,81,73,0.1); border-color:var(--danger-color); color:var(--danger-color);">RESOURCES & DELAYED RESPONSE</span>
-                            <pre style="max-height:none; font-size:0.66rem; line-height:1.2; margin-top:4px;">GET /api/unknown  (danh sách resources)
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25; margin-top:4px;">GET /api/unknown  (danh sách resources)
 → 200: { data: [{ id, name:"cerulean", year:2000,
   color:"#98B2D1", pantone_value:"15-4020" }] }
 
@@ -2124,7 +2445,7 @@ GET /api/users?delay=3  (giả lập API chậm)
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                         <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
                             <span class="badge" style="background:rgba(57,211,83,0.1); border-color:var(--success-color); color:var(--success-color);">R1</span> <strong style="color:var(--text-bright); font-size:0.82rem;">POST /api/login</strong>
-                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2; margin-top:4px;">// Body
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25; margin-top:4px;">// Body
 {"email":"{{email}}","password":"{{password}}"}
 
 // Tests Script — Viết trong tab Tests
@@ -2138,7 +2459,7 @@ if (res.token) {
                         </div>
                         <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
                             <span class="badge" style="background:rgba(88,166,255,0.1); border-color:var(--primary-color); color:var(--primary-color);">R2</span> <strong style="color:var(--text-bright); font-size:0.82rem;">GET /api/users?page=2</strong>
-                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2; margin-top:4px;">// Tests Script
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25; margin-top:4px;">// Tests Script
 const res = pm.response.json();
 pm.test("Status 200", () => pm.response.to.have.status(200));
 pm.test("page = 2", () => pm.expect(res.page).to.equal(2));
@@ -2154,7 +2475,7 @@ if (res.data && res.data.length > 0) {
                         </div>
                         <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
                             <span class="badge" style="background:rgba(0,240,255,0.1); border-color:var(--accent-color); color:var(--accent-color);">R3</span> <strong style="color:var(--text-bright); font-size:0.82rem;">POST /api/users</strong>
-                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2; margin-top:4px;">// Body
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25; margin-top:4px;">// Body
 {"name":"QA Tester","job":"automation engineer"}
 
 // Tests Script
@@ -2171,7 +2492,7 @@ pm.environment.set("created_user_id", res.id);</pre>
                         </div>
                         <div style="background: rgba(255,255,255,0.01); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
                             <span class="badge" style="background:rgba(248,81,73,0.1); border-color:var(--danger-color); color:var(--danger-color);">R4-R5</span> <strong style="color:var(--text-bright); font-size:0.82rem;">PUT User + DELETE User</strong>
-                            <pre style="max-height:none; font-size:0.68rem; line-height:1.2; margin-top:4px;">// R4: PUT /api/users/{{user_id}}
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25; margin-top:4px;">// R4: PUT /api/users/{{user_id}}
 // Body: {"name":"QA Lead","job":"senior tester"}
 const res = pm.response.json();
 pm.test("Status 200", () => pm.response.to.have.status(200));
@@ -2196,7 +2517,7 @@ pm.test("Body rỗng", () =>
                         <div style="background: rgba(248,81,73,0.03); padding: 10px; border-radius: 10px; border: 1px dashed rgba(248,81,73,0.15);">
                             <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-01</span>
                             <p style="font-size:0.72rem; color:var(--text-bright); margin:4px 0 2px; font-weight:600;">Login — Sai Password</p>
-                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2;">POST /api/login
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25;">POST /api/login
 {"email":"eve.holt@reqres.in","password":"wrong"}
 // Expected: 400 + error message
 const res = pm.response.json();
@@ -2210,7 +2531,7 @@ pm.test("Không trả token", () =>
                         <div style="background: rgba(248,81,73,0.03); padding: 10px; border-radius: 10px; border: 1px dashed rgba(248,81,73,0.15);">
                             <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-02</span>
                             <p style="font-size:0.72rem; color:var(--text-bright); margin:4px 0 2px; font-weight:600;">Register — Thiếu Password</p>
-                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2;">POST /api/register
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25;">POST /api/register
 {"email":"eve.holt@reqres.in"}
 // Expected: 400 + "Missing password"
 const res = pm.response.json();
@@ -2222,7 +2543,7 @@ pm.test("Báo thiếu password", () =>
                         <div style="background: rgba(248,81,73,0.03); padding: 10px; border-radius: 10px; border: 1px dashed rgba(248,81,73,0.15);">
                             <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-03</span>
                             <p style="font-size:0.72rem; color:var(--text-bright); margin:4px 0 2px; font-weight:600;">Register — Email Không Hợp Lệ</p>
-                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2;">POST /api/register
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25;">POST /api/register
 {"email":"random@xyz.com","password":"abc123"}
 // Expected: 400 (email not in whitelist)
 const res = pm.response.json();
@@ -2234,7 +2555,7 @@ pm.test("Có error message", () =>
                         <div style="background: rgba(248,81,73,0.03); padding: 10px; border-radius: 10px; border: 1px dashed rgba(248,81,73,0.15);">
                             <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-04</span>
                             <p style="font-size:0.72rem; color:var(--text-bright); margin:4px 0 2px; font-weight:600;">User Không Tồn Tại</p>
-                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2;">GET /api/users/999
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25;">GET /api/users/999
 // Expected: 404 + empty body
 const res = pm.response.json();
 pm.test("Status 404", () =>
@@ -2245,7 +2566,7 @@ pm.test("Body rỗng", () =>
                         <div style="background: rgba(248,81,73,0.03); padding: 10px; border-radius: 10px; border: 1px dashed rgba(248,81,73,0.15);">
                             <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-05</span>
                             <p style="font-size:0.72rem; color:var(--text-bright); margin:4px 0 2px; font-weight:600;">Login — Body Hoàn Toàn Rỗng</p>
-                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2;">POST /api/login
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25;">POST /api/login
 Body: {}
 // Expected: 400 + Missing email/username
 const res = pm.response.json();
@@ -2257,15 +2578,17 @@ pm.test("Báo thiếu email", () =>
                         <div style="background: rgba(248,81,73,0.03); padding: 10px; border-radius: 10px; border: 1px dashed rgba(248,81,73,0.15);">
                             <span class="badge" style="border-color:var(--danger-color); color:var(--danger-color); font-size:0.62rem;">NEG-06</span>
                             <p style="font-size:0.72rem; color:var(--text-bright); margin:4px 0 2px; font-weight:600;">Delayed Response — Timeout</p>
-                            <pre style="max-height:none; font-size:0.65rem; line-height:1.2;">GET /api/users?delay=5
-// Expected: 200 nhưng chậm > 3s
+                            <pre style="max-height:none; font-size:0.78rem; line-height:1.25;">GET /api/users?delay=5
+// Expected: 200 nhưng chậm > 2.5s (tuỳ network/env)
 const res = pm.response.json();
 pm.test("Status 200", () =>
   pm.response.to.have.status(200));
-pm.test("Response > 3s (delayed)", () =>
-  pm.expect(pm.response.responseTime).to.be.above(3000));
+pm.test("Response > 2.5s (delayed)", () =>
+  pm.expect(pm.response.responseTime).to.be.above(2500));
 pm.test("Data vẫn hợp lệ", () =>
-  pm.expect(res.data).to.be.an("array"));</pre>
+  pm.expect(res.data).to.be.an("array"));
+// ⚠️ responseTime phụ thuộc mạng & server.
+// Nếu mạng nhanh, giá trị có thể < 2.5s.</pre>
                         </div>
                     </div>
                 </div>
@@ -2407,12 +2730,14 @@ pm.expect(pm.response.responseTime).to.be.below(2000);</pre>
                     <div style="background: rgba(255,255,255,0.01); padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
                         <h4 class="highlight" style="margin-bottom: 6px; font-size: 0.92rem;"><i class="fa-solid fa-link"></i> Chaining E2E Flow</h4>
                         <div style="font-size: 0.74rem; color: #8b949e; line-height: 1.4;">
-                            <p style="margin-bottom: 4px;"><span class="highlight">Quy trình 4 bước nhớ suốt đời:</span></p>
+                            <p style="margin-bottom: 4px;"><span class="highlight">Quy trình E2E nhớ suốt đời:</span></p>
                             <p style="padding-left: 8px;">
                                 <strong style="color:var(--accent-color);">R1</strong> Login → lưu <code>token</code><br>
                                 <strong style="color:var(--accent-color);">R2</strong> List Users → lưu <code>user_id</code><br>
                                 <strong style="color:var(--accent-color);">R3</strong> Create User → lưu <code>created_user_id</code><br>
-                                <strong style="color:var(--accent-color);">R4</strong> Update User → đối chiếu dữ liệu R3
+                                <strong style="color:var(--accent-color);">R4</strong> PUT Update → thay toàn bộ<br>
+                                <strong style="color:var(--accent-color);">R4b</strong> PATCH Update → sửa 1 phần<br>
+                                <strong style="color:var(--accent-color);">R5</strong> DELETE → dọn dẹp + <code>setNextRequest(null)</code>
                             </p>
                             <p style="margin-top: 6px;"><span class="highlight">Nguyên tắc vàng:</span></p>
                             <p style="padding-left: 8px; font-size: 0.72rem;">
@@ -2513,6 +2838,21 @@ pm.expect(pm.response.responseTime).to.be.below(2000);</pre>
                 prevSlide();
             }
         });
+
+        // Touch swipe navigation for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 60) {
+                if (diff > 0) nextSlide();
+                else prevSlide();
+            }
+        }, { passive: true });
 
         function submitAnswer(element, isCorrect, optionText, baseFeedback, qId) {
             if (userAnswers[qId].answered) return;
@@ -2764,6 +3104,41 @@ pm.expect(pm.response.responseTime).to.be.below(2000);</pre>
                 preBox.style.borderColor = 'rgba(255,255,255,0.05)';
                 preBox.style.boxShadow = 'none';
             }
+        }
+
+        document.addEventListener('click', function(e) {
+            const footerSpan = e.target.closest('.slide-footer span:last-child');
+            if (footerSpan && footerSpan.textContent.includes('Slide')) {
+                e.stopPropagation();
+                showSlidePicker(footerSpan);
+                return;
+            }
+            const picker = document.getElementById('slidePickerDropdown');
+            if (picker && !e.target.closest('.slide-picker-dropdown')) {
+                picker.remove();
+            }
+        });
+
+        function showSlidePicker(target) {
+            let existing = document.getElementById('slidePickerDropdown');
+            if (existing) { existing.remove(); return; }
+
+            const dropdown = document.createElement('div');
+            dropdown.id = 'slidePickerDropdown';
+            dropdown.className = 'slide-picker-dropdown open';
+
+            slides.forEach((slide, i) => {
+                const titleEl = slide.querySelector('.slide-title');
+                const title = titleEl ? titleEl.textContent : (i === 0 ? 'Lobby' : `Slide ${i+1}`);
+                const item = document.createElement('div');
+                item.className = 'slide-picker-item' + (i === currentSlide ? ' current' : '');
+                item.textContent = `${i+1}. ${title}`;
+                item.onclick = (e) => { e.stopPropagation(); showSlide(i); dropdown.remove(); };
+                dropdown.appendChild(item);
+            });
+
+            target.style.position = 'relative';
+            target.appendChild(dropdown);
         }
 
         function revealPath(key, description) {
