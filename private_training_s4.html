@@ -1,0 +1,2692 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buổi 4: API Testing Nâng cao & Chuỗi Giao dịch</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f17;
+            --card-bg: #111622;
+            --primary-color: #58a6ff;
+            --accent-color: #00f0ff;
+            --success-color: #39d353;
+            --danger-color: #f85149;
+            --text-color: #c9d1d9;
+            --text-bright: #f0f6fc;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(88, 166, 255, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(0, 240, 255, 0.05) 0px, transparent 50%);
+        }
+
+        .slide-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide {
+            display: none;
+            width: 92%;
+            max-width: 1180px;
+            height: 82vh;
+            background-color: var(--card-bg);
+            border-radius: 24px;
+            padding: 22px 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 240, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text-bright);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .logo span {
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .slide-title {
+            font-size: 1.3rem;
+            color: var(--text-bright);
+            font-weight: 700;
+        }
+
+        .slide-content {
+            flex-grow: 1;
+            font-size: 0.98rem;
+            line-height: 1.45;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 10px;
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: #8b949e;
+            flex-shrink: 0;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-bright);
+            padding: 8px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn:hover {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: #0b0f17;
+            border-color: transparent;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            right: 5%;
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .quiz-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .quiz-option {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 10px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.92rem;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-option:hover:not(.disabled) {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.08);
+            transform: translateX(4px);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--success-color) !important;
+            background: rgba(57, 211, 83, 0.08) !important;
+            color: #7eff93 !important;
+            box-shadow: 0 0 15px rgba(57, 211, 83, 0.1);
+        }
+
+        .quiz-option.incorrect {
+            border-color: var(--danger-color) !important;
+            background: rgba(248, 81, 73, 0.08) !important;
+            color: #ff8e8a !important;
+            box-shadow: 0 0 15px rgba(248, 81, 73, 0.1);
+        }
+
+        .quiz-option.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .quiz-option i {
+            font-size: 1rem;
+        }
+
+        .quiz-feedback {
+            margin-top: 10px;
+            font-weight: 500;
+            display: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            line-height: 1.4;
+            backdrop-filter: blur(10px);
+            border-style: solid;
+            border-width: 1px;
+            animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-card {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.01) 0%, rgba(255, 255, 255, 0.03) 100%);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            max-width: 650px;
+            margin: 10px auto;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .score-display {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 10px 0;
+            filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.2));
+        }
+
+        .badge-rating {
+            display: inline-block;
+            padding: 6px 20px;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .tab-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--text-color);
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 0.85rem;
+        }
+
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: #0b0f17;
+            font-weight: bold;
+            box-shadow: 0 0 12px rgba(88, 166, 255, 0.2);
+            border-color: transparent;
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px;
+            border-radius: 14px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .highlight {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        pre {
+            background: #070a10;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.06);
+            overflow-x: auto;
+            color: #e6edf3;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.82rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .badge {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .progress-bar-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: #111622;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .intro-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            text-align: center;
+            padding: 5px 0;
+        }
+
+        .game-status-bar {
+            display: inline-flex;
+            gap: 12px;
+            margin: 0 auto 10px auto;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 5px 15px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            align-self: center;
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--accent-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.5; }
+        }
+
+        .intro-title {
+            font-size: 2.2rem;
+            background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            filter: drop-shadow(0 0 12px rgba(0,240,255,0.1));
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .intro-subtitle {
+            font-size: 1.05rem;
+            color: #8b949e;
+            max-width: 750px;
+            margin: 0 auto 15px auto;
+            line-height: 1.4;
+        }
+
+        .intro-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .intro-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.01) 100%);
+            padding: 12px 15px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .intro-card h4 {
+            font-size: 0.95rem;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .intro-card p {
+            font-size: 0.8rem;
+            color: #8b949e;
+            line-height: 1.35;
+        }
+
+        .start-alert {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            padding: 6px 14px;
+            border-radius: 10px;
+            color: var(--accent-color);
+            font-size: 0.8rem;
+            font-weight: 600;
+            animation: bounce 2s infinite;
+            align-self: center;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        ul.list-modern {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        ul.list-modern li {
+            position: relative;
+            padding-left: 15px;
+            margin-bottom: 6px;
+            font-size: 0.88rem;
+            color: #8b949e;
+        }
+
+        ul.list-modern li::before {
+            content: "✦";
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+        }
+
+        .lifecycle-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.01);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 15px 25px;
+            margin-bottom: 12px;
+        }
+
+        .flow-node {
+            text-align: center;
+            flex: 1;
+            padding: 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.04);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .flow-node.active-node {
+            background: rgba(0, 240, 255, 0.05);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);
+        }
+
+        .flow-arrow {
+            color: rgba(255,255,255,0.2);
+            font-size: 1rem;
+            padding: 0 10px;
+        }
+
+        .sandbox-container {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 15px;
+        }
+
+        .interactive-json-key {
+            cursor: pointer;
+            color: #ff79c6;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .interactive-json-key:hover {
+            color: var(--accent-color);
+            background: rgba(0, 240, 255, 0.08);
+            border-radius: 4px;
+            padding: 0 4px;
+        }
+
+        .slide-footer span:last-child {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .slide-footer span:last-child:hover {
+            color: var(--accent-color);
+        }
+        .slide-picker-dropdown {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 100;
+            min-width: 220px;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.4);
+        }
+        .slide-picker-dropdown.open { display: block; }
+        .slide-picker-item {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            color: var(--text-color);
+            border-radius: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .slide-picker-item:hover { background: rgba(88,166,255,0.1); }
+        .slide-picker-item.current { color: var(--accent-color); font-weight: bold; }
+
+        pre::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        pre::-webkit-scrollbar-track {
+            background: #070a10;
+        }
+        pre::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+
+        /* ===== RESPONSIVE: Tablet ===== */
+        @media (max-width: 1024px) {
+            .slide {
+                padding: 18px 24px;
+                height: 85vh;
+                width: 96%;
+                border-radius: 16px;
+            }
+            .slide-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+                padding-bottom: 8px;
+                margin-bottom: 8px;
+            }
+            .slide-title {
+                font-size: 1.1rem;
+            }
+            .logo {
+                font-size: 1.1rem;
+            }
+            .grid-2 {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            .intro-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            .sandbox-container {
+                grid-template-columns: 1fr;
+            }
+            .controls {
+                bottom: 12px;
+                right: 3%;
+            }
+            .tab-btn {
+                padding: 5px 10px;
+                font-size: 0.78rem;
+            }
+        }
+
+        /* ===== RESPONSIVE: Mobile ===== */
+        @media (max-width: 640px) {
+            body {
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            .slide-container {
+                align-items: flex-start;
+                padding: 8px 0;
+            }
+            .slide {
+                width: 100%;
+                height: auto;
+                min-height: 92vh;
+                border-radius: 0;
+                padding: 14px 16px;
+                overflow-y: auto;
+                overflow-x: hidden;
+                box-shadow: none;
+                border: none;
+            }
+            .slide.active {
+                justify-content: flex-start;
+            }
+            .slide-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 2px;
+                padding-bottom: 6px;
+                margin-bottom: 8px;
+            }
+            .slide-title {
+                font-size: 0.95rem;
+            }
+            .logo {
+                font-size: 1rem;
+            }
+            .slide-content {
+                font-size: 0.88rem;
+                line-height: 1.4;
+                overflow-y: auto;
+                flex-grow: 1;
+            }
+
+            /* Grids → single column */
+            .grid-2,
+            .intro-grid {
+                grid-template-columns: 1fr !important;
+                gap: 8px;
+            }
+            .sandbox-container {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Lifecycle flow → wrap */
+            .lifecycle-flow {
+                flex-wrap: wrap;
+                gap: 6px;
+                padding: 10px 12px;
+            }
+            .flow-node {
+                flex: 1 1 40%;
+                min-width: 120px;
+            }
+            .flow-arrow {
+                display: none;
+            }
+
+            /* Quiz options — bigger touch targets */
+            .quiz-option {
+                padding: 12px 14px;
+                font-size: 0.85rem;
+                min-height: 44px;
+            }
+            .quiz-container {
+                gap: 6px;
+            }
+            .quiz-feedback {
+                font-size: 0.82rem;
+                padding: 10px;
+            }
+
+            /* Tabs — scroll horizontally */
+            .tab-container {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                gap: 6px;
+                padding-bottom: 4px;
+            }
+            .tab-btn {
+                white-space: nowrap;
+                flex-shrink: 0;
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+
+            /* Code blocks */
+            pre {
+                font-size: 0.72rem !important;
+                padding: 10px;
+                max-height: 180px;
+            }
+
+            /* Controls — bottom fixed */
+            .controls {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                justify-content: center;
+                background: var(--bg-color);
+                padding: 8px 16px;
+                border-top: 1px solid rgba(255,255,255,0.06);
+                z-index: 20;
+                gap: 10px;
+            }
+            .nav-btn {
+                padding: 10px 20px;
+                font-size: 0.85rem;
+                flex: 1;
+                justify-content: center;
+            }
+
+            /* Footer */
+            .slide-footer {
+                font-size: 0.7rem;
+                margin-top: 8px;
+                padding-top: 6px;
+                padding-bottom: 50px;
+            }
+
+            /* Intro */
+            .intro-title {
+                font-size: 1.5rem;
+            }
+            .intro-subtitle {
+                font-size: 0.88rem;
+            }
+            .game-status-bar {
+                font-size: 0.65rem;
+                gap: 6px;
+                padding: 4px 10px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .start-alert {
+                font-size: 0.72rem;
+            }
+
+            /* Score display */
+            .score-display {
+                font-size: 2.8rem;
+            }
+            .result-card {
+                padding: 16px;
+            }
+
+            /* Progress bar */
+            .progress-bar-container {
+                height: 4px;
+            }
+
+            /* Force ALL inline grids to single column on mobile */
+            [style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
+            /* Exception: keep step number + content side by side */
+            [style*="grid-template-columns: 36px"] {
+                grid-template-columns: 36px 1fr !important;
+            }
+
+            /* Testing pyramid — stack vertically on mobile */
+            .testing-pyramid {
+                flex-direction: column-reverse !important;
+                align-items: center !important;
+                gap: 3px !important;
+            }
+            .testing-pyramid > div {
+                width: 100% !important;
+                height: auto !important;
+                min-height: 32px !important;
+                border-radius: 6px !important;
+                font-size: 0.62rem !important;
+                padding: 4px 8px !important;
+            }
+
+            /* Slide picker */
+            .slide-picker-dropdown {
+                max-height: 250px;
+                min-width: 180px;
+                right: -10px;
+            }
+        }
+
+        /* ===== Touch device: ensure clickable quiz options ===== */
+        @media (pointer: coarse) {
+            .quiz-option {
+                min-height: 48px;
+                -webkit-tap-highlight-color: rgba(0, 240, 255, 0.1);
+            }
+            .quiz-option span,
+            .quiz-option i {
+                pointer-events: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="slide-container">
+
+        <!-- SLIDE 1: LOBBY -->
+        <div class="slide active">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div>Lobby // Session_04</div>
+            </div>
+            <div class="slide-content" style="overflow: hidden;">
+                <div class="intro-container">
+                    <div class="game-status-bar">
+                        <span><span class="pulse-dot"></span> STATUS: ONLINE</span>
+                        <span>|</span>
+                        <span>DIFFICULTY: INTERMEDIATE-ADVANCED</span>
+                        <span>|</span>
+                        <span>QUEST: REQUEST CHAINING & ASSERTIONS</span>
+                    </div>
+
+                    <h1 class="intro-title">
+                        API TESTING NÂNG CAO & CHUỖI GIAO DỊCH
+                    </h1>
+
+                    <p class="intro-subtitle">
+                        Làm chủ kỹ thuật <span class="highlight">Chaining Requests</span> và viết <span class="highlight">Assertions</span> chuyên sâu trong Postman — nền tảng để xây dựng một bộ test tự động End-to-End thực chiến.
+                    </p>
+
+                    <div class="intro-grid">
+                        <div class="intro-card">
+                            <h4 class="highlight"><i class="fa-solid fa-bullseye"></i> NHIỆM VỤ</h4>
+                            <p>Xây dựng một chuỗi (chain) request hoàn chỉnh mô phỏng giao dịch chuyển tiền E2E: Đăng nhập → Chuyển tiền → Tra cứu trạng thái.</p>
+                        </div>
+                        <div class="intro-card">
+                            <h4 class="highlight"><i class="fa-solid fa-flask"></i> MÔI TRƯỜNG</h4>
+                            <p>Thực hành trên Postman kết hợp Restful-Booker (<code>restful-booker.herokuapp.com</code>) — REST API thật, dữ liệu lưu thực sự, có Token Auth, CRUD Booking.</p>
+                        </div>
+                        <div class="intro-card" style="border-color: rgba(57, 211, 83, 0.15);">
+                            <h4 style="color: var(--success-color);"><i class="fa-solid fa-graduation-cap"></i> CHUẨN ĐẦU RA</h4>
+                            <p>Thành thạo kỹ thuật Chaining, viết được Assertions chuyên sâu và sử dụng thành thạo Dynamic Variables trong Postman.</p>
+                        </div>
+                    </div>
+
+                    <div class="start-alert">
+                        <i class="fa-solid fa-play"></i> NHẤN PHÍM "MŨI TÊN PHẢI" ĐỂ BẮT ĐẦU QUIZ
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>IT Learn Studio</span>
+                <span>Slide 1 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: Q1 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q1</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">Postman Environment</span> Trong Postman, biến <span class="highlight">{{base_url}}</span> nên được khai báo ở đâu để dùng chung cho cả Collection?</p>
+                <div class="quiz-container" data-question="1">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. Console log', 'Hụt rồi! Console chỉ để xem log debug, không lưu được biến.', 1)">
+                        <span>A. Console log</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B. Environment Variables', 'Chuẩn không cần chỉnh! Environment Variables là nơi khai báo các biến dùng chung như base_url, token cho cả môi trường Dev/Staging/UAT.', 1)">
+                        <span>B. Environment Variables</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C. Tab Body của request', 'Sai lệch rồi! Body chỉ chứa dữ liệu gửi đi của từng request cụ thể.', 1)">
+                        <span>C. Tab Body của request</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. File README của Collection', 'Không đúng nha! README chỉ là văn bản mô tả, không lưu được biến động.', 1)">
+                        <span>D. File README của Collection</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-1"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 2 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: Q2 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q2</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">API Request</span> Khi gửi request <span class="highlight">POST /api/login</span> với email và password, dữ liệu đăng nhập nên được gửi ở phần nào của request?</p>
+                <div class="quiz-container" data-question="2">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. Trên URL dưới dạng query string', 'Sai rồi nè! Gửi password trên URL cực kỳ không an toàn vì URL có thể bị log lại hoặc lộ trên trình duyệt.', 2)">
+                        <span>A. Trên URL dưới dạng query string (?email=...&password=...)</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B. Trong Body dạng JSON', 'Quá chuẩn! Dữ liệu nhạy cảm như password phải gửi trong Body (thường là JSON), không bao giờ để trên URL.', 2)">
+                        <span>B. Trong Body của request dưới dạng JSON</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C. Trong phần Headers', 'Chưa chính xác! Headers dùng cho metadata như Content-Type, Authorization — không phải cho dữ liệu login form.', 2)">
+                        <span>C. Trong phần Headers của request</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. Không cần gửi, server tự biết', 'Ối, sai hoàn toàn! Server không thể tự biết credentials, bạn phải gửi dữ liệu xác thực trong request.', 2)">
+                        <span>D. Không cần gửi, server sẽ tự nhận biết</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-2"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 3 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: Q3 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q3</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 8px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">JSON Path</span> Cho response bên dưới, cú pháp nào lấy đúng giá trị <span class="highlight">"Giang"</span>?</p>
+                <pre style="margin-bottom: 10px;">{ "data": { "user": { "name": "Giang" } } }</pre>
+                <div class="quiz-container" data-question="3">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. res.name', 'Sai rồi! Đi thẳng vậy là bỏ qua 2 tầng lồng nhau data và user.', 3)">
+                        <span>A. `res.name`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B. res.data.user.name', 'Chuẩn xác 100%! Đi từ ngoài vào trong theo đúng thứ tự các key lồng nhau: data → user → name.', 3)">
+                        <span>B. `res.data.user.name`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C. res.user.data.name', 'Nhầm thứ tự rồi! `data` phải nằm ngoài cùng, sau đó mới đến `user`.', 3)">
+                        <span>C. `res.user.data.name`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. res.data.name.user', 'Sai thứ tự nha! `name` phải là key trong cùng nhất.', 3)">
+                        <span>D. `res.data.name.user`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-3"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 4 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: Q4 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q4</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">HTTP Status Code</span> Status code <span class="highlight">201</span> mang ý nghĩa gì?</p>
+                <div class="quiz-container" data-question="4">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. Request thất bại', 'Sai hoàn toàn! 2xx luôn là dải mã báo hiệu thành công.', 4)">
+                        <span>A. Request thất bại</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B. Created - tạo mới resource thành công', 'Chuẩn không cần chỉnh! 201 Created báo hiệu resource mới đã được tạo thành công, thường trả về sau POST.', 4)">
+                        <span>B. Created — tạo mới resource thành công</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C. Không tìm thấy resource', 'Nhầm rồi! Không tìm thấy phải là mã 404 nha.', 4)">
+                        <span>C. Không tìm thấy resource</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. Server đang bảo trì', 'Sai lệch! Đó phải là lỗi 5xx phía server.', 4)">
+                        <span>D. Server đang bảo trì</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-4"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 5 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: Q5 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q5</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">REST API</span> API trả về status <span class="highlight">200</span> nhưng body chứa <span class="highlight">{"status": "error", "message": "Số dư không đủ"}</span>. Kết quả test nên là gì?</p>
+                <div class="quiz-container" data-question="5">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. PASS — vì status code 200', 'Sai rồi nè! Đừng bị đánh lừa bởi status 200 — body đang báo lỗi nghiệp vụ rõ ràng.', 5)">
+                        <span>A. PASS — vì status code là 200 nghĩa là thành công</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'B. PASS — vì server có phản hồi', 'Nhầm rồi! Có phản hồi nhưng nội dung báo lỗi thì vẫn là test hỏng.', 5)">
+                        <span>B. PASS — vì server đã phản hồi không bị timeout</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'C. FAIL — status 200 nhưng business logic lỗi', 'Đỉnh cao tư duy Tester! Status 200 chỉ là HTTP layer OK, nhưng business logic báo Số dư không đủ thì phải FAIL và log bug: server nên trả 4xx chứ không phải 200.', 5)">
+                        <span>C. FAIL — status 200 nhưng business logic báo lỗi, cần investigate</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. Không cần test vì đây là lỗi bình thường', 'Sai lầm lớn! Mọi response đều phải được kiểm tra, đặc biệt khi status code và body mâu thuẫn nhau.', 5)">
+                        <span>D. Không cần test — đây là hành vi bình thường của API</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-5"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 6 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: Q6 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q6</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">Chaining</span> Trong kỹ thuật Chaining Requests, output của request A trở thành gì của request B?</p>
+                <div class="quiz-container" data-question="6">
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'A. Input - thông qua biến Environment', 'Quá đỉnh! Output (ví dụ token, id) của request A được lưu vào biến Environment, rồi request B lấy biến đó làm Input của mình.', 6)">
+                        <span>A. Input — thông qua biến Environment</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'B. Không liên quan gì cả', 'Sai hoàn toàn! Đó chính xác là bản chất của kỹ thuật Chaining.', 6)">
+                        <span>B. Không liên quan gì cả</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C. Header cố định', 'Chưa đúng! Header là nơi gắn giá trị đó vào, nhưng nguồn gốc là biến Environment.', 6)">
+                        <span>C. Header cố định</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. Một Collection mới hoàn toàn', 'Không liên quan nha! Chaining không tạo ra Collection mới.', 6)">
+                        <span>D. Một Collection mới hoàn toàn</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-6"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 7 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: Q7 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q7</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">HTTP Status Code</span> Sự khác nhau chính giữa <span class="highlight">401</span> và <span class="highlight">403</span> là gì?</p>
+                <div class="quiz-container" data-question="7">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. Hai mã này hoàn toàn giống nhau', 'Sai rồi! Hai mã lỗi này mang ý nghĩa hoàn toàn khác nhau.', 7)">
+                        <span>A. Hai mã này hoàn toàn giống nhau</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B. 401 = chưa xác thực, 403 = đã xác thực nhưng không đủ quyền', 'Chuẩn cơm mẹ nấu! 401 Unauthorized = chưa đăng nhập/token sai; 403 Forbidden = đã đăng nhập nhưng không đủ quyền truy cập.', 7)">
+                        <span>B. 401 = chưa xác thực, 403 = đã xác thực nhưng không đủ quyền</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C. 401 là lỗi server, 403 là lỗi client', 'Không đúng nha! Cả hai đều là lỗi phía Client (4xx).', 7)">
+                        <span>C. 401 là lỗi server, 403 là lỗi client</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. 401 dùng cho GET, 403 dùng cho POST', 'Sai lệch hoàn toàn! Status code không phụ thuộc vào HTTP method.', 7)">
+                        <span>D. 401 dùng cho GET, 403 dùng cho POST</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-7"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 8 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: Q8 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q8</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">API Testing</span> Bạn test API chuyển tiền: gửi <span class="highlight">POST /transfer</span> với số tiền 500,000đ. Server trả về <span class="highlight">201 Created</span>. Bước tiếp theo bạn cần kiểm tra gì?</p>
+                <div class="quiz-container" data-question="8">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. Chỉ cần xác nhận status 201 là đủ', 'Chưa đủ đâu! Status 201 chỉ xác nhận HTTP layer thành công, chưa kiểm tra được nghiệp vụ bên trong.', 8)">
+                        <span>A. Chỉ cần xác nhận status 201 là đủ, test PASS</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'B. Gọi lại API chuyển tiền thêm 1 lần nữa', 'Ối, nguy hiểm! Gọi lại sẽ chuyển tiền 2 lần — đây không phải cách verify kết quả.', 8)">
+                        <span>B. Gọi lại POST /transfer thêm 1 lần nữa để xác nhận</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'C. Kiểm tra response body + gọi GET tra cứu giao dịch', 'Tuyệt vời! Tester chuyên nghiệp phải: (1) kiểm tra body có transaction_id, số tiền đúng, (2) gọi GET /transaction/{id} để xác nhận giao dịch thực sự tồn tại và đúng trạng thái.', 8)">
+                        <span>C. Kiểm tra response body (transaction_id, số tiền) rồi gọi GET tra cứu giao dịch đó</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. Báo dev kiểm tra database', 'Hơi thiếu chủ động! Tester nên tự verify qua API trước, chỉ nhờ dev khi cần truy vấn trực tiếp DB.', 8)">
+                        <span>D. Nhờ developer kiểm tra trực tiếp trong database</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-8"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 9 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: Q9 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q9</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 8px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">JSON Path</span> Cho response sau, cú pháp nào lấy đúng id của <span class="highlight">user thứ 2</span>?</p>
+                <pre style="margin-bottom: 10px;">{ "users": [ {"id": 1}, {"id": 2} ] }</pre>
+                <div class="quiz-container" data-question="9">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. res.users[2].id', 'Suýt trúng! Mảng (array) trong JS đánh số bắt đầu từ 0, nên phần tử thứ 2 có index là 1.', 9)">
+                        <span>A. `res.users[2].id`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B. res.users[1].id', 'Chuẩn xác! Index mảng bắt đầu từ 0, nên phần tử thứ 2 (id=2) nằm ở index [1].', 9)">
+                        <span>B. `res.users[1].id`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C. res.users.id[1]', 'Sai cú pháp rồi! Phải truy cập phần tử mảng trước, rồi mới lấy field id.', 9)">
+                        <span>C. `res.users.id[1]`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. res.users[0].id', 'Chưa đúng! Đây là id của user thứ nhất (index 0), không phải thứ 2.', 9)">
+                        <span>D. `res.users[0].id`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-9"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 10 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: Q10 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q10</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">Dynamic Variables</span> Biến động <span class="highlight">{{$randomInt}}</span> trong Postman được dùng để làm gì?</p>
+                <div class="quiz-container" data-question="10">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. Lấy token xác thực tự động', 'Sai rồi! Token phải lấy từ response của request Login, không phải dynamic variable này.', 10)">
+                        <span>A. Lấy token xác thực tự động</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B. Sinh số ngẫu nhiên 0-1000 mỗi lần chạy request', 'Chuẩn không cần chỉnh! {{$randomInt}} sinh ra một số nguyên ngẫu nhiên từ 0-1000 mỗi lần Postman gửi request, cực hữu ích để tạo test data unique.', 10)">
+                        <span>B. Sinh số ngẫu nhiên 0-1000 mỗi lần chạy request</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C. Đo thời gian phản hồi của server', 'Không đúng! Thời gian phản hồi được đo bằng pm.response.responseTime.', 10)">
+                        <span>C. Đo thời gian phản hồi của server</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. Xóa toàn bộ Environment Variables', 'Sai hoàn toàn! Đây không phải là hành động của dynamic variable này.', 10)">
+                        <span>D. Xóa toàn bộ Environment Variables</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-10"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 11 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: Q11 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q11</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 8px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">JSON Path</span> Cho response bên dưới, cú pháp nào lấy đúng giá trị <span class="highlight">"electronics"</span>?</p>
+                <pre style="margin-bottom: 10px;">{
+  "products": [
+    { "id": 1, "name": "Laptop", "category": { "type": "electronics", "priority": "high" } },
+    { "id": 2, "name": "Shirt", "category": { "type": "clothing", "priority": "low" } }
+  ]
+}</pre>
+                <div class="quiz-container" data-question="11">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. res.products.category.type', 'Sai rồi! products là mảng (array), phải chỉ rõ index phần tử trước khi truy cập tiếp.', 11)">
+                        <span>A. `res.products.category.type`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B. res.products[0].category.type', 'Chuẩn xác! Truy cập phần tử đầu tiên của mảng products (index 0), rồi vào object category, lấy field type.', 11)">
+                        <span>B. `res.products[0].category.type`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C. res.products[1].category.type', 'Gần đúng nhưng sai index! Index [1] là phần tử thứ 2 (Shirt → clothing), không phải phần tử thứ 1 (Laptop → electronics).', 11)">
+                        <span>C. `res.products[1].category.type`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. res.products[0].type', 'Thiếu 1 tầng! Field type nằm bên trong object category, phải đi qua category trước.', 11)">
+                        <span>D. `res.products[0].type`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-11"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 12 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: Q12 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q12</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 8px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">JSON Path</span> Response API trả về danh sách booking. Muốn lấy <span class="highlight">số lượng booking</span>, dùng cú pháp nào?</p>
+                <pre style="margin-bottom: 10px;">{
+  "bookings": [
+    { "bookingid": 101, "room": "A1" },
+    { "bookingid": 102, "room": "B3" },
+    { "bookingid": 103, "room": "C5" }
+  ]
+}</pre>
+                <div class="quiz-container" data-question="12">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A. res.bookings.count', 'Sai rồi! JavaScript array không có thuộc tính .count — đó là cú pháp của ngôn ngữ khác.', 12)">
+                        <span>A. `res.bookings.count`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'B. res.bookings.size()', 'Nhầm rồi! JavaScript dùng .length chứ không phải .size() cho array.', 12)">
+                        <span>B. `res.bookings.size()`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'C. res.bookings.length', 'Chuẩn! Trong JavaScript, .length là thuộc tính đếm số phần tử của mảng. Ở đây sẽ trả về 3.', 12)">
+                        <span>C. `res.bookings.length`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D. res.length.bookings', 'Sai thứ tự! Phải truy cập mảng bookings trước, rồi mới dùng .length.', 12)">
+                        <span>D. `res.length.bookings`</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-12"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 13 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: QUIZ RESULTS -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Báo Cáo Thành Tích Pre-Check Quiz</div>
+            </div>
+            <div class="slide-content" style="display: flex; flex-direction: column; justify-content: flex-start; overflow-y: auto;">
+                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 14px; align-items: start;">
+                    <div class="result-card" style="margin: 0; padding: 16px;">
+                        <h3 style="color: var(--text-bright); font-size: 1rem; margin-bottom: 4px;">KẾT QUẢ ĐÁNH GIÁ</h3>
+                        <div class="score-display" id="quizScore" style="font-size: 3rem; margin: 6px 0;">0/12</div>
+                        <div class="badge-rating" id="scoreBadge" style="background: var(--primary-color); color: #0b0f17; margin-bottom: 8px; font-size: 0.78rem;">Đang tính điểm...</div>
+                        <p style="line-height: 1.4; font-size: 0.82rem; color: #8b949e;" id="scoreEvaluation">Hoàn thành 12 câu hỏi để nhận phân tích chi tiết.</p>
+                    </div>
+                    <div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;" id="topicBreakdown">
+                            <div class="topic-row" data-topic="api-fundamentals" style="background: rgba(255,255,255,0.01); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                    <span style="font-size:0.76rem; font-weight:700; color:var(--text-bright);"><i class="fa-solid fa-globe"></i> API Cơ Bản & Postman</span>
+                                    <span id="score-api-fundamentals" style="font-size:0.7rem; font-weight:700; color:#8b949e;">—</span>
+                                </div>
+                                <div style="font-size:0.68rem; color:#8b949e; line-height:1.3;">
+                                    <span style="color:#555;">Q1: Environment Variable | Q2: Request Body</span>
+                                </div>
+                                <div id="suggest-api-fundamentals" style="font-size:0.68rem; margin-top:3px; display:none; line-height:1.3;"></div>
+                            </div>
+                            <div class="topic-row" data-topic="json-path" style="background: rgba(255,255,255,0.01); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                    <span style="font-size:0.76rem; font-weight:700; color:var(--text-bright);"><i class="fa-solid fa-code"></i> JSON & JSONPath</span>
+                                    <span id="score-json-path" style="font-size:0.7rem; font-weight:700; color:#8b949e;">—</span>
+                                </div>
+                                <div style="font-size:0.68rem; color:#8b949e; line-height:1.3;">
+                                    <span style="color:#555;">Q3: Nested Path | Q9: Array Index | Q11: Array+Nested | Q12: Array Length</span>
+                                </div>
+                                <div id="suggest-json-path" style="font-size:0.68rem; margin-top:3px; display:none; line-height:1.3;"></div>
+                            </div>
+                            <div class="topic-row" data-topic="status-codes" style="background: rgba(255,255,255,0.01); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                    <span style="font-size:0.76rem; font-weight:700; color:var(--text-bright);"><i class="fa-solid fa-shield-halved"></i> HTTP Status Codes</span>
+                                    <span id="score-status-codes" style="font-size:0.7rem; font-weight:700; color:#8b949e;">—</span>
+                                </div>
+                                <div style="font-size:0.68rem; color:#8b949e; line-height:1.3;">
+                                    <span style="color:#555;">Q4: 201 Created | Q7: 401 vs 403</span>
+                                </div>
+                                <div id="suggest-status-codes" style="font-size:0.68rem; margin-top:3px; display:none; line-height:1.3;"></div>
+                            </div>
+                            <div class="topic-row" data-topic="tester-mindset" style="background: rgba(255,255,255,0.01); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                    <span style="font-size:0.76rem; font-weight:700; color:var(--text-bright);"><i class="fa-solid fa-brain"></i> Tư Duy Tester & Verify</span>
+                                    <span id="score-tester-mindset" style="font-size:0.7rem; font-weight:700; color:#8b949e;">—</span>
+                                </div>
+                                <div style="font-size:0.68rem; color:#8b949e; line-height:1.3;">
+                                    <span style="color:#555;">Q5: Status 200 vs Logic Error | Q8: Verify Giao Dịch</span>
+                                </div>
+                                <div id="suggest-tester-mindset" style="font-size:0.68rem; margin-top:3px; display:none; line-height:1.3;"></div>
+                            </div>
+                            <div class="topic-row" data-topic="chaining-dynamic" style="background: rgba(255,255,255,0.01); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); grid-column: 1 / -1;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                    <span style="font-size:0.76rem; font-weight:700; color:var(--text-bright);"><i class="fa-solid fa-link"></i> Chaining & Dynamic Variables</span>
+                                    <span id="score-chaining-dynamic" style="font-size:0.7rem; font-weight:700; color:#8b949e;">—</span>
+                                </div>
+                                <div style="font-size:0.68rem; color:#8b949e; line-height:1.3;">
+                                    <span style="color:#555;">Q6: Request Chaining | Q10: Dynamic Variables</span>
+                                </div>
+                                <div id="suggest-chaining-dynamic" style="font-size:0.68rem; margin-top:3px; display:none; line-height:1.3;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="learningPath" style="margin-top: 10px; background: rgba(0,240,255,0.03); border: 1px solid rgba(0,240,255,0.1); border-radius: 10px; padding: 10px 14px; display: none;">
+                    <h4 style="font-size: 0.82rem; color: var(--accent-color); margin-bottom: 6px;"><i class="fa-solid fa-road"></i> Lộ Trình Học Tập Đề Xuất Cho Bạn</h4>
+                    <div id="learningPathContent" style="font-size: 0.76rem; color: #8b949e; line-height: 1.4;"></div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phân tích chi tiết theo từng nhóm kiến thức</span>
+                <span>Slide 14 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: AGENDA -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Agenda — Lộ Trình Buổi 4 (120 phút)</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.9rem; color: #8b949e; margin-bottom: 12px; text-align: center;">
+                    Buổi học hôm nay tập trung <span class="highlight">100% thực chiến</span> — biến những gì đã học ở Buổi 3 thành một chuỗi giao dịch tự động hoàn chỉnh.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; background: rgba(255,255,255,0.01); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                        <span class="highlight" style="font-family:monospace;">00:00-00:10</span>
+                        <span>Ôn tập kiến thức Buổi 3 &amp; Pre-Check Quiz</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; background: rgba(0,240,255,0.03); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(0,240,255,0.12);">
+                        <span class="highlight" style="font-family:monospace;">00:10-00:30</span>
+                        <span><strong>Phần 1</strong> — Kỹ thuật Chaining Requests</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; background: rgba(0,240,255,0.03); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(0,240,255,0.12);">
+                        <span class="highlight" style="font-family:monospace;">00:30-00:50</span>
+                        <span><strong>Phần 2</strong> — Viết Assertions chuyên sâu</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; background: rgba(230,192,28,0.05); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(230,192,28,0.15);">
+                        <span style="font-family:monospace; color:#e6c01c; font-weight:700;">00:50-01:00</span>
+                        <span><i class="fa-solid fa-mug-hot"></i> Break</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; background: rgba(0,240,255,0.03); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(0,240,255,0.12);">
+                        <span class="highlight" style="font-family:monospace;">01:00-01:10</span>
+                        <span><strong>Phần 3</strong> — Dynamic Variables</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; background: rgba(57,211,83,0.04); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.15);">
+                        <span style="font-family:monospace; color:var(--success-color); font-weight:700;">01:10-01:50</span>
+                        <span><strong>Phần 4</strong> — Thực hành Case Study 4 (Xây dựng chuỗi giao dịch E2E)</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; background: rgba(255,255,255,0.01); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                        <span class="highlight" style="font-family:monospace;">01:50-02:00</span>
+                        <span>Tổng kết &amp; Q&amp;A</span>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Lộ trình tổng quan buổi học</span>
+                <span>Slide 15 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: Chaining Concept -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 1.1 — Chaining Requests Là Gì?</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.88rem; color: #8b949e; margin-bottom: 8px; text-align: center;">
+                    <span class="highlight">Chaining Requests</span> = Lấy dữ liệu từ response của request A → lưu vào biến → dùng làm input cho request B. Tạo thành chuỗi giao dịch <strong>tự động, không cần copy-paste</strong>.
+                </p>
+
+                <div class="grid-2" style="margin-bottom: 8px;">
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 style="color:var(--danger-color); margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-xmark"></i> Không Có Chaining (Thủ Công)</h4>
+                        <div style="font-size: 0.74rem; color: #8b949e; line-height: 1.4;">
+                            <p>1. Gửi POST /login → nhận token <code>"QpwL5tke..."</code></p>
+                            <p>2. <span style="color:var(--danger-color); font-weight:700;">Copy token bằng tay</span> → paste vào Header request tiếp</p>
+                            <p>3. Gửi POST /transfer → nhận <code>transaction_id: "TXN-8821"</code></p>
+                            <p>4. <span style="color:var(--danger-color); font-weight:700;">Copy transaction_id bằng tay</span> → paste vào URL request tra cứu</p>
+                            <p style="margin-top:6px; color:var(--danger-color); font-weight:600;"><i class="fa-solid fa-triangle-exclamation"></i> Chậm, dễ sai, không chạy được Collection Runner tự động!</p>
+                        </div>
+                    </div>
+                    <div style="background: rgba(57,211,83,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(57,211,83,0.12);">
+                        <h4 style="color:var(--success-color); margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-check"></i> Có Chaining (Tự Động)</h4>
+                        <div style="font-size: 0.74rem; color: #8b949e; line-height: 1.4;">
+                            <p>1. Gửi POST /login → <span style="color:var(--success-color); font-weight:700;">Script tự lưu</span> token vào biến</p>
+                            <p>2. Request tiếp <span style="color:var(--success-color); font-weight:700;">tự đọc</span> <code>{{token}}</code> từ biến → gửi đi</p>
+                            <p>3. Gửi POST /transfer → <span style="color:var(--success-color); font-weight:700;">Script tự lưu</span> transaction_id</p>
+                            <p>4. GET /transaction/<code>{{txn_id}}</code> → <span style="color:var(--success-color); font-weight:700;">tự động tra cứu</span></p>
+                            <p style="margin-top:6px; color:var(--success-color); font-weight:600;"><i class="fa-solid fa-rocket"></i> Nhanh, chính xác, chạy Collection Runner 1 click!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lifecycle-flow" style="margin-bottom: 8px;">
+                    <div class="flow-node active-node">
+                        <i class="fa-solid fa-paper-plane"></i> Request A<br>
+                        <span style="font-weight:400; font-size:0.7rem;">Response chứa data</span>
+                    </div>
+                    <div class="flow-arrow"><i class="fa-solid fa-angles-right"></i></div>
+                    <div class="flow-node" style="background: rgba(255,121,198,0.05); border-color: #ff79c6; color:#ff79c6;">
+                        <i class="fa-solid fa-code"></i> Tests Script<br>
+                        <span style="font-weight:400; font-size:0.7rem;">pm.environment.set()</span>
+                    </div>
+                    <div class="flow-arrow"><i class="fa-solid fa-angles-right"></i></div>
+                    <div class="flow-node" style="background: rgba(230,192,28,0.05); border-color: #e6c01c; color:#e6c01c;">
+                        <i class="fa-solid fa-database"></i> Environment<br>
+                        <span style="font-weight:400; font-size:0.7rem;">{{token}}, {{user_id}}</span>
+                    </div>
+                    <div class="flow-arrow"><i class="fa-solid fa-angles-right"></i></div>
+                    <div class="flow-node" style="background: rgba(57,211,83,0.05); border-color: var(--success-color); color:var(--success-color);">
+                        <i class="fa-solid fa-paper-plane"></i> Request B<br>
+                        <span style="font-weight:400; font-size:0.7rem;">Đọc {{biến}} làm input</span>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                    <div style="background: rgba(0,240,255,0.03); border: 1px solid rgba(0,240,255,0.1); border-radius: 10px; padding: 8px 12px;">
+                        <h4 style="font-size:0.78rem; color:var(--accent-color); margin-bottom:4px;"><i class="fa-solid fa-key"></i> Ví Dụ 1: Token Auth</h4>
+                        <p style="font-size:0.68rem; color:#8b949e; line-height:1.3;">Login → lưu <code>token</code> → mọi request sau đính kèm <code>Bearer {{token}}</code> trong Header</p>
+                    </div>
+                    <div style="background: rgba(0,240,255,0.03); border: 1px solid rgba(0,240,255,0.1); border-radius: 10px; padding: 8px 12px;">
+                        <h4 style="font-size:0.78rem; color:var(--accent-color); margin-bottom:4px;"><i class="fa-solid fa-cart-shopping"></i> Ví Dụ 2: E-Commerce</h4>
+                        <p style="font-size:0.68rem; color:#8b949e; line-height:1.3;">Tạo sản phẩm → lưu <code>product_id</code> → thêm vào giỏ hàng → lưu <code>cart_id</code> → thanh toán</p>
+                    </div>
+                    <div style="background: rgba(0,240,255,0.03); border: 1px solid rgba(0,240,255,0.1); border-radius: 10px; padding: 8px 12px;">
+                        <h4 style="font-size:0.78rem; color:var(--accent-color); margin-bottom:4px;"><i class="fa-solid fa-money-bill-transfer"></i> Ví Dụ 3: Banking</h4>
+                        <p style="font-size:0.68rem; color:#8b949e; line-height:1.3;">Login → lưu <code>token</code> → chuyển tiền → lưu <code>txn_id</code> → tra cứu trạng thái giao dịch</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 1: Chaining Requests // Khái niệm</span>
+                <span>Slide 16 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 15: E2E scenario -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 1.2 — Kịch Bản E2E: Login → Đặt Phòng → Xác Nhận → Dọn Dẹp</div>
+            </div>
+            <div class="slide-content" style="overflow-y:auto;">
+                <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 8px; text-align: center;">
+                    Sử dụng <span class="highlight">Restful-Booker</span> (<code>restful-booker.herokuapp.com</code>) — REST API <strong>thật, dữ liệu lưu thực sự</strong>, có Token Auth, CRUD Booking hoàn chỉnh.
+                </p>
+                <div class="sandbox-container" style="grid-template-columns: 0.55fr 0.45fr;">
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <div style="display: grid; grid-template-columns: 32px 1fr; gap: 8px; align-items: start; background: rgba(0,240,255,0.04); padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(0,240,255,0.15);">
+                            <div style="text-align:center;"><span style="background:var(--accent-color); color:#0b0f17; font-weight:900; border-radius:50%; width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; font-size:0.72rem;">1</span></div>
+                            <div>
+                                <strong style="color:var(--text-bright); font-size:0.82rem;"><span class="badge" style="background:rgba(57,211,83,0.1); border-color:var(--success-color); color:var(--success-color); font-size:0.6rem;">POST</span> /auth</strong>
+                                <p style="font-size:0.7rem; color:#8b949e; margin-top:2px;">Gửi username + password → Nhận <span class="highlight">token</span> → Lưu vào <code>{{token}}</code></p>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 32px 1fr; gap: 8px; align-items: start; background: rgba(57,211,83,0.03); padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.12);">
+                            <div style="text-align:center;"><span style="background:var(--success-color); color:#0b0f17; font-weight:900; border-radius:50%; width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; font-size:0.72rem;">2</span></div>
+                            <div>
+                                <strong style="color:var(--text-bright); font-size:0.82rem;"><span class="badge" style="background:rgba(57,211,83,0.1); border-color:var(--success-color); color:var(--success-color); font-size:0.6rem;">POST</span> /booking</strong>
+                                <p style="font-size:0.7rem; color:#8b949e; margin-top:2px;">Tạo đặt phòng mới → Response trả về <code>bookingid</code> thực → Lưu <code>{{booking_id}}</code></p>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 32px 1fr; gap: 8px; align-items: start; background: rgba(88,166,255,0.03); padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(88,166,255,0.12);">
+                            <div style="text-align:center;"><span style="background:var(--primary-color); color:#0b0f17; font-weight:900; border-radius:50%; width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; font-size:0.72rem;">3</span></div>
+                            <div>
+                                <strong style="color:var(--text-bright); font-size:0.82rem;"><span class="badge" style="background:rgba(88,166,255,0.1); border-color:var(--primary-color); color:var(--primary-color); font-size:0.6rem;">GET</span> /booking/{{booking_id}}</strong>
+                                <p style="font-size:0.7rem; color:#8b949e; margin-top:2px;">Tra cứu booking vừa tạo → <strong>Dữ liệu thật</strong>, verify tên, ngày, giá khớp input</p>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 32px 1fr; gap: 8px; align-items: start; background: rgba(230,192,28,0.03); padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(230,192,28,0.12);">
+                            <div style="text-align:center;"><span style="background:#e6c01c; color:#0b0f17; font-weight:900; border-radius:50%; width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; font-size:0.72rem;">4</span></div>
+                            <div>
+                                <strong style="color:var(--text-bright); font-size:0.82rem;"><span class="badge" style="background:rgba(230,192,28,0.1); border-color:#e6c01c; color:#e6c01c; font-size:0.6rem;">PUT</span> /booking/{{booking_id}}</strong>
+                                <p style="font-size:0.7rem; color:#8b949e; margin-top:2px;">Dùng <code>Cookie: token={{token}}</code> → Cập nhật thông tin → Verify dữ liệu mới</p>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 32px 1fr; gap: 8px; align-items: start; background: rgba(248,81,73,0.03); padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(248,81,73,0.12);">
+                            <div style="text-align:center;"><span style="background:var(--danger-color); color:#fff; font-weight:900; border-radius:50%; width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; font-size:0.72rem;">5</span></div>
+                            <div>
+                                <strong style="color:var(--text-bright); font-size:0.82rem;"><span class="badge" style="background:rgba(248,81,73,0.1); border-color:var(--danger-color); color:var(--danger-color); font-size:0.6rem;">DELETE</span> /booking/{{booking_id}}</strong>
+                                <p style="font-size:0.7rem; color:#8b949e; margin-top:2px;">Xóa booking <strong>thật</strong> → Dọn dẹp data → GET lại sẽ trả 404</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <div style="background:rgba(255,121,198,0.03); border:1px dashed rgba(255,121,198,0.2); padding:10px 12px; border-radius:10px;">
+                            <h4 style="font-size:0.78rem; color:#ff79c6; margin-bottom:6px;"><i class="fa-solid fa-arrows-turn-to-dots"></i> Dữ Liệu Truyền Giữa Các Bước</h4>
+                            <div style="font-size:0.68rem; color:#8b949e; line-height:1.4;">
+                                <p style="margin-bottom:3px;"><span style="color:var(--accent-color);">Bước 1 → 2:</span> Không cần token (POST /booking công khai)</p>
+                                <p style="margin-bottom:3px;"><span style="color:var(--success-color);">Bước 2 → 3:</span> <code>{{booking_id}}</code> (ID booking vừa tạo)</p>
+                                <p style="margin-bottom:3px;"><span style="color:var(--primary-color);">Bước 1 → 4:</span> <code>{{token}}</code> + <code>{{booking_id}}</code> (cần auth để sửa)</p>
+                                <p><span style="color:var(--danger-color);">Bước 1 → 5:</span> <code>{{token}}</code> + <code>{{booking_id}}</code> (cần auth để xóa)</p>
+                            </div>
+                        </div>
+                        <div style="background:rgba(0,240,255,0.03); border:1px solid rgba(0,240,255,0.1); padding:10px 12px; border-radius:10px;">
+                            <h4 style="font-size:0.78rem; color:var(--accent-color); margin-bottom:6px;"><i class="fa-solid fa-circle-info"></i> Tại Sao Restful-Booker?</h4>
+                            <div style="font-size:0.68rem; color:#8b949e; line-height:1.4;">
+                                <p>• <strong>Dữ liệu lưu thật</strong> — tạo booking → GET lại được</p>
+                                <p>• Có <strong>Token Authentication</strong> thực tế</p>
+                                <p>• CRUD hoàn chỉnh: Create, Read, Update, Delete</p>
+                                <p>• <strong>Chaining hoạt động thật</strong> — không phải mock!</p>
+                                <p>• Miễn phí, không cần đăng ký</p>
+                                <p style="margin-top:4px;"><span class="highlight">Base URL:</span></p>
+                                <p><code style="color:#e6edf3;">https://restful-booker.herokuapp.com</code></p>
+                                <p style="margin-top:2px;"><span class="highlight">Account:</span></p>
+                                <p><code style="color:#e6edf3;">admin / password123</code></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 1: Chaining Requests // Kịch bản E2E thực tế</span>
+                <span>Slide 17 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 16: Demo chaining on Restful-Booker -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 1.3 — Demo Chaining Trên Restful-Booker (Chi Tiết)</div>
+            </div>
+            <div class="slide-content">
+                <div style="background: rgba(0,240,255,0.03); border: 1px solid rgba(0,240,255,0.1); padding: 6px 12px; border-radius: 8px; margin-bottom: 6px; font-size: 0.74rem;">
+                    <span class="highlight"><i class="fa-solid fa-globe"></i> Cấu hình Environment:</span>
+                    <code style="color:#e6edf3; margin-left:6px;">base_url</code> = <code style="color:var(--success-color);">https://restful-booker.herokuapp.com</code> &nbsp;|&nbsp;
+                    <code style="color:#e6edf3;">token</code>, <code style="color:#e6edf3;">booking_id</code> = <span style="color:#e6c01c;">để trống (script tự gán)</span>
+                </div>
+                <div class="tab-container" id="bookerTabs">
+                    <button class="tab-btn active" onclick="switchNestedTab(event, 'bk-r1', 'bookerTabs')">R1: Auth</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'bk-r2', 'bookerTabs')">R2: Tạo Booking</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'bk-r3', 'bookerTabs')">R3: Xem Booking</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'bk-r4', 'bookerTabs')">R4: Sửa Booking</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'bk-r5', 'bookerTabs')">R5: Xóa Booking</button>
+                </div>
+                <div class="tab-content active" id="bk-r1">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <span><strong>URL:</strong> <span class="highlight">POST {{base_url}}/auth</span></span>
+                        <span class="badge" style="background:rgba(57,211,83,0.1); border-color:var(--success-color); color:var(--success-color);">POST</span>
+                    </div>
+                    <div class="grid-2">
+                        <div>
+                            <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">Body (raw JSON):</span>
+                            <pre style="margin-top:2px;">{
+  "username": "admin",
+  "password": "password123"
+}</pre>
+                            <p style="font-size:0.65rem; color:#8b949e; margin-top:4px;"><i class="fa-solid fa-circle-info"></i> Đây là tài khoản mặc định của Restful-Booker, dùng chung cho mọi người.</p>
+                        </div>
+                        <div>
+                            <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">Tab Tests — Lưu token:</span>
+                            <pre style="margin-top:2px;">const res = pm.response.json();
+
+pm.test("[Auth] Status 200", () => {
+    pm.response.to.have.status(200);
+});
+pm.test("[Auth] Có token trả về", () => {
+    pm.expect(res.token).to.be.a("string");
+});
+// ⭐ CHAINING: Lưu token cho PUT/DELETE
+pm.environment.set("token", res.token);
+console.log("✅ Token:", res.token);</pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="bk-r2">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <span><strong>URL:</strong> <span class="highlight">POST {{base_url}}/booking</span></span>
+                        <span class="badge" style="background:rgba(57,211,83,0.1); border-color:var(--success-color); color:var(--success-color);">POST</span>
+                    </div>
+                    <div class="grid-2">
+                        <div>
+                            <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">Headers:</span>
+                            <pre style="margin-top:2px;">Content-Type: application/json
+Accept: application/json</pre>
+                            <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600; margin-top:4px; display:block;">Body (raw JSON):</span>
+                            <pre style="margin-top:2px;">{
+  "firstname": "QA",
+  "lastname": "Tester",
+  "totalprice": {{$randomInt}},
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2025-01-01",
+    "checkout": "2025-01-05"
+  },
+  "additionalneeds": "Breakfast"
+}</pre>
+                        </div>
+                        <div>
+                            <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">Tab Tests — Lưu booking_id:</span>
+                            <pre style="margin-top:2px;">const res = pm.response.json();
+
+pm.test("[Create] Status 200", () => {
+    pm.response.to.have.status(200);
+});
+pm.test("[Create] Có bookingid trả về", () => {
+    pm.expect(res.bookingid).to.be.a("number");
+});
+pm.test("[Create] Tên khớp input", () => {
+    pm.expect(res.booking.firstname)
+        .to.eql("QA");
+});
+// ⭐ CHAINING: Lưu booking_id THẬT
+pm.environment.set("booking_id",
+    res.bookingid);
+console.log("✅ Booking ID:", res.bookingid);</pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="bk-r3">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <span><strong>URL:</strong> <span class="highlight">GET {{base_url}}/booking/{{booking_id}}</span></span>
+                        <span class="badge" style="background:rgba(88,166,255,0.1); border-color:var(--primary-color); color:var(--primary-color);">GET</span>
+                    </div>
+                    <div style="font-size:0.7rem; color:var(--accent-color); font-weight:600; margin-bottom:2px;">Headers: <code style="font-weight:400;">Accept: application/json</code></div>
+                    <pre>// ⭐ CHAINING: booking_id tự động thay thế từ Environment
+// → Dữ liệu trả về là THẬT, đúng booking vừa tạo!
+const res = pm.response.json();
+
+pm.test("[GetBooking] Status 200", () => {
+    pm.response.to.have.status(200);
+});
+pm.test("[GetBooking] Tên khách đúng", () => {
+    pm.expect(res.firstname).to.eql("QA");
+    pm.expect(res.lastname).to.eql("Tester");
+});
+pm.test("[GetBooking] Có đặt cọc", () => {
+    pm.expect(res.depositpaid).to.be.true;
+});
+pm.test("[GetBooking] Ngày check-in đúng", () => {
+    pm.expect(res.bookingdates.checkin).to.eql("2025-01-01");
+});</pre>
+                </div>
+                <div class="tab-content" id="bk-r4">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <span><strong>URL:</strong> <span class="highlight">PUT {{base_url}}/booking/{{booking_id}}</span></span>
+                        <span class="badge" style="background:rgba(230,192,28,0.1); border-color:#e6c01c; color:#e6c01c;">PUT</span>
+                    </div>
+                    <div class="grid-2">
+                        <div>
+                            <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">Headers (cần Auth!):</span>
+                            <pre style="margin-top:2px;">Content-Type: application/json
+Accept: application/json
+Cookie: token={{token}}</pre>
+                            <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600; margin-top:4px; display:block;">Body — Đổi tên + giá:</span>
+                            <pre style="margin-top:2px;">{
+  "firstname": "QA Updated",
+  "lastname": "Automation",
+  "totalprice": 999,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2025-02-01",
+    "checkout": "2025-02-10"
+  },
+  "additionalneeds": "Lunch"
+}</pre>
+                        </div>
+                        <div>
+                            <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">Tab Tests — Verify update:</span>
+                            <pre style="margin-top:2px;">const res = pm.response.json();
+
+pm.test("[Update] Status 200", () => {
+    pm.response.to.have.status(200);
+});
+pm.test("[Update] Tên đã thay đổi", () => {
+    pm.expect(res.firstname)
+        .to.eql("QA Updated");
+});
+pm.test("[Update] Giá đã cập nhật", () => {
+    pm.expect(res.totalprice).to.eql(999);
+});
+pm.test("[Update] Ngày mới đúng", () => {
+    pm.expect(res.bookingdates.checkin)
+        .to.eql("2025-02-01");
+});</pre>
+                            <div style="margin-top:4px; padding:4px 8px; background:rgba(230,192,28,0.05); border:1px dashed rgba(230,192,28,0.15); border-radius:6px; font-size:0.65rem; color:#8b949e;">
+                                <span style="color:#e6c01c; font-weight:700;">⚠</span> PUT cần <code>Cookie: token={{token}}</code> — đây chính là giá trị được CHAIN từ bước Auth!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="bk-r5">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <span><strong>URL:</strong> <span class="highlight">DELETE {{base_url}}/booking/{{booking_id}}</span></span>
+                        <span class="badge" style="background:rgba(248,81,73,0.1); border-color:var(--danger-color); color:var(--danger-color);">DELETE</span>
+                    </div>
+                    <div style="font-size:0.7rem; color:var(--accent-color); font-weight:600; margin-bottom:2px;">Headers: <code style="font-weight:400;">Cookie: token={{token}}</code></div>
+                    <pre>pm.test("[Delete] Status 201", () => {
+    pm.response.to.have.status(201);
+});
+
+// Dọn dẹp biến Environment
+pm.environment.unset("booking_id");
+console.log("🧹 Đã dọn dẹp booking_id");
+
+// Dừng Collection Runner
+postman.setNextRequest(null);</pre>
+                    <div style="margin-top:6px; padding:6px 10px; background:rgba(57,211,83,0.04); border:1px dashed rgba(57,211,83,0.15); border-radius:6px; font-size:0.7rem; color:#8b949e;">
+                        <span style="color:var(--success-color); font-weight:700;"><i class="fa-solid fa-circle-check"></i> Restful-Booker xóa THẬT!</span> Sau khi DELETE, nếu GET lại <code>/booking/{{booking_id}}</code> sẽ trả về <strong>404 Not Found</strong> — chứng minh chaining hoạt động end-to-end.
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 1: Chaining Requests // Demo Restful-Booker — restful-booker.herokuapp.com</span>
+                <span>Slide 18 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 17: Assertions detail -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 2.1 — Postman Assertions Chi Tiết</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.88rem; color: #8b949e; margin-bottom: 10px; text-align:center;">
+                    Mỗi assertion được bọc trong <span class="highlight">pm.test("tên test", callback)</span> — Postman sẽ hiển thị PASS/FAIL riêng cho từng test này trong tab Test Results.
+                </p>
+                <div class="tab-container" id="assertTabs">
+                    <button class="tab-btn active" onclick="switchNestedTab(event, 'assert-status', 'assertTabs')">Status Code</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'assert-body', 'assertTabs')">Response Body</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'assert-time', 'assertTabs')">Response Time</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'assert-header', 'assertTabs')">Headers</button>
+                </div>
+                <div class="tab-content active" id="assert-status">
+                    <pre>pm.test("Status code là 200", () => {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Status code nằm trong danh sách hợp lệ", () => {
+    pm.expect(pm.response.code).to.be.oneOf([200, 201]);
+});</pre>
+                </div>
+                <div class="tab-content" id="assert-body">
+                    <pre>const res = pm.response.json();
+
+pm.test("Response chứa token", () => {
+    pm.expect(res).to.have.property("token");
+});
+
+pm.test("Email đúng định dạng", () => {
+    pm.expect(res.data.email).to.include("@");
+});</pre>
+                </div>
+                <div class="tab-content" id="assert-time">
+                    <pre>pm.test("Response time dưới 500ms", () => {
+    pm.expect(pm.response.responseTime).to.be.below(500);
+});</pre>
+                </div>
+                <div class="tab-content" id="assert-header">
+                    <pre>pm.test("Content-Type là application/json", () => {
+    pm.response.to.have.header("Content-Type");
+    pm.expect(pm.response.headers.get("Content-Type")).to.include("application/json");
+});</pre>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 2: Assertions // Cấu trúc pm.test()</span>
+                <span>Slide 19 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 18: Assertions practical -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 2.2 — Viết Assertions Thực Chiến (Có Giải Thích)</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.82rem; color: #8b949e; margin-bottom: 6px; text-align:center;">
+                    Ví dụ thực tế trên <span class="highlight">Restful-Booker</span>: mỗi tab là một nhóm assertions — code bên trái, giải thích <strong>TẠI SAO</strong> bên phải.
+                </p>
+                <div class="tab-container" id="assertPracTabs">
+                    <button class="tab-btn active" onclick="switchNestedTab(event, 'ap-status', 'assertPracTabs')"><i class="fa-solid fa-signal"></i> Status & Time</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'ap-body', 'assertPracTabs')"><i class="fa-solid fa-file-code"></i> Body & Fields</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'ap-header', 'assertPracTabs')"><i class="fa-solid fa-envelope-open-text"></i> Headers</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'ap-booking', 'assertPracTabs')"><i class="fa-solid fa-hotel"></i> Booking Data</button>
+                </div>
+                <div class="tab-content active" id="ap-status">
+                    <div class="sandbox-container" style="grid-template-columns: 1fr 1fr;">
+                        <div>
+                            <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">Code — POST /auth:</span>
+                            <pre style="margin-top:2px; font-size:0.7rem;">// Kiểm tra API có trả thành công?
+pm.test("Auth trả về status 200", () => {
+    pm.response.to.have.status(200);
+});
+
+// Kiểm tra API không trả 201 hay 204
+pm.test("Status chính xác là 200", () => {
+    pm.expect(pm.response.code).to.eql(200);
+});
+
+// Kiểm tra performance
+pm.test("Response time < 2 giây", () => {
+    pm.expect(pm.response.responseTime)
+        .to.be.below(2000);
+});</pre>
+                        </div>
+                        <div style="font-size:0.72rem; color:#8b949e; line-height:1.5;">
+                            <div style="padding:8px 10px; background:rgba(0,240,255,0.03); border-radius:8px; border-left:3px solid var(--accent-color); margin-bottom:6px;">
+                                <p><span class="highlight">.to.have.status(200)</span></p>
+                                <p>So sánh status code chính xác. Nếu server trả 400/401/500 → test FAIL ngay, giúp phát hiện lỗi sớm.</p>
+                            </div>
+                            <div style="padding:8px 10px; background:rgba(0,240,255,0.03); border-radius:8px; border-left:3px solid var(--accent-color); margin-bottom:6px;">
+                                <p><span class="highlight">.to.eql(200)</span> vs <span class="highlight">.to.have.status(200)</span></p>
+                                <p>Cùng kiểm tra 200, nhưng <code>eql</code> so sánh giá trị number còn <code>have.status</code> là cú pháp chuyên dụng cho HTTP.</p>
+                            </div>
+                            <div style="padding:8px 10px; background:rgba(248,81,73,0.03); border-radius:8px; border-left:3px solid var(--danger-color);">
+                                <p><span style="color:var(--danger-color);">Tại sao test time?</span></p>
+                                <p>Login mất > 2s = user bỏ app. <strong>Performance cũng là bug!</strong> Dùng <code>.to.be.below(ms)</code> để set ngưỡng.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="ap-body">
+                    <div class="sandbox-container" style="grid-template-columns: 1fr 1fr;">
+                        <div>
+                            <span style="font-size:0.7rem; color:var(--success-color); font-weight:600;">Code — Kiểm tra response body:</span>
+                            <pre style="margin-top:2px; font-size:0.7rem;">const res = pm.response.json();
+
+// Field có tồn tại?
+pm.test("Response có field token", () => {
+    pm.expect(res)
+        .to.have.property("token");
+});
+
+// Kiểu dữ liệu đúng?
+pm.test("Token là string", () => {
+    pm.expect(res.token).to.be.a("string");
+});
+
+// Giá trị không rỗng?
+pm.test("Token không rỗng", () => {
+    pm.expect(res.token.length)
+        .to.be.above(0);
+});
+
+// Giá trị chính xác?
+pm.test("Không có field reason", () => {
+    pm.expect(res)
+        .to.not.have.property("reason");
+});</pre>
+                        </div>
+                        <div style="font-size:0.72rem; color:#8b949e; line-height:1.5;">
+                            <div style="padding:8px 10px; background:rgba(57,211,83,0.03); border-radius:8px; border-left:3px solid var(--success-color); margin-bottom:6px;">
+                                <p><span class="highlight">.have.property("token")</span></p>
+                                <p>Backend quên trả token → test FAIL ngay. Luôn kiểm tra field <strong>tồn tại</strong> trước khi kiểm tra giá trị.</p>
+                            </div>
+                            <div style="padding:8px 10px; background:rgba(57,211,83,0.03); border-radius:8px; border-left:3px solid var(--success-color); margin-bottom:6px;">
+                                <p><span class="highlight">.to.be.a("string")</span></p>
+                                <p>Token phải là string, không phải <code>null</code>, <code>number</code> hay <code>boolean</code>. Sai kiểu = bug nghiêm trọng.</p>
+                            </div>
+                            <div style="padding:8px 10px; background:rgba(57,211,83,0.03); border-radius:8px; border-left:3px solid var(--success-color); margin-bottom:6px;">
+                                <p><span class="highlight">.length.to.be.above(0)</span></p>
+                                <p>String rỗng <code>""</code> vẫn pass test kiểu dữ liệu! Cần check thêm length > 0.</p>
+                            </div>
+                            <div style="padding:8px 10px; background:rgba(248,81,73,0.03); border-radius:8px; border-left:3px solid var(--danger-color);">
+                                <p><span class="highlight">.to.not.have.property("reason")</span></p>
+                                <p>Khi login thất bại, Restful-Booker trả <code>{"reason":"Bad credentials"}</code>. Test ngược giúp đảm bảo không có lỗi ẩn!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="ap-header">
+                    <div class="sandbox-container" style="grid-template-columns: 1fr 1fr;">
+                        <div>
+                            <span style="font-size:0.7rem; color:#ff79c6; font-weight:600;">Code — Kiểm tra response headers:</span>
+                            <pre style="margin-top:2px; font-size:0.7rem;">// Header có tồn tại?
+pm.test("Có header Content-Type", () => {
+    pm.response.to.have.header("Content-Type");
+});
+
+// Format đúng JSON?
+pm.test("Content-Type là JSON", () => {
+    pm.expect(
+        pm.response.headers.get("Content-Type")
+    ).to.include("application/json");
+});
+
+// Token đủ dài (bảo mật)?
+pm.test("Token có độ dài an toàn", () => {
+    const res = pm.response.json();
+    pm.expect(res.token.length)
+        .to.be.above(10);
+});</pre>
+                        </div>
+                        <div style="font-size:0.72rem; color:#8b949e; line-height:1.5;">
+                            <div style="padding:8px 10px; background:rgba(255,121,198,0.03); border-radius:8px; border-left:3px solid #ff79c6; margin-bottom:6px;">
+                                <p><span class="highlight">Tại sao test header?</span></p>
+                                <p>Nếu server trả <code>text/html</code> thay vì <code>application/json</code> → <code>pm.response.json()</code> sẽ crash → lỗi rất khó debug.</p>
+                            </div>
+                            <div style="padding:8px 10px; background:rgba(255,121,198,0.03); border-radius:8px; border-left:3px solid #ff79c6; margin-bottom:6px;">
+                                <p><span class="highlight">.to.include("application/json")</span></p>
+                                <p>Dùng <code>include</code> thay vì <code>eql</code> vì header có thể là <code>"application/json; charset=utf-8"</code> — include linh hoạt hơn.</p>
+                            </div>
+                            <div style="padding:8px 10px; background:rgba(255,121,198,0.03); border-radius:8px; border-left:3px solid #ff79c6;">
+                                <p><span class="highlight">Token length > 10</span></p>
+                                <p>Token quá ngắn → brute-force dễ dàng = <strong>lỗ hổng bảo mật</strong>. Đây là security assertion, quan trọng cho tester!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="ap-booking">
+                    <div class="sandbox-container" style="grid-template-columns: 1fr 1fr;">
+                        <div>
+                            <span style="font-size:0.7rem; color:#e6c01c; font-weight:600;">Code — GET /booking/{{booking_id}}:</span>
+                            <pre style="margin-top:2px; font-size:0.7rem;">const res = pm.response.json();
+
+// So sánh giá trị chính xác
+pm.test("Tên khách đúng", () => {
+    pm.expect(res.firstname).to.eql("QA");
+});
+
+// Kiểm tra boolean
+pm.test("Đã đặt cọc", () => {
+    pm.expect(res.depositpaid).to.be.true;
+});
+
+// Kiểm tra nested object
+pm.test("Ngày check-in đúng", () => {
+    pm.expect(res.bookingdates.checkin)
+        .to.eql("2025-01-01");
+});
+
+// Kiểm tra number > 0
+pm.test("Giá > 0", () => {
+    pm.expect(res.totalprice)
+        .to.be.a("number")
+        .and.to.be.above(0);
+});</pre>
+                        </div>
+                        <div style="font-size:0.72rem; color:#8b949e; line-height:1.5;">
+                            <div style="padding:8px 10px; background:rgba(230,192,28,0.03); border-radius:8px; border-left:3px solid #e6c01c; margin-bottom:6px;">
+                                <p><span class="highlight">.to.eql("QA")</span></p>
+                                <p><code>eql</code> = deep equal (so sánh giá trị). Khác <code>equal</code> ở chỗ eql so sánh sâu vào object/array con.</p>
+                            </div>
+                            <div style="padding:8px 10px; background:rgba(230,192,28,0.03); border-radius:8px; border-left:3px solid #e6c01c; margin-bottom:6px;">
+                                <p><span class="highlight">.to.be.true</span></p>
+                                <p>Kiểm tra boolean chính xác. <code>.to.be.true</code> chỉ pass khi giá trị đúng là <code>true</code>, không pass cho <code>1</code> hay <code>"true"</code>.</p>
+                            </div>
+                            <div style="padding:8px 10px; background:rgba(230,192,28,0.03); border-radius:8px; border-left:3px solid #e6c01c; margin-bottom:6px;">
+                                <p><span class="highlight">res.bookingdates.checkin</span></p>
+                                <p>Truy cập nested object: <code>bookingdates</code> là object con chứa <code>checkin</code> và <code>checkout</code> — đi từng tầng.</p>
+                            </div>
+                            <div style="padding:8px 10px; background:rgba(57,211,83,0.04); border-radius:8px; border-left:3px solid var(--success-color);">
+                                <p><span style="color:var(--success-color);"><i class="fa-solid fa-lightbulb"></i> Golden Rule:</span></p>
+                                <p>Mỗi <code>pm.test()</code> test <strong>MỘT thứ</strong> — khi FAIL, biết ngay cái gì hỏng!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 2: Assertions // Thực chiến có giải thích</span>
+                <span>Slide 20 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 19: Cheat sheet assertions -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 2.3 — Bảng Tra Cứu Assertions Nhanh</div>
+            </div>
+            <div class="slide-content" style="overflow-y:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:0.76rem;">
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.08); color:var(--text-bright);">
+                        <td style="padding:5px 6px; font-weight:700;">Nhóm</td>
+                        <td style="padding:5px 6px; font-weight:700;">Cú pháp</td>
+                        <td style="padding:5px 6px; font-weight:700;">Ý nghĩa</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:4px 6px;" class="highlight">Kiểu dữ liệu</td><td style="padding:4px 6px;"><code>pm.expect(x).to.be.a("string")</code></td><td style="padding:4px 6px; color:#8b949e;">Kiểm tra x là string/number/array/object/boolean</td></tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:4px 6px;" class="highlight">So sánh giá trị</td><td style="padding:4px 6px;"><code>pm.expect(x).to.eql(y)</code></td><td style="padding:4px 6px; color:#8b949e;">So sánh bằng nhau (deep equal)</td></tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:4px 6px;" class="highlight">So sánh giá trị</td><td style="padding:4px 6px;"><code>pm.expect(x).to.be.above(n) / .below(n)</code></td><td style="padding:4px 6px; color:#8b949e;">Lớn hơn / nhỏ hơn n</td></tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:4px 6px;" class="highlight">So sánh giá trị</td><td style="padding:4px 6px;"><code>pm.expect(x).to.be.oneOf([a,b])</code></td><td style="padding:4px 6px; color:#8b949e;">x nằm trong danh sách [a,b]</td></tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:4px 6px;" class="highlight">Cấu trúc</td><td style="padding:4px 6px;"><code>pm.expect(res).to.have.property("id")</code></td><td style="padding:4px 6px; color:#8b949e;">Object có tồn tại field "id"</td></tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:4px 6px;" class="highlight">Cấu trúc</td><td style="padding:4px 6px;"><code>pm.expect(arr).to.be.an("array").that.is.not.empty</code></td><td style="padding:4px 6px; color:#8b949e;">Mảng tồn tại và không rỗng</td></tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:4px 6px;" class="highlight">Regex</td><td style="padding:4px 6px;"><code>pm.expect(x).to.match(/^[a-z]+@/)</code></td><td style="padding:4px 6px; color:#8b949e;">Kiểm tra chuỗi khớp regex</td></tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:4px 6px;" class="highlight">Status &amp; Time</td><td style="padding:4px 6px;"><code>pm.response.to.have.status(200)</code></td><td style="padding:4px 6px; color:#8b949e;">Kiểm tra status code chính xác</td></tr>
+                    <tr><td style="padding:4px 6px;" class="highlight">Status &amp; Time</td><td style="padding:4px 6px;"><code>pm.response.responseTime</code></td><td style="padding:4px 6px; color:#8b949e;">Lấy thời gian phản hồi (ms)</td></tr>
+                </table>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 2: Assertions // Cheat Sheet</span>
+                <span>Slide 21 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 20: Dynamic Variables -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 3.1 — Dynamic Variables Của Postman</div>
+            </div>
+            <div class="slide-content" style="overflow-y:auto;">
+                <div class="sandbox-container" style="grid-template-columns: 1fr 1fr; margin-bottom: 6px;">
+                    <div>
+                        <p style="font-size: 0.82rem; color: #8b949e; margin-bottom: 6px;">
+                            Dynamic Variables = biến <span class="highlight">tự sinh giá trị mới mỗi lần gửi request</span>. Cú pháp: <code>{{$tênBiến}}</code> — dùng trực tiếp trong Body, URL, hoặc Headers.
+                        </p>
+                        <div style="background:rgba(57,211,83,0.03); border:1px solid rgba(57,211,83,0.12); border-radius:8px; padding:8px 10px; margin-bottom:6px;">
+                            <h4 style="font-size:0.78rem; color:var(--success-color); margin-bottom:4px;"><i class="fa-solid fa-check"></i> Khi nào dùng?</h4>
+                            <ul style="font-size:0.7rem; color:#8b949e; line-height:1.4; padding-left:14px; margin:0;">
+                                <li>Tạo user/email unique → tránh lỗi "đã tồn tại"</li>
+                                <li>Test với dữ liệu ngẫu nhiên → phát hiện edge case</li>
+                                <li>Gắn timestamp → theo dõi thứ tự request</li>
+                                <li>Chạy Collection Runner nhiều lần → data khác nhau mỗi lần</li>
+                            </ul>
+                        </div>
+                        <div style="background:rgba(248,81,73,0.03); border:1px solid rgba(248,81,73,0.12); border-radius:8px; padding:8px 10px;">
+                            <h4 style="font-size:0.78rem; color:var(--danger-color); margin-bottom:4px;"><i class="fa-solid fa-xmark"></i> Lưu ý quan trọng</h4>
+                            <ul style="font-size:0.7rem; color:#8b949e; line-height:1.4; padding-left:14px; margin:0;">
+                                <li>Giá trị <strong>thay đổi mỗi lần Send</strong> → không dùng để so sánh cố định</li>
+                                <li>Muốn giữ lại giá trị → lưu vào Environment trước bằng Pre-request Script</li>
+                                <li>Chỉ hoạt động trong Postman, <strong>không phải cú pháp JavaScript</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <table style="width:100%; border-collapse:collapse; font-size:0.7rem;">
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.08); color:var(--text-bright);">
+                                <td style="padding:4px 6px; font-weight:700;">Biến</td>
+                                <td style="padding:4px 6px; font-weight:700;">Ý nghĩa</td>
+                                <td style="padding:4px 6px; font-weight:700;">Ví dụ output</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:3px 6px;"><code class="highlight">{{$randomInt}}</code></td><td style="padding:3px 6px; color:#8b949e;">Số ngẫu nhiên 0-1000</td><td style="padding:3px 6px; color:var(--success-color);">742</td></tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:3px 6px;"><code class="highlight">{{$guid}}</code></td><td style="padding:3px 6px; color:#8b949e;">UUID v4 duy nhất</td><td style="padding:3px 6px; color:var(--success-color);">a1b2c3d4-...</td></tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:3px 6px;"><code class="highlight">{{$timestamp}}</code></td><td style="padding:3px 6px; color:#8b949e;">Unix timestamp (giây)</td><td style="padding:3px 6px; color:var(--success-color);">1722441600</td></tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:3px 6px;"><code class="highlight">{{$isoTimestamp}}</code></td><td style="padding:3px 6px; color:#8b949e;">Thời gian ISO 8601</td><td style="padding:3px 6px; color:var(--success-color);">2025-07-31T...</td></tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:3px 6px;"><code class="highlight">{{$randomFirstName}}</code></td><td style="padding:3px 6px; color:#8b949e;">Tên ngẫu nhiên</td><td style="padding:3px 6px; color:var(--success-color);">Giang</td></tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:3px 6px;"><code class="highlight">{{$randomLastName}}</code></td><td style="padding:3px 6px; color:#8b949e;">Họ ngẫu nhiên</td><td style="padding:3px 6px; color:var(--success-color);">Nguyen</td></tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:3px 6px;"><code class="highlight">{{$randomEmail}}</code></td><td style="padding:3px 6px; color:#8b949e;">Email ngẫu nhiên</td><td style="padding:3px 6px; color:var(--success-color);">abc@test.net</td></tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:3px 6px;"><code class="highlight">{{$randomPhoneNumber}}</code></td><td style="padding:3px 6px; color:#8b949e;">Số điện thoại</td><td style="padding:3px 6px; color:var(--success-color);">555-123-4567</td></tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:3px 6px;"><code class="highlight">{{$randomCity}}</code></td><td style="padding:3px 6px; color:#8b949e;">Tên thành phố</td><td style="padding:3px 6px; color:var(--success-color);">Ho Chi Minh</td></tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:3px 6px;"><code class="highlight">{{$randomCountry}}</code></td><td style="padding:3px 6px; color:#8b949e;">Tên quốc gia</td><td style="padding:3px 6px; color:var(--success-color);">Vietnam</td></tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:3px 6px;"><code class="highlight">{{$randomBankAccount}}</code></td><td style="padding:3px 6px; color:#8b949e;">Số tài khoản ngân hàng</td><td style="padding:3px 6px; color:var(--success-color);">09812345</td></tr>
+                            <tr><td style="padding:3px 6px;"><code class="highlight">{{$randomBoolean}}</code></td><td style="padding:3px 6px; color:#8b949e;">true hoặc false</td><td style="padding:3px 6px; color:var(--success-color);">true</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div style="background:rgba(0,240,255,0.03); border:1px solid rgba(0,240,255,0.1); border-radius:8px; padding:6px 12px;">
+                    <h4 style="font-size:0.78rem; color:var(--accent-color); margin-bottom:4px; display:inline;"><i class="fa-solid fa-flask"></i> Ví dụ thực tế — POST /booking trên Restful-Booker:</h4>
+                    <pre style="margin-top:4px; font-size:0.7rem;">{ "firstname": "{{$randomFirstName}}", "lastname": "{{$randomLastName}}", "totalprice": {{$randomInt}},
+  "depositpaid": {{$randomBoolean}}, "bookingdates": { "checkin": "2025-01-01", "checkout": "2025-01-05" },
+  "additionalneeds": "Breakfast" }
+// Mỗi lần Send → tên, giá, depositpaid đều khác nhau → test data unique, phát hiện nhiều edge case hơn!</pre>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 3: Dynamic Variables // Tổng quan & Bảng tra cứu</span>
+                <span>Slide 22 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 21: Dynamic variables practical -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 3.2 — Dynamic Variables Trong Thực Tế</div>
+            </div>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div style="background: rgba(255,255,255,0.01); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom:8px; font-size:0.9rem;"><i class="fa-solid fa-file-code"></i> Dùng trực tiếp trong Body</h4>
+                        <pre>{
+  "email": "user_{{$randomInt}}@test.com",
+  "name": "{{$randomFirstName}} {{$randomLastName}}",
+  "created_at": "{{$isoTimestamp}}"
+}</pre>
+                        <p style="font-size:0.72rem; color:#8b949e; margin-top:6px;">Mỗi lần Send, Postman tự thay thế các biến này bằng giá trị mới — tránh lỗi "email đã tồn tại" khi test tạo user liên tục.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom:8px; font-size:0.9rem;"><i class="fa-solid fa-terminal"></i> Kết hợp trong Pre-request Script</h4>
+                        <pre>// Sinh giá trị động rồi lưu vào Environment
+// để tái sử dụng cho nhiều bước trong chuỗi
+const uniqueId = pm.variables.replaceIn("{{$randomInt}}");
+pm.environment.set("test_run_id", "run_" + uniqueId);</pre>
+                        <p style="font-size:0.72rem; color:#8b949e; margin-top:6px;">Cách này giúp cả chuỗi request (tạo, sửa, xóa) đều dùng chung một mã định danh duy nhất cho lần chạy hiện tại.</p>
+                    </div>
+                </div>
+                <div style="background: rgba(0,240,255,0.03); border: 1px solid rgba(0,240,255,0.1); border-radius: 10px; padding: 10px 14px; margin-top: 10px;">
+                    <p style="font-size:0.78rem; color:#8b949e;"><span class="highlight">Mẹo:</span> Kết hợp Dynamic Variables với Environment Variables để vừa có dữ liệu mới mỗi lần chạy, vừa giữ được các giá trị dùng chung xuyên suốt chuỗi (như token, base_url).</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 3: Dynamic Variables // Ứng dụng thực tế</span>
+                <span>Slide 23 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 22: Case Study 4 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 4 — Thực Hành Case Study 4</div>
+            </div>
+            <div class="slide-content">
+                <div class="tab-container" id="caseTabs">
+                    <button class="tab-btn active" onclick="switchNestedTab(event, 'case-task', 'caseTabs')">Nhiệm vụ</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'case-guide', 'caseTabs')">Hướng dẫn từng bước</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'case-script', 'caseTabs')">Script mẫu</button>
+                </div>
+                <div class="tab-content active" id="case-task">
+                    <h4 class="highlight" style="margin-bottom:8px; font-size:0.9rem;"><i class="fa-solid fa-bullseye"></i> Đề bài</h4>
+                    <p style="font-size:0.82rem; color:#8b949e; line-height:1.5;">
+                        Xây dựng một Collection Postman hoàn chỉnh mô phỏng luồng <span class="highlight">Booking E2E</span> trên Restful-Booker, gồm 3 request được liên kết (chained) với nhau:
+                    </p>
+                    <ul class="list-modern" style="margin-top:8px;">
+                        <li>Request 1 — <strong>Auth</strong>: POST /auth → lưu token vào Environment.</li>
+                        <li>Request 2 — <strong>Tạo Booking</strong>: POST /booking → tạo đặt phòng, lưu booking_id.</li>
+                        <li>Request 3 — <strong>Xem Booking</strong>: GET /booking/{{booking_id}} → tra cứu và verify dữ liệu khớp.</li>
+                    </ul>
+                    <p style="font-size:0.78rem; color:#8b949e; margin-top:8px;">Mỗi request phải có ít nhất <span class="highlight">2 assertions</span> và chạy PASS 100% khi bấm <span class="highlight">Collection Runner</span>.</p>
+                </div>
+                <div class="tab-content" id="case-guide">
+                    <ol style="padding-left: 18px; font-size:0.8rem; color:#8b949e; line-height:1.6;">
+                        <li>Tạo Environment mới với biến <code>base_url = https://restful-booker.herokuapp.com</code></li>
+                        <li>Tạo Request 1 (Auth) → POST <code>{{base_url}}/auth</code> với body <code>{"username":"admin","password":"password123"}</code> → Tests Script lưu <code>token</code></li>
+                        <li>Tạo Request 2 (Create Booking) → POST <code>{{base_url}}/booking</code> → dùng Body có <code>{{$randomInt}}</code> trong totalprice để tạo data unique → Tests Script lưu <code>booking_id</code></li>
+                        <li>Tạo Request 3 (Get Booking) → GET <code>{{base_url}}/booking/{{booking_id}}</code> → viết assertion verify dữ liệu khớp</li>
+                        <li>Chạy thử từng request theo đúng thứ tự, kiểm tra tab Test Results</li>
+                        <li>Mở Collection Runner → chọn cả 3 request → Run → xác nhận tất cả PASS</li>
+                    </ol>
+                </div>
+                <div class="tab-content" id="case-script">
+                    <pre>// [Request 1 - POST /auth] Tests
+pm.test("Auth OK", () => pm.response.to.have.status(200));
+const res1 = pm.response.json();
+pm.test("Có token trả về", () => pm.expect(res1.token).to.exist);
+pm.environment.set("token", res1.token);
+
+// [Request 2 - POST /booking] Tests
+pm.test("Tạo booking thành công", () => pm.response.to.have.status(200));
+const res2 = pm.response.json();
+pm.environment.set("booking_id", res2.bookingid);
+pm.test("Booking có id hợp lệ", () => {
+    pm.expect(res2.bookingid).to.be.a("number");
+});
+
+// [Request 3 - GET /booking/{{booking_id}}] Tests
+pm.test("Tra cứu thành công", () => pm.response.to.have.status(200));
+const res3 = pm.response.json();
+pm.test("Tên khách đúng", () => {
+    pm.expect(res3.firstname).to.eql("QA");
+    pm.expect(res3.lastname).to.eql("Tester");
+});</pre>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 4: Thực Hành // Case Study 4</span>
+                <span>Slide 24 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 23: Acceptance criteria -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 4 (tiếp) — Acceptance Criteria &amp; Checklist</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.86rem; color: #8b949e; margin-bottom: 12px; text-align:center;">
+                    Trước khi nộp bài, hãy tự chấm chéo theo checklist sau — đây cũng chính là tiêu chí mình sẽ dùng để đánh giá bài thực hành của bạn:
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 10px; background: rgba(57,211,83,0.04); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.15);">
+                        <i class="fa-solid fa-square-check" style="color:var(--success-color); font-size:1.1rem;"></i>
+                        <span style="font-size:0.85rem;"><strong>Cấu trúc Collection</strong> — 3 requests được đặt tên rõ ràng, đúng thứ tự (Login → Transfer → Verify).</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; background: rgba(57,211,83,0.04); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.15);">
+                        <i class="fa-solid fa-square-check" style="color:var(--success-color); font-size:1.1rem;"></i>
+                        <span style="font-size:0.85rem;"><strong>Environment Variables</strong> — đã setup base_url, và các biến trung gian (token, created_user_id) được set qua Tests Script chứ không hardcode tay.</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; background: rgba(57,211,83,0.04); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.15);">
+                        <i class="fa-solid fa-square-check" style="color:var(--success-color); font-size:1.1rem;"></i>
+                        <span style="font-size:0.85rem;"><strong>Scripts hoạt động (Chaining)</strong> — request sau sử dụng đúng biến được lưu từ request trước, không bị lỗi undefined.</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; background: rgba(57,211,83,0.04); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.15);">
+                        <i class="fa-solid fa-square-check" style="color:var(--success-color); font-size:1.1rem;"></i>
+                        <span style="font-size:0.85rem;"><strong>Assertions PASS</strong> — mỗi request có tối thiểu 2 assertions và tất cả đều PASS (không có test bị bỏ sót hoặc luôn PASS giả).</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; background: rgba(57,211,83,0.04); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.15);">
+                        <i class="fa-solid fa-square-check" style="color:var(--success-color); font-size:1.1rem;"></i>
+                        <span style="font-size:0.85rem;"><strong>Collection Runner chạy xanh 100%</strong> — chạy cả 3 requests bằng Runner, kết quả hiển thị toàn bộ PASS, không có lỗi màu đỏ.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 4: Thực Hành // Acceptance Criteria</span>
+                <span>Slide 25 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 24: Summary -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Tổng Kết — Kiến Thức Cốt Lõi Buổi 4</div>
+            </div>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div style="background: rgba(255,255,255,0.01); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 8px; font-size: 0.9rem;"><i class="fa-solid fa-link"></i> Chaining Requests</h4>
+                        <p style="font-size:0.8rem; color:#8b949e; line-height:1.4;">Output request A → lưu vào Environment Variable → dùng làm Input request B. Đây là nền tảng để xây dựng E2E test tự động.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 8px; font-size: 0.9rem;"><i class="fa-solid fa-check-double"></i> Assertions Essentials</h4>
+                        <p style="font-size:0.8rem; color:#8b949e; line-height:1.4;">Bọc mỗi kiểm tra trong <code>pm.test()</code>, dùng <code>pm.expect()</code> để kiểm tra status, body, response time và headers.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 8px; font-size: 0.9rem;"><i class="fa-solid fa-dice"></i> Dynamic Variables</h4>
+                        <p style="font-size:0.8rem; color:#8b949e; line-height:1.4;"><code>{{$randomInt}}</code>, <code>{{$guid}}</code>, <code>{{$timestamp}}</code>... giúp sinh test data unique, tránh trùng lặp mỗi lần chạy request.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 8px; font-size: 0.9rem;"><i class="fa-solid fa-star"></i> Best Practices</h4>
+                        <p style="font-size:0.8rem; color:#8b949e; line-height:1.4;">Luôn dọn dẹp dữ liệu test (DELETE ở cuối chuỗi), đặt tên biến rõ ràng, và chạy Collection Runner để verify toàn bộ chuỗi tự động.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Tổng kết kiến thức buổi học</span>
+                <span>Slide 26 / 27</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 25: Cheat sheet -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Postman Cheat Sheet — Buổi 4</div>
+            </div>
+            <div class="slide-content" style="overflow-y:auto;">
+                <div class="grid-2">
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom:6px; font-size:0.86rem;"><i class="fa-solid fa-link"></i> Chaining</h4>
+                        <pre>pm.environment.set("key", value);
+pm.environment.get("key");
+pm.environment.unset("key");
+pm.variables.set("key", value); // local scope</pre>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom:6px; font-size:0.86rem;"><i class="fa-solid fa-check-double"></i> Assertions</h4>
+                        <pre>pm.test("name", () => { ... });
+pm.response.to.have.status(200);
+pm.expect(x).to.eql(y);
+pm.expect(x).to.be.above(n) / .below(n);
+pm.expect(res).to.have.property("id");</pre>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom:6px; font-size:0.86rem;"><i class="fa-solid fa-dice"></i> Dynamic Variables</h4>
+                        <pre>{{$timestamp}}  {{$isoTimestamp}}
+{{$randomInt}}  {{$guid}}
+{{$randomEmail}}  {{$randomFirstName}}</pre>
+                    </div>
+                    <div style="background: rgba(0,240,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(0,240,255,0.12);">
+                        <h4 style="margin-bottom:6px; font-size:0.86rem; color:var(--accent-color);"><i class="fa-solid fa-list-check"></i> Checklist trước khi chạy Test</h4>
+                        <p style="font-size:0.76rem; color:#8b949e; line-height:1.5;">
+                            ☑ Environment đã chọn đúng<br>
+                            ☑ Biến trung gian đã được set qua Tests Script<br>
+                            ☑ Mỗi request có ít nhất 2 assertions<br>
+                            ☑ Chạy thử Collection Runner toàn bộ chuỗi
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>IT Learn Studio // Tài liệu tham khảo nhanh</span>
+                <span>Slide 27 / 27</span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="controls">
+        <button class="nav-btn" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Trước</button>
+        <button class="nav-btn" onclick="nextSlide()">Sau <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const progressBar = document.getElementById('progressBar');
+
+        const userAnswers = {
+            1: { answered: false, correct: false },
+            2: { answered: false, correct: false },
+            3: { answered: false, correct: false },
+            4: { answered: false, correct: false },
+            5: { answered: false, correct: false },
+            6: { answered: false, correct: false },
+            7: { answered: false, correct: false },
+            8: { answered: false, correct: false },
+            9: { answered: false, correct: false },
+            10: { answered: false, correct: false },
+            11: { answered: false, correct: false },
+            12: { answered: false, correct: false }
+        };
+
+        const correctGreetings = [
+            "Đỉnh chóp! 🌟 ", "Mượt thế nhờ! 😎 ", "Hết nước chấm! 🔥 ", "Đúng boong luôn! 🎯 ", "Out trình thực sự! 🚀 "
+        ];
+
+        const incorrectGreetings = [
+            "Úi, suýt soát! 🧐 ", "Không sao nè, thử lại nha! 💪 ", "Hơi lệch tủ tí thôi, tự tin lên! 🚀 ", "Ối, nhầm tí xíu! ⚡ ", "Cú này trượt nhẹ rồi! 🧩 "
+        ];
+
+        function getRandomGreeting(isCorrect) {
+            const arr = isCorrect ? correctGreetings : incorrectGreetings;
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function showSlide(index) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (index + slides.length) % slides.length;
+            slides[currentSlide].classList.add('active');
+            updateProgressBar();
+
+            if (currentSlide === 11) {
+                calculateFinalScore();
+            }
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        function updateProgressBar() {
+            const percentage = ((currentSlide + 1) / slides.length) * 100;
+            progressBar.style.width = percentage + '%';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        // Touch swipe navigation for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 60) {
+                if (diff > 0) nextSlide();
+                else prevSlide();
+            }
+        }, { passive: true });
+
+        function submitAnswer(element, isCorrect, optionText, baseFeedback, qId) {
+            if (userAnswers[qId].answered) return;
+
+            const container = element.parentElement;
+            const options = container.querySelectorAll('.quiz-option');
+            const feedback = document.getElementById(`feedback-${qId}`);
+
+            options.forEach(opt => {
+                opt.classList.add('disabled');
+            });
+
+            userAnswers[qId].answered = true;
+            userAnswers[qId].correct = isCorrect;
+
+            const greeting = getRandomGreeting(isCorrect);
+
+            if (isCorrect) {
+                element.classList.add('correct');
+                element.querySelector('i').className = 'fa-solid fa-circle-check';
+                feedback.style.display = 'block';
+                feedback.style.background = 'rgba(57, 211, 83, 0.08)';
+                feedback.style.color = '#7eff93';
+                feedback.style.borderColor = 'rgba(57, 211, 83, 0.3)';
+                feedback.innerHTML = `<i class="fa-solid fa-circle-check"></i> &nbsp; <strong>${greeting}</strong> ${baseFeedback}`;
+            } else {
+                element.classList.add('incorrect');
+                element.querySelector('i').className = 'fa-solid fa-circle-xmark';
+
+                options.forEach(opt => {
+                    if (opt.getAttribute('onclick').includes('true')) {
+                        opt.classList.add('correct');
+                        opt.querySelector('i').className = 'fa-solid fa-circle-check';
+                    }
+                });
+
+                feedback.style.display = 'block';
+                feedback.style.background = 'rgba(248, 81, 73, 0.08)';
+                feedback.style.color = '#ff8e8a';
+                feedback.style.borderColor = 'rgba(248, 81, 73, 0.3)';
+                feedback.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> &nbsp; <strong>${greeting}</strong> ${baseFeedback}`;
+            }
+        }
+
+        const topicMap = {
+            'api-fundamentals':  { questions: [1, 2], label: 'API Cơ Bản & Postman' },
+            'json-path':         { questions: [3, 9, 11, 12], label: 'JSON & JSONPath' },
+            'status-codes':      { questions: [4, 7], label: 'HTTP Status Codes' },
+            'tester-mindset':    { questions: [5, 8], label: 'Tư Duy Tester & Verify' },
+            'chaining-dynamic':  { questions: [6, 10], label: 'Chaining & Dynamic Variables' }
+        };
+
+        const topicSuggestions = {
+            'api-fundamentals': {
+                fail: '⚠️ Cần ôn lại: Environment Variables khai báo biến dùng chung (base_url, token); dữ liệu nhạy cảm (password) phải gửi trong Body JSON, không đặt trên URL.',
+                slideRef: '📍 Xem: Slide 14 (Chaining Concept) → Slide 16 (Demo Restful-Booker) → Slide 25 (Cheat Sheet)',
+                color: 'var(--danger-color)'
+            },
+            'json-path': {
+                fail: '⚠️ Cần ôn lại: Truy cập nested object đi từ ngoài vào trong (res.data.user.name); mảng dùng index bắt đầu từ 0 (res.users[1].id = user thứ 2).',
+                slideRef: '📍 Xem: Slide 15 (Kịch bản E2E) → Slide 16 (Demo Restful-Booker)',
+                color: 'var(--danger-color)'
+            },
+            'status-codes': {
+                fail: '⚠️ Cần ôn lại: 201=Created (POST tạo mới thành công); 401=chưa xác thực (chưa login), 403=đã xác thực nhưng không đủ quyền (role thiếu).',
+                slideRef: '📍 Xem: Slide 17 (Assertions Chi Tiết) → Slide 19 (Cheat Sheet Assertions)',
+                color: 'var(--danger-color)'
+            },
+            'tester-mindset': {
+                fail: '⚠️ Cần ôn lại: Status 200 + body error = FAIL (HTTP OK nhưng logic lỗi); sau khi POST tạo giao dịch phải verify bằng GET tra cứu, không chỉ nhìn status code.',
+                slideRef: '📍 Xem: Slide 15 (Kịch bản E2E) → Slide 17-18 (Assertions) → Slide 22 (Case Study)',
+                color: 'var(--danger-color)'
+            },
+            'chaining-dynamic': {
+                fail: '⚠️ Cần ôn lại: Chaining = lưu output request A vào Environment Variable rồi dùng làm input request B; {{$randomInt}} sinh số ngẫu nhiên để tạo test data unique.',
+                slideRef: '📍 Xem: Slide 14 (Chaining Concept) → Slide 20-21 (Dynamic Variables)',
+                color: 'var(--danger-color)'
+            }
+        };
+
+        function calculateFinalScore() {
+            let totalCorrect = 0;
+            let totalAnswered = 0;
+
+            for (let i = 1; i <= 12; i++) {
+                if (userAnswers[i].answered) {
+                    totalAnswered++;
+                    if (userAnswers[i].correct) totalCorrect++;
+                }
+            }
+
+            const scoreDisplay = document.getElementById('quizScore');
+            const scoreBadge = document.getElementById('scoreBadge');
+            const scoreEvaluation = document.getElementById('scoreEvaluation');
+
+            scoreDisplay.innerText = `${totalCorrect}/10`;
+
+            if (totalAnswered < 10) {
+                scoreBadge.innerText = "CHƯA HOÀN THÀNH ⚠️";
+                scoreBadge.style.background = "#e6c01c";
+                scoreBadge.style.color = "#000";
+                scoreEvaluation.innerHTML = `Mới hoàn thành <span class="highlight">${totalAnswered}/10</span> câu. Quay lại hoàn tất để nhận phân tích chi tiết!`;
+            } else if (totalCorrect >= 9) {
+                scoreBadge.innerText = "CHIẾN THẦN CHAINING 👑";
+                scoreBadge.style.background = "var(--success-color)";
+                scoreBadge.style.color = "#0b0f17";
+                scoreEvaluation.innerHTML = `<strong>Kiến thức siêu vững!</strong> Bay thẳng sang thực chiến xây dựng chuỗi giao dịch E2E!`;
+            } else if (totalCorrect >= 7) {
+                scoreBadge.innerText = "TAY CHƠI HỆ CHIẾN ⚡";
+                scoreBadge.style.background = "var(--accent-color)";
+                scoreBadge.style.color = "#0b0f17";
+                scoreEvaluation.innerHTML = `<strong>Gần sẵn sàng!</strong> Xem gợi ý bên phải để bổ sung kiến thức còn thiếu.`;
+            } else if (totalCorrect >= 5) {
+                scoreBadge.innerText = "ẨN SỐ TIỀM NĂNG 🌱";
+                scoreBadge.style.background = "var(--primary-color)";
+                scoreBadge.style.color = "#0b0f17";
+                scoreEvaluation.innerHTML = `<strong>Cần bổ sung!</strong> Tập trung vào các mục <span style="color:var(--danger-color);">đỏ</span> bên phải.`;
+            } else {
+                scoreBadge.innerText = "TÂN BINH ĐANG LÊN 🛡️";
+                scoreBadge.style.background = "var(--danger-color)";
+                scoreBadge.style.color = "#fff";
+                scoreEvaluation.innerHTML = `<strong>Đừng lo!</strong> Lộ trình bên dưới sẽ giúp bạn nạp lại kiến thức từ đầu.`;
+            }
+
+            let weakTopics = [];
+            let strongTopics = [];
+
+            for (const [topicKey, topicData] of Object.entries(topicMap)) {
+                const qs = topicData.questions;
+                let correct = 0;
+                let answered = 0;
+                qs.forEach(q => {
+                    if (userAnswers[q].answered) {
+                        answered++;
+                        if (userAnswers[q].correct) correct++;
+                    }
+                });
+
+                const scoreEl = document.getElementById(`score-${topicKey}`);
+                const suggestEl = document.getElementById(`suggest-${topicKey}`);
+                const rowEl = suggestEl.closest('.topic-row');
+
+                if (answered === 0) {
+                    scoreEl.innerText = '—';
+                    continue;
+                }
+
+                scoreEl.innerText = `${correct}/${qs.length}`;
+
+                if (correct === qs.length) {
+                    scoreEl.style.color = 'var(--success-color)';
+                    rowEl.style.borderColor = 'rgba(57,211,83,0.2)';
+                    rowEl.style.background = 'rgba(57,211,83,0.03)';
+                    suggestEl.style.display = 'block';
+                    suggestEl.innerHTML = `<span style="color:var(--success-color);">✅ Tuyệt vời! Bạn đã nắm vững phần này.</span>`;
+                    strongTopics.push(topicData.label);
+                } else if (correct > 0) {
+                    scoreEl.style.color = '#e6c01c';
+                    rowEl.style.borderColor = 'rgba(230,192,28,0.2)';
+                    rowEl.style.background = 'rgba(230,192,28,0.03)';
+                    suggestEl.style.display = 'block';
+                    const info = topicSuggestions[topicKey];
+                    suggestEl.innerHTML = `<span style="color:#e6c01c;">⚡ Gần đạt — ôn nhanh điểm sai:</span> ${info.fail.replace('⚠️ Cần ôn lại: ', '')}<br><span style="color:#555;">${info.slideRef}</span>`;
+                    weakTopics.push({ label: topicData.label, key: topicKey, severity: 'partial' });
+                } else {
+                    scoreEl.style.color = 'var(--danger-color)';
+                    rowEl.style.borderColor = 'rgba(248,81,73,0.25)';
+                    rowEl.style.background = 'rgba(248,81,73,0.04)';
+                    suggestEl.style.display = 'block';
+                    const info = topicSuggestions[topicKey];
+                    suggestEl.innerHTML = `<span style="color:var(--danger-color);">${info.fail}</span><br><span style="color:#555;">${info.slideRef}</span>`;
+                    weakTopics.push({ label: topicData.label, key: topicKey, severity: 'full' });
+                }
+            }
+
+            const pathEl = document.getElementById('learningPath');
+            const pathContent = document.getElementById('learningPathContent');
+
+            if (totalAnswered >= 10) {
+                pathEl.style.display = 'block';
+
+                if (weakTopics.length === 0) {
+                    pathEl.style.borderColor = 'rgba(57,211,83,0.2)';
+                    pathEl.style.background = 'rgba(57,211,83,0.03)';
+                    pathContent.innerHTML = `
+                        <span style="color:var(--success-color); font-weight:700;">🎯 Bạn đã sẵn sàng 100%!</span> Lộ trình đề xuất:<br>
+                        <span style="color:var(--text-bright);">Slide 13</span> (Agenda) → <span style="color:var(--text-bright);">Slide 14-16</span> (Chaining) → <span style="color:var(--text-bright);">Slide 17-19</span> (Assertions) → <span style="color:var(--text-bright);">Slide 20-21</span> (Dynamic Variables) → <span style="color:var(--text-bright);">Slide 22-23</span> (Thực hành Case Study)
+                    `;
+                } else {
+                    const fullFails = weakTopics.filter(t => t.severity === 'full');
+                    const partialFails = weakTopics.filter(t => t.severity === 'partial');
+
+                    let pathHTML = '';
+
+                    if (fullFails.length > 0) {
+                        pathHTML += `<span style="color:var(--danger-color); font-weight:700;">🔴 Ưu tiên cao — cần học kỹ:</span> ${fullFails.map(t => t.label).join(', ')}<br>`;
+                    }
+                    if (partialFails.length > 0) {
+                        pathHTML += `<span style="color:#e6c01c; font-weight:700;">🟡 Ôn nhanh — gần đạt:</span> ${partialFails.map(t => t.label).join(', ')}<br>`;
+                    }
+                    if (strongTopics.length > 0) {
+                        pathHTML += `<span style="color:var(--success-color); font-weight:700;">🟢 Đã vững:</span> ${strongTopics.join(', ')}<br>`;
+                    }
+
+                    pathHTML += `<br><span style="color:var(--text-bright); font-weight:600;">📍 Lộ trình đề xuất:</span> `;
+
+                    if (totalCorrect < 5) {
+                        pathHTML += `Slide 13 (Agenda) → Slide 14-16 (Chaining Requests từ đầu) → Slide 17-19 (Assertions) → Slide 20-21 (Dynamic Variables) → Slide 22 (Thực hành có hướng dẫn)`;
+                    } else if (totalCorrect < 8) {
+                        pathHTML += `Ôn nhanh các mục <span style="color:var(--danger-color);">đỏ/vàng</span> ở trên → Slide 15-16 (Kịch bản E2E + Demo) → Slide 18-19 (Assertions thực chiến) → Slide 22 (Thực hành)`;
+                    } else {
+                        pathHTML += `Lướt nhanh mục <span style="color:#e6c01c;">vàng</span> → Bay thẳng Slide 22 (Case Study 4) → Slide 23 (Acceptance Criteria) → Slide 25 (Cheat Sheet)`;
+                    }
+
+                    pathContent.innerHTML = pathHTML;
+                }
+            }
+        }
+
+        function switchNestedTab(evt, tabId, tabGroupContainerId) {
+            const tabContainer = document.getElementById(tabGroupContainerId);
+            const parentSlide = tabContainer.closest('.slide');
+            const tabContents = parentSlide.querySelectorAll('.tab-content');
+            const tabButtons = tabContainer.querySelectorAll('.tab-btn');
+
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            tabButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            parentSlide.querySelector(`#${tabId}`).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        function highlightLifecycle(type) {
+            const preBox = document.getElementById('lifecycle-pre-desc');
+            const testBox = document.getElementById('lifecycle-test-desc');
+            if (!preBox || !testBox) return;
+            if (type === 'pre') {
+                preBox.style.borderColor = 'var(--accent-color)';
+                preBox.style.boxShadow = '0 0 10px rgba(0,240,255,0.1)';
+                testBox.style.borderColor = 'rgba(255,255,255,0.05)';
+                testBox.style.boxShadow = 'none';
+            } else {
+                testBox.style.borderColor = 'var(--success-color)';
+                testBox.style.boxShadow = '0 0 10px rgba(57,211,83,0.1)';
+                preBox.style.borderColor = 'rgba(255,255,255,0.05)';
+                preBox.style.boxShadow = 'none';
+            }
+        }
+
+        document.addEventListener('click', function(e) {
+            const footerSpan = e.target.closest('.slide-footer span:last-child');
+            if (footerSpan && footerSpan.textContent.includes('Slide')) {
+                e.stopPropagation();
+                showSlidePicker(footerSpan);
+                return;
+            }
+            const picker = document.getElementById('slidePickerDropdown');
+            if (picker && !e.target.closest('.slide-picker-dropdown')) {
+                picker.remove();
+            }
+        });
+
+        function showSlidePicker(target) {
+            let existing = document.getElementById('slidePickerDropdown');
+            if (existing) { existing.remove(); return; }
+
+            const dropdown = document.createElement('div');
+            dropdown.id = 'slidePickerDropdown';
+            dropdown.className = 'slide-picker-dropdown open';
+
+            slides.forEach((slide, i) => {
+                const titleEl = slide.querySelector('.slide-title');
+                const title = titleEl ? titleEl.textContent : (i === 0 ? 'Lobby' : `Slide ${i+1}`);
+                const item = document.createElement('div');
+                item.className = 'slide-picker-item' + (i === currentSlide ? ' current' : '');
+                item.textContent = `${i+1}. ${title}`;
+                item.onclick = (e) => { e.stopPropagation(); showSlide(i); dropdown.remove(); };
+                dropdown.appendChild(item);
+            });
+
+            target.style.position = 'relative';
+            target.appendChild(dropdown);
+        }
+
+        function revealPath(key, description) {
+            const display = document.getElementById('jsonPathDisplay');
+            if (!display) return;
+            display.innerHTML = `<span style="color:#ff79c6;">res.${key}</span><br><span style="font-size:0.8rem; color:#8b949e; font-weight:normal;">${description}</span>`;
+        }
+    </script>
+</body>
+</html>
