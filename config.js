@@ -114,7 +114,13 @@ const COURSE_CONFIG = [
                 links: [
                     { name: "API_DOCS", url: "API_DOCS.html" }
                 ]
-            }
+            },
+            {
+                sectionTitle: "API Docs Petstore",
+                links: [
+                    { name: "API_DOCS_PET_STORE", url: "S20_API_Docs.html" }
+                ]
+            },            
         ]
     },    
     {

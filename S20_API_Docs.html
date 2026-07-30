@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swagger Petstore API - Complete Specifications & Payloads</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    code, pre { font-family: 'JetBrains Mono', monospace; }
+    .glass {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-purple-500 selection:text-white pb-16">
+
+  <!-- Background Glows -->
+  <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-purple-600/15 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/3 -right-40 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-40 left-1/3 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl"></div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- Hero Header -->
+    <header class="glass border border-slate-800 rounded-3xl p-6 sm:p-10 relative overflow-hidden shadow-2xl">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div class="space-y-4 max-w-2xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold uppercase tracking-wider">
+            <i data-lucide="code-2" class="w-3.5 h-3.5"></i> Complete API Contract Specification
+          </div>
+          <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+            Swagger Petstore <span class="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Full Payload Matrix</span>
+          </h1>
+          <p class="text-slate-400 text-base sm:text-lg leading-relaxed">
+            Complete technical breakdown for all <strong>20 Endpoints</strong> including Request Headers, Request Body schemas, and HTTP Status Codes with Response Payloads.
+          </p>
+        </div>
+        
+        <!-- Environment Quick Reference -->
+        <div class="glass bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3 min-w-[280px]">
+          <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-2">
+            <span>Specification Summary</span>
+            <span class="inline-flex items-center gap-1 text-emerald-400 font-medium">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> OpenAPI v2.0
+            </span>
+          </div>
+          <div>
+            <div class="text-xs text-slate-400">Base URL</div>
+            <div class="text-xs font-mono text-purple-300 font-medium select-all mt-1">https://petstore.swagger.io/v2</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-400">Default Auth Header</div>
+            <div class="text-xs font-mono text-slate-300 bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800 mt-1 flex justify-between items-center">
+              <span>api_key: special-key</span>
+              <button onclick="copyToClipboard('special-key')" class="text-slate-400 hover:text-white transition">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="flex flex-wrap gap-2 border-b border-slate-800/80 pb-4">
+      <button onclick="switchTab('pet')" id="tab-pet" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 bg-purple-600 text-white shadow-lg shadow-purple-600/30 flex items-center gap-2">
+        <i data-lucide="dog" class="w-4 h-4"></i> Pet Endpoints <span class="bg-purple-800/80 text-purple-200 text-xs px-2 py-0.5 rounded-full font-mono">8</span>
+      </button>
+      <button onclick="switchTab('store')" id="tab-store" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2 border border-slate-800">
+        <i data-lucide="shopping-bag" class="w-4 h-4"></i> Store Endpoints <span class="bg-slate-800 text-slate-300 text-xs px-2 py-0.5 rounded-full font-mono">4</span>
+      </button>
+      <button onclick="switchTab('user')" id="tab-user" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2 border border-slate-800">
+        <i data-lucide="users" class="w-4 h-4"></i> User Endpoints <span class="bg-slate-800 text-slate-300 text-xs px-2 py-0.5 rounded-full font-mono">8</span>
+      </button>
+    </nav>
+
+    <!-- =================================================================== -->
+    <!-- PET MODULE (8 Endpoints) -->
+    <!-- =================================================================== -->
+    <section id="content-pet" class="tab-content space-y-6">
+      
+      <!-- PET 1: POST /pet/{petId}/uploadImage -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-bold font-mono">POST</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/pet/{petId}/uploadImage</span>
+          </div>
+          <span class="text-xs text-slate-400">Uploads an image for a pet</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- Request Headers & Params -->
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers & Parameters</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1 custom-scrollbar overflow-x-auto">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Content-Type:</span> multipart/form-data</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Accept:</span> application/json</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Path Param:</span> petId (integer, required)</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <pre class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-purple-300 custom-scrollbar overflow-x-auto">
+Form-Data Payload:
+  - additionalMetadata: "Front profile image" (string, optional)
+  - file: [binary image file data] (file, optional)</pre>
+          </div>
+
+          <!-- Response Headers & Codes -->
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                  <span class="text-slate-400">Header: Content-Type: application/json</span>
+                </div>
+                <pre class="text-emerald-300 text-[11px] custom-scrollbar overflow-x-auto">
+{
+  "code": 200,
+  "type": "unknown",
+  "message": "additionalMetadata: Front profile image\nFile uploaded to ./upload/file.png, 15432 bytes"
+}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PET 2: POST /pet -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-bold font-mono">POST</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/pet</span>
+          </div>
+          <span class="text-xs text-slate-400">Add a new pet to the store</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Content-Type:</span> application/json</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Accept:</span> application/json</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <pre class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-purple-300 custom-scrollbar overflow-x-auto">
+{
+  "id": 10,
+  "category": {
+    "id": 1,
+    "name": "Dogs"
+  },
+  "name": "Doggie",
+  "photoUrls": [
+    "https://example.com/photos/dog1.jpg"
+  ],
+  "tags": [
+    {
+      "id": 1,
+      "name": "friendly"
+    }
+  ],
+  "status": "available"
+}</pre>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <pre class="text-emerald-300 text-[11px] custom-scrollbar overflow-x-auto">
+{
+  "id": 10,
+  "category": { "id": 1, "name": "Dogs" },
+  "name": "Doggie",
+  "photoUrls": ["https://example.com/photos/dog1.jpg"],
+  "tags": [{ "id": 1, "name": "friendly" }],
+  "status": "available"
+}</pre>
+              </div>
+              <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                <span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 font-bold">405 Invalid Input</span>
+                <span class="text-slate-400">Response Body: None</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PET 3: PUT /pet -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-amber-500/20 text-amber-400 text-xs font-bold font-mono">PUT</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/pet</span>
+          </div>
+          <span class="text-xs text-slate-400">Update an existing pet</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Content-Type:</span> application/json</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Accept:</span> application/json</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <pre class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-purple-300 custom-scrollbar overflow-x-auto">
+{
+  "id": 10,
+  "category": { "id": 1, "name": "Dogs" },
+  "name": "Doggie Updated",
+  "photoUrls": ["https://example.com/photos/dog1_updated.jpg"],
+  "tags": [{ "id": 1, "name": "trained" }],
+  "status": "pending"
+}</pre>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-1.5 font-mono text-xs">
+              <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <span class="text-slate-300 ml-2">Returns updated Pet object</span>
+              </div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-amber-400 font-bold">400 Invalid ID supplied</div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-rose-400 font-bold">404 Pet not found</div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-rose-400 font-bold">405 Validation exception</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PET 4: GET /pet/findByStatus -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-blue-500/20 text-blue-400 text-xs font-bold font-mono">GET</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/pet/findByStatus</span>
+          </div>
+          <span class="text-xs text-slate-400">Finds Pets by status</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers & Query Params</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Accept:</span> application/json</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Query Param:</span> status (available, pending, sold)</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-slate-500 italic">None (GET Request)</div>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <pre class="text-emerald-300 text-[11px] custom-scrollbar overflow-x-auto">
+[
+  {
+    "id": 10,
+    "name": "Doggie",
+    "photoUrls": ["https://example.com/photo.jpg"],
+    "status": "available"
+  }
+]</pre>
+              </div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-amber-400 font-bold">400 Invalid status value</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PET 5: GET /pet/findByTags -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-blue-500/20 text-blue-400 text-xs font-bold font-mono">GET</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/pet/findByTags</span>
+          </div>
+          <span class="text-xs text-slate-400">Finds Pets by tags (Deprecated)</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers & Query Params</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Accept:</span> application/json</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Query Param:</span> tags (string, comma-separated)</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-slate-500 italic">None (GET Request)</div>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <pre class="text-emerald-300 text-[11px] custom-scrollbar overflow-x-auto">
+[
+  {
+    "id": 10,
+    "name": "Doggie",
+    "tags": [{ "id": 1, "name": "friendly" }],
+    "status": "available"
+  }
+]</pre>
+              </div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-amber-400 font-bold">400 Invalid tag value</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PET 6: GET /pet/{petId} -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-blue-500/20 text-blue-400 text-xs font-bold font-mono">GET</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/pet/{petId}</span>
+          </div>
+          <span class="text-xs text-slate-400">Find pet by ID</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers & Params</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Accept:</span> application/json</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">api_key:</span> special-key (Header, optional)</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Path Param:</span> petId (integer, required)</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-slate-500 italic">None (GET Request)</div>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <pre class="text-emerald-300 text-[11px] custom-scrollbar overflow-x-auto">
+{
+  "id": 10,
+  "category": { "id": 1, "name": "Dogs" },
+  "name": "Doggie",
+  "photoUrls": ["https://example.com/photo.jpg"],
+  "tags": [{ "id": 1, "name": "friendly" }],
+  "status": "available"
+}</pre>
+              </div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-amber-400 font-bold">400 Invalid ID supplied</div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-rose-400 font-bold">404 Pet not found</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PET 7: POST /pet/{petId} -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-bold font-mono">POST</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/pet/{petId}</span>
+          </div>
+          <span class="text-xs text-slate-400">Updates a pet in the store with form data</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers & Params</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Content-Type:</span> application/x-www-form-urlencoded</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Path Param:</span> petId (integer, required)</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <pre class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-purple-300 custom-scrollbar overflow-x-auto">
+URL Form Encoded Payload:
+  - name: "Updated Dog Name" (string, optional)
+  - status: "sold" (string, optional)</pre>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <span class="text-slate-400">Form values updated</span>
+              </div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-rose-400 font-bold">405 Invalid input</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PET 8: DELETE /pet/{petId} -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-rose-500/20 text-rose-400 text-xs font-bold font-mono">DELETE</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/pet/{petId}</span>
+          </div>
+          <span class="text-xs text-slate-400">Deletes a pet</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers & Params</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">api_key:</span> special-key (Header, optional)</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Path Param:</span> petId (integer, required)</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-slate-500 italic">None (DELETE Request)</div>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <span class="text-slate-400">Pet deleted successfully</span>
+              </div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-amber-400 font-bold">400 Invalid ID supplied</div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-rose-400 font-bold">404 Pet not found</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- STORE MODULE (4 Endpoints) -->
+    <!-- =================================================================== -->
+    <section id="content-store" class="tab-content hidden space-y-6">
+      
+      <!-- STORE 1: GET /store/inventory -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-blue-500/20 text-blue-400 text-xs font-bold font-mono">GET</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/store/inventory</span>
+          </div>
+          <span class="text-xs text-slate-400">Returns pet inventories by status</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Accept:</span> application/json</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">api_key:</span> special-key (Header, required)</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-slate-500 italic">None (GET Request)</div>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <pre class="text-emerald-300 text-[11px] custom-scrollbar overflow-x-auto">
+{
+  "approved": 5,
+  "placed": 12,
+  "delivered": 42,
+  "available": 234,
+  "pending": 15,
+  "sold": 89
+}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STORE 2: POST /store/order -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-bold font-mono">POST</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/store/order</span>
+          </div>
+          <span class="text-xs text-slate-400">Place an order for a pet</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Content-Type:</span> application/json</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Accept:</span> application/json</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <pre class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-purple-300 custom-scrollbar overflow-x-auto">
+{
+  "id": 1,
+  "petId": 10,
+  "quantity": 1,
+  "shipDate": "2026-07-30T15:17:21.000Z",
+  "status": "placed",
+  "complete": true
+}</pre>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <pre class="text-emerald-300 text-[11px] custom-scrollbar overflow-x-auto">
+{
+  "id": 1,
+  "petId": 10,
+  "quantity": 1,
+  "shipDate": "2026-07-30T15:17:21.000Z",
+  "status": "placed",
+  "complete": true
+}</pre>
+              </div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-amber-400 font-bold">400 Invalid Order</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STORE 3: GET /store/order/{orderId} -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-blue-500/20 text-blue-400 text-xs font-bold font-mono">GET</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/store/order/{orderId}</span>
+          </div>
+          <span class="text-xs text-slate-400">Find purchase order by ID</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers & Params</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Accept:</span> application/json</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Path Param:</span> orderId (integer, range 1-10)</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-slate-500 italic">None (GET Request)</div>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <pre class="text-emerald-300 text-[11px] custom-scrollbar overflow-x-auto">
+{
+  "id": 1,
+  "petId": 10,
+  "quantity": 1,
+  "shipDate": "2026-07-30T15:17:21.000Z",
+  "status": "placed",
+  "complete": true
+}</pre>
+              </div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-amber-400 font-bold">400 Invalid ID supplied</div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-rose-400 font-bold">404 Order not found</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STORE 4: DELETE /store/order/{orderId} -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-rose-500/20 text-rose-400 text-xs font-bold font-mono">DELETE</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/store/order/{orderId}</span>
+          </div>
+          <span class="text-xs text-slate-400">Delete purchase order by ID</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers & Params</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Path Param:</span> orderId (integer, min 1)</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-slate-500 italic">None (DELETE Request)</div>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <span class="text-slate-400">Order deleted successfully</span>
+              </div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-amber-400 font-bold">400 Invalid ID supplied</div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-rose-400 font-bold">404 Order not found</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- USER MODULE (8 Endpoints) -->
+    <!-- =================================================================== -->
+    <section id="content-user" class="tab-content hidden space-y-6">
+      
+      <!-- USER 1: POST /user/createWithList -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-bold font-mono">POST</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/user/createWithList</span>
+          </div>
+          <span class="text-xs text-slate-400">Creates list of users with given input array</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Content-Type:</span> application/json</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Accept:</span> application/json</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <pre class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-purple-300 custom-scrollbar overflow-x-auto">
+[
+  {
+    "id": 100,
+    "username": "johndoe",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com",
+    "password": "password123",
+    "phone": "123-456-7890",
+    "userStatus": 1
+  }
+]</pre>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <span class="text-slate-400">successful operation</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USER 2: GET /user/{username} -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-blue-500/20 text-blue-400 text-xs font-bold font-mono">GET</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/user/{username}</span>
+          </div>
+          <span class="text-xs text-slate-400">Get user by user name</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers & Params</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Accept:</span> application/json</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Path Param:</span> username (string, required)</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-slate-500 italic">None (GET Request)</div>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <pre class="text-emerald-300 text-[11px] custom-scrollbar overflow-x-auto">
+{
+  "id": 100,
+  "username": "johndoe",
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john@example.com",
+  "password": "password123",
+  "phone": "123-456-7890",
+  "userStatus": 1
+}</pre>
+              </div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-amber-400 font-bold">400 Invalid username supplied</div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-rose-400 font-bold">404 User not found</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USER 3: PUT /user/{username} -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-amber-500/20 text-amber-400 text-xs font-bold font-mono">PUT</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/user/{username}</span>
+          </div>
+          <span class="text-xs text-slate-400">Updated user</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers & Params</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Content-Type:</span> application/json</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Path Param:</span> username (string, required)</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <pre class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-purple-300 custom-scrollbar overflow-x-auto">
+{
+  "id": 100,
+  "username": "johndoe_updated",
+  "firstName": "Johnathan",
+  "lastName": "Doe",
+  "email": "john_updated@example.com",
+  "password": "newpassword123",
+  "phone": "987-654-3210",
+  "userStatus": 1
+}</pre>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <span class="text-slate-400">User updated successfully</span>
+              </div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-amber-400 font-bold">400 Invalid user supplied</div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-rose-400 font-bold">404 User not found</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USER 4: DELETE /user/{username} -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-rose-500/20 text-rose-400 text-xs font-bold font-mono">DELETE</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/user/{username}</span>
+          </div>
+          <span class="text-xs text-slate-400">Delete user</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers & Params</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Path Param:</span> username (string, required)</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-slate-500 italic">None (DELETE Request)</div>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <span class="text-slate-400">User deleted successfully</span>
+              </div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-amber-400 font-bold">400 Invalid username supplied</div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-rose-400 font-bold">404 User not found</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USER 5: GET /user/login -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-blue-500/20 text-blue-400 text-xs font-bold font-mono">GET</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/user/login</span>
+          </div>
+          <span class="text-xs text-slate-400">Logs user into the system</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers & Query Params</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Accept:</span> application/json</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Query Param:</span> username (string, required)</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Query Param:</span> password (string, required)</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-slate-500 italic">None (GET Request)</div>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                  <span class="text-slate-400">Headers: X-Rate-Limit, X-Expires-After</span>
+                </div>
+                <pre class="text-emerald-300 text-[11px] custom-scrollbar overflow-x-auto">"logged in user session: 1722352641000"</pre>
+              </div>
+              <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-amber-400 font-bold">400 Invalid username/password supplied</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USER 6: GET /user/logout -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-blue-500/20 text-blue-400 text-xs font-bold font-mono">GET</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/user/logout</span>
+          </div>
+          <span class="text-xs text-slate-400">Logs out current logged in user session</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Accept:</span> application/json</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-slate-500 italic">None (GET Request)</div>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <span class="text-slate-400">User logged out successfully</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USER 7: POST /user/createWithArray -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-bold font-mono">POST</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/user/createWithArray</span>
+          </div>
+          <span class="text-xs text-slate-400">Creates list of users with given input array</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Content-Type:</span> application/json</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Accept:</span> application/json</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <pre class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-purple-300 custom-scrollbar overflow-x-auto">
+[
+  {
+    "id": 101,
+    "username": "user1",
+    "firstName": "User",
+    "lastName": "One",
+    "email": "user1@example.com",
+    "password": "password123",
+    "phone": "111-222-3333",
+    "userStatus": 1
+  }
+]</pre>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <span class="text-slate-400">successful operation</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USER 8: POST /user -->
+      <div class="glass border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-bold font-mono">POST</span>
+            <span class="text-base font-mono text-slate-200 font-semibold">/user</span>
+          </div>
+          <span class="text-xs text-slate-400">Create user</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Request Headers</h4>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-1">
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Content-Type:</span> application/json</div>
+              <div class="text-slate-400"><span class="text-slate-200 font-semibold">Accept:</span> application/json</div>
+            </div>
+            <h4 class="text-xs font-semibold uppercase text-purple-400 tracking-wider">Request Body Format</h4>
+            <pre class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-purple-300 custom-scrollbar overflow-x-auto">
+{
+  "id": 100,
+  "username": "johndoe",
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john@example.com",
+  "password": "password123",
+  "phone": "123-456-7890",
+  "userStatus": 1
+}</pre>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-semibold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> HTTP Status Codes & Response Body</h4>
+            <div class="space-y-2 font-mono text-xs">
+              <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">200 OK</span>
+                <span class="text-slate-400">successful operation</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.className = "tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2 border border-slate-800";
+      });
+
+      document.getElementById('content-' + tabName).classList.remove('hidden');
+      const activeBtn = document.getElementById('tab-' + tabName);
+      activeBtn.className = "tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 bg-purple-600 text-white shadow-lg shadow-purple-600/30 flex items-center gap-2";
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text);
+    }
+  </script>
+</body>
+</html>
