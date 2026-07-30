@@ -116,7 +116,7 @@ const COURSE_CONFIG = [
                 ]
             }
         ]
-    },    
+    },
     {
         lessonId: "privateTrainingS1",
         lessonTitle: "Private Training S1",
@@ -139,7 +139,13 @@ const COURSE_CONFIG = [
                 links: [
                     { name: "private_training_s3", url: "private_training_s3.html" }
                 ]
-            }                            
+            },
+            {
+                sectionTitle: "Private Training S4",
+                links: [
+                    { name: "private_training_s4", url: "private_training_s4.html" }
+                ]
+            }
         ]
     }
     /*
