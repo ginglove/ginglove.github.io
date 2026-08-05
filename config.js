@@ -124,6 +124,19 @@ const COURSE_CONFIG = [
         ]
     },
     {
+        lessonId: "lesson21",
+        lessonTitle: "Lesson 21",
+        pin: "2121", // Set your PIN here
+        categories: [
+            {
+                sectionTitle: "API Final Exams",
+                links: [
+                    { name: "S21: Final Exams", url: "S21_API_Final_Exams.html" },
+                ]
+            }
+        ]
+    },    
+    {
         lessonId: "privateTrainingS1",
         lessonTitle: "Private Training S1",
         pin: "2026",
@@ -151,7 +164,13 @@ const COURSE_CONFIG = [
                 links: [
                     { name: "private_training_s4", url: "private_training_s4.html" }
                 ]
-            }
+            },
+            {
+                sectionTitle: "Private Training S5",
+                links: [
+                    { name: "private_training_s5", url: "private_training_s5.html" }
+                ]
+            }            
         ]
     }
     /*

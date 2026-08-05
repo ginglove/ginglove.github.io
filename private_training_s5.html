@@ -1,0 +1,2497 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buổi 5: Data-Driven Testing (DDT) & Newman CLI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f17;
+            --card-bg: #111622;
+            --primary-color: #58a6ff;
+            --accent-color: #00f0ff;
+            --success-color: #39d353;
+            --danger-color: #f85149;
+            --text-color: #c9d1d9;
+            --text-bright: #f0f6fc;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(88, 166, 255, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(0, 240, 255, 0.05) 0px, transparent 50%);
+        }
+
+        .slide-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide {
+            display: none;
+            width: 92%;
+            max-width: 1180px;
+            height: 82vh;
+            background-color: var(--card-bg);
+            border-radius: 24px;
+            padding: 22px 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 240, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text-bright);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .logo span {
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .slide-title {
+            font-size: 1.3rem;
+            color: var(--text-bright);
+            font-weight: 700;
+        }
+
+        .slide-content {
+            flex-grow: 1;
+            font-size: 0.98rem;
+            line-height: 1.45;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 10px;
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: #8b949e;
+            flex-shrink: 0;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-bright);
+            padding: 8px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn:hover {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: #0b0f17;
+            border-color: transparent;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            right: 5%;
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .quiz-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .quiz-option {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 10px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.92rem;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-option:hover:not(.disabled) {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.08);
+            transform: translateX(4px);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--success-color) !important;
+            background: rgba(57, 211, 83, 0.08) !important;
+            color: #7eff93 !important;
+            box-shadow: 0 0 15px rgba(57, 211, 83, 0.1);
+        }
+
+        .quiz-option.incorrect {
+            border-color: var(--danger-color) !important;
+            background: rgba(248, 81, 73, 0.08) !important;
+            color: #ff8e8a !important;
+            box-shadow: 0 0 15px rgba(248, 81, 73, 0.1);
+        }
+
+        .quiz-option.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .quiz-option i {
+            font-size: 1rem;
+        }
+
+        .quiz-feedback {
+            margin-top: 10px;
+            font-weight: 500;
+            display: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            line-height: 1.4;
+            backdrop-filter: blur(10px);
+            border-style: solid;
+            border-width: 1px;
+            animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-card {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.01) 0%, rgba(255, 255, 255, 0.03) 100%);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            max-width: 650px;
+            margin: 10px auto;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .score-display {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 10px 0;
+            filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.2));
+        }
+
+        .badge-rating {
+            display: inline-block;
+            padding: 6px 20px;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .tab-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--text-color);
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 0.85rem;
+        }
+
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: #0b0f17;
+            font-weight: bold;
+            box-shadow: 0 0 12px rgba(88, 166, 255, 0.2);
+            border-color: transparent;
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px;
+            border-radius: 14px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .highlight {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        pre {
+            background: #070a10;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.06);
+            overflow-x: auto;
+            color: #e6edf3;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.82rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .badge {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .progress-bar-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: #111622;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .intro-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            text-align: center;
+            padding: 5px 0;
+        }
+
+        .game-status-bar {
+            display: inline-flex;
+            gap: 12px;
+            margin: 0 auto 10px auto;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 5px 15px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            align-self: center;
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--accent-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.5; }
+        }
+
+        .intro-title {
+            font-size: 2.2rem;
+            background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            filter: drop-shadow(0 0 12px rgba(0,240,255,0.1));
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .intro-subtitle {
+            font-size: 1.05rem;
+            color: #8b949e;
+            max-width: 750px;
+            margin: 0 auto 15px auto;
+            line-height: 1.4;
+        }
+
+        .intro-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .intro-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.01) 100%);
+            padding: 12px 15px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .intro-card h4 {
+            font-size: 0.95rem;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .intro-card p {
+            font-size: 0.8rem;
+            color: #8b949e;
+            line-height: 1.35;
+        }
+
+        .start-alert {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            padding: 6px 14px;
+            border-radius: 10px;
+            color: var(--accent-color);
+            font-size: 0.8rem;
+            font-weight: 600;
+            animation: bounce 2s infinite;
+            align-self: center;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        ul.list-modern {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        ul.list-modern li {
+            position: relative;
+            padding-left: 15px;
+            margin-bottom: 6px;
+            font-size: 0.88rem;
+            color: #8b949e;
+        }
+
+        ul.list-modern li::before {
+            content: "✦";
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+        }
+
+        .lifecycle-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.01);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 15px 25px;
+            margin-bottom: 12px;
+        }
+
+        .flow-node {
+            text-align: center;
+            flex: 1;
+            padding: 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.04);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .flow-node.active-node {
+            background: rgba(0, 240, 255, 0.05);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);
+        }
+
+        .flow-arrow {
+            color: rgba(255,255,255,0.2);
+            font-size: 1rem;
+            padding: 0 10px;
+        }
+
+        .sandbox-container {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 15px;
+        }
+
+        .slide-footer span:last-child {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .slide-footer span:last-child:hover {
+            color: var(--accent-color);
+        }
+        .slide-picker-dropdown {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 100;
+            min-width: 220px;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.4);
+        }
+        .slide-picker-dropdown.open { display: block; }
+        .slide-picker-item {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            color: var(--text-color);
+            border-radius: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .slide-picker-item:hover { background: rgba(88,166,255,0.1); }
+        .slide-picker-item.current { color: var(--accent-color); font-weight: bold; }
+
+        pre::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        pre::-webkit-scrollbar-track {
+            background: #070a10;
+        }
+        pre::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+
+        @media (max-width: 1024px) {
+            .slide {
+                padding: 18px 24px;
+                height: 85vh;
+                width: 96%;
+                border-radius: 16px;
+            }
+            .slide-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+                padding-bottom: 8px;
+                margin-bottom: 8px;
+            }
+            .slide-title { font-size: 1.1rem; }
+            .logo { font-size: 1.1rem; }
+            .grid-2 { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .intro-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .sandbox-container { grid-template-columns: 1fr; }
+            .controls { bottom: 12px; right: 3%; }
+            .tab-btn { padding: 5px 10px; font-size: 0.78rem; }
+        }
+
+        @media (max-width: 640px) {
+            body { overflow-y: auto; overflow-x: hidden; }
+            .slide-container { align-items: flex-start; padding: 8px 0; }
+            .slide {
+                width: 100%; height: auto; min-height: 92vh; border-radius: 0;
+                padding: 14px 16px; overflow-y: auto; overflow-x: hidden;
+                box-shadow: none; border: none;
+            }
+            .slide.active { justify-content: flex-start; }
+            .slide-header { flex-direction: column; align-items: flex-start; gap: 2px; padding-bottom: 6px; margin-bottom: 8px; }
+            .slide-title { font-size: 0.95rem; }
+            .logo { font-size: 1rem; }
+            .slide-content { font-size: 0.88rem; line-height: 1.4; overflow-y: auto; flex-grow: 1; }
+            .grid-2, .intro-grid { grid-template-columns: 1fr !important; gap: 8px; }
+            .sandbox-container { grid-template-columns: 1fr !important; }
+            .lifecycle-flow { flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
+            .flow-node { flex: 1 1 40%; min-width: 120px; }
+            .flow-arrow { display: none; }
+            .quiz-option { padding: 12px 14px; font-size: 0.85rem; min-height: 44px; }
+            .quiz-container { gap: 6px; }
+            .quiz-feedback { font-size: 0.82rem; padding: 10px; }
+            .tab-container { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 6px; padding-bottom: 4px; }
+            .tab-btn { white-space: nowrap; flex-shrink: 0; padding: 5px 10px; font-size: 0.75rem; }
+            pre { font-size: 0.72rem !important; padding: 10px; max-height: 180px; }
+            .controls {
+                position: fixed; bottom: 0; left: 0; right: 0; justify-content: center;
+                background: var(--bg-color); padding: 8px 16px;
+                border-top: 1px solid rgba(255,255,255,0.06); z-index: 20; gap: 10px;
+            }
+            .nav-btn { padding: 10px 20px; font-size: 0.85rem; flex: 1; justify-content: center; }
+            .slide-footer { font-size: 0.7rem; margin-top: 8px; padding-top: 6px; padding-bottom: 50px; }
+            .intro-title { font-size: 1.5rem; }
+            .intro-subtitle { font-size: 0.88rem; }
+            .game-status-bar { font-size: 0.65rem; gap: 6px; padding: 4px 10px; flex-wrap: wrap; justify-content: center; }
+            .start-alert { font-size: 0.72rem; }
+            .score-display { font-size: 2.8rem; }
+            .result-card { padding: 16px; }
+            .progress-bar-container { height: 4px; }
+            [style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+            [style*="grid-template-columns: 36px"] { grid-template-columns: 36px 1fr !important; }
+            .slide-picker-dropdown { max-height: 250px; min-width: 180px; right: -10px; }
+        }
+
+        @media (pointer: coarse) {
+            .quiz-option {
+                min-height: 48px;
+                -webkit-tap-highlight-color: rgba(0, 240, 255, 0.1);
+            }
+            .quiz-option span, .quiz-option i { pointer-events: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="slide-container">
+
+        <!-- SLIDE 1: LOBBY -->
+        <div class="slide active">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div>Lobby // Session_05</div>
+            </div>
+            <div class="slide-content" style="overflow: hidden;">
+                <div class="intro-container">
+                    <div class="game-status-bar">
+                        <span><span class="pulse-dot"></span> STATUS: ONLINE</span>
+                        <span>|</span>
+                        <span>DIFFICULTY: INTERMEDIATE</span>
+                        <span>|</span>
+                        <span>QUEST: DDT & NEWMAN CLI</span>
+                    </div>
+
+                    <h1 class="intro-title">
+                        DATA-DRIVEN TESTING & NEWMAN CLI
+                    </h1>
+
+                    <p class="intro-subtitle">
+                        Mở rộng độ bao phủ kiểm thử với <span class="highlight">nhiều tập dữ liệu (CSV/JSON)</span> và chạy Collection ở chế độ <span class="highlight">Command Line</span> bằng Newman — nền tảng để tích hợp CI/CD.
+                    </p>
+
+                    <div class="intro-grid">
+                        <div class="intro-card">
+                            <h4 class="highlight"><i class="fa-solid fa-database"></i> DATA-DRIVEN</h4>
+                            <p>Thiết kế file dữ liệu CSV/JSON, map biến vào Postman bằng cú pháp <code>{{variable}}</code>, chạy hàng chục test case chỉ với 1 Collection.</p>
+                        </div>
+                        <div class="intro-card">
+                            <h4 class="highlight"><i class="fa-solid fa-terminal"></i> NEWMAN CLI</h4>
+                            <p>Cài đặt Node.js & Newman, chạy Collection từ dòng lệnh với <code>newman run</code>, truyền biến môi trường (<code>-e</code>) và file dữ liệu (<code>-d</code>).</p>
+                        </div>
+                        <div class="intro-card" style="border-color: rgba(57, 211, 83, 0.15);">
+                            <h4 style="color: var(--success-color);"><i class="fa-solid fa-file-lines"></i> HTML REPORT</h4>
+                            <p>Cài đặt <code>newman-reporter-htmlextra</code>, xuất báo cáo kiểm thử HTML chuyên nghiệp và đọc hiểu kết quả report.</p>
+                        </div>
+                    </div>
+
+                    <div class="start-alert">
+                        <i class="fa-solid fa-play"></i> NHẤN PHÍM "MŨI TÊN PHẢI" ĐỂ BẮT ĐẦU QUIZ
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>IT Learn Studio</span>
+                <span>Slide 1 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: Q1 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q1</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">Postman Environment</span> Trong Postman, muốn cùng một Collection chạy trên cả môi trường <span class="highlight">Dev</span> và <span class="highlight">Staging</span> mà không cần sửa URL, bạn cần dùng gì?</p>
+                <div class="quiz-container" data-question="1">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Sai rồi! Global Variables dùng chung mọi nơi, không phân biệt được Dev hay Staging.', 1)">
+                        <span>A. Global Variables</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B', 'Chuẩn! Tạo 2 Environment (Dev & Staging), mỗi env khai báo cùng tên biến base_url nhưng giá trị khác nhau. Khi chạy chỉ cần chọn đúng env.', 1)">
+                        <span>B. Environment Variables — tạo 2 env với cùng tên biến nhưng giá trị khác nhau</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C', 'Chưa đúng! Collection Variables chỉ có 1 bộ giá trị, không chuyển đổi theo môi trường được.', 1)">
+                        <span>C. Collection Variables</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Sai lệch! Local Variables chỉ tồn tại trong 1 request duy nhất.', 1)">
+                        <span>D. Local Variables</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-1"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 2 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: Q2 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q2</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">HTTP Status Code</span> Khi gửi request tạo tài khoản mới, server trả về <span class="highlight">409 Conflict</span>. Điều này có ý nghĩa gì?</p>
+                <div class="quiz-container" data-question="2">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Sai rồi! 500 mới là lỗi server, 409 thuộc nhóm 4xx — lỗi phía client.', 2)">
+                        <span>A. Server bị lỗi nội bộ</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B', 'Chuẩn! 409 Conflict nghĩa là tài nguyên bị xung đột — thường do email/username đã tồn tại. Đây là case rất hay gặp khi test tạo tài khoản.', 2)">
+                        <span>B. Tài nguyên bị xung đột — ví dụ email đã tồn tại</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C', 'Nhầm rồi! 401 mới là chưa xác thực, 409 là xung đột dữ liệu.', 2)">
+                        <span>C. Chưa đăng nhập, cần gửi token</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Không đúng! 404 Not Found mới là không tìm thấy endpoint.', 2)">
+                        <span>D. URL endpoint không tồn tại</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-2"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 3 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: Q3 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q3</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 8px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">JSON Path</span> Cho response bên dưới, cú pháp nào lấy đúng giá trị <span class="highlight">"VND"</span>?</p>
+                <pre style="margin-bottom: 10px;">{ "transaction": { "amount": 500000, "currency": { "code": "VND", "name": "Vietnamese Dong" } } }</pre>
+                <div class="quiz-container" data-question="3">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Sai rồi! Thiếu tầng currency, phải đi qua transaction → currency → code.', 3)">
+                        <span>A. <code>res.transaction.code</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B', 'Chuẩn xác! Đi từ ngoài vào: transaction → currency → code = VND.', 3)">
+                        <span>B. <code>res.transaction.currency.code</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C', 'Nhầm thứ tự! currency nằm bên trong transaction chứ không phải ngang hàng.', 3)">
+                        <span>C. <code>res.currency.transaction.code</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Sai! code nằm trong currency object, không phải trực tiếp trong res.', 3)">
+                        <span>D. <code>res.code</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-3"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 4 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: Q4 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q4</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">API Basics</span> HTTP method <span class="highlight">POST</span> thường được dùng để làm gì?</p>
+                <div class="quiz-container" data-question="4">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Sai! GET mới dùng để lấy dữ liệu, POST dùng để gửi/tạo dữ liệu mới.', 4)">
+                        <span>A. Lấy danh sách dữ liệu từ server</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B', 'Chuẩn! POST dùng để gửi dữ liệu lên server — thường là tạo tài nguyên mới (tạo user, tạo đơn hàng, gửi form đăng ký). Dữ liệu nằm trong request body.', 4)">
+                        <span>B. Gửi dữ liệu lên server để tạo tài nguyên mới</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C', 'Nhầm rồi! DELETE mới dùng để xóa tài nguyên.', 4)">
+                        <span>C. Xóa một tài nguyên trên server</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Không đúng! PUT hoặc PATCH mới dùng để cập nhật dữ liệu đã có.', 4)">
+                        <span>D. Cập nhật toàn bộ dữ liệu đã tồn tại</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-4"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 5 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: Q5 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q5</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">API Basics</span> Header <span class="highlight">Content-Type: application/json</span> trong request có ý nghĩa gì?</p>
+                <div class="quiz-container" data-question="5">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Nhầm rồi! Content-Type mô tả định dạng dữ liệu, không phải yêu cầu xác thực.', 5)">
+                        <span>A. Yêu cầu server xác thực người dùng bằng JSON token</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B', 'Chuẩn! Content-Type báo cho server biết body của request đang ở định dạng JSON. Server sẽ đọc và parse body theo đúng format JSON.', 5)">
+                        <span>B. Báo cho server biết body request đang ở định dạng JSON</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C', 'Sai! Content-Type chỉ mô tả format dữ liệu gửi đi, không liên quan đến format response.', 5)">
+                        <span>C. Yêu cầu server trả response về dạng JSON</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Không đúng! Content-Type là header tiêu chuẩn HTTP, không liên quan đến mã hóa bảo mật.', 5)">
+                        <span>D. Mã hóa dữ liệu trước khi gửi để bảo mật</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-5"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 6 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: Q6 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q6</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">Postman Environment</span> Bạn có 3 biến cùng tên <span class="highlight">base_url</span> ở Global, Collection và Environment. Postman sẽ ưu tiên lấy giá trị từ đâu?</p>
+                <div class="quiz-container" data-question="6">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Sai rồi! Global có độ ưu tiên thấp nhất trong 3 loại biến này.', 6)">
+                        <span>A. Global Variables — vì là phạm vi rộng nhất</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'B', 'Chưa đúng! Collection Variables nằm giữa, không phải ưu tiên cao nhất.', 6)">
+                        <span>B. Collection Variables — vì gần Collection nhất</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'C', 'Chuẩn! Thứ tự ưu tiên từ cao → thấp: Local > Data (file) > Environment > Collection > Global. Environment thắng Collection và Global!', 6)">
+                        <span>C. Environment Variables — vì có độ ưu tiên cao hơn Collection & Global</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Sai lệch! Postman có quy tắc ưu tiên rõ ràng, không ngẫu nhiên.', 6)">
+                        <span>D. Ngẫu nhiên — Postman lấy bất kỳ giá trị nào tìm thấy trước</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-6"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 7 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: Q7 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q7</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 8px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">JSON Path</span> Cho response sau, cú pháp nào lấy đúng <span class="highlight">tên người nhận</span> của giao dịch thứ 3?</p>
+                <pre style="margin-bottom: 10px;">{
+  "transfers": [
+    { "id": 1, "receiver": "An", "amount": 100000 },
+    { "id": 2, "receiver": "Binh", "amount": 200000 },
+    { "id": 3, "receiver": "Cuong", "amount": 300000 }
+  ]
+}</pre>
+                <div class="quiz-container" data-question="7">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Suýt trúng! Index [3] không tồn tại vì mảng chỉ có index 0, 1, 2 — đánh số từ 0!', 7)">
+                        <span>A. <code>res.transfers[3].receiver</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B', 'Chuẩn xác! Phần tử thứ 3 (Cuong) nằm ở index [2] vì mảng bắt đầu từ 0.', 7)">
+                        <span>B. <code>res.transfers[2].receiver</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C', 'Sai cú pháp! Phải truy cập phần tử mảng bằng index trước, rồi mới lấy field.', 7)">
+                        <span>C. <code>res.transfers.receiver[2]</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Không đúng! Index [1] là phần tử thứ 2 (Binh), không phải thứ 3.', 7)">
+                        <span>D. <code>res.transfers[1].receiver</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-7"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 8 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: Q8 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q8</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">HTTP Status Code</span> Khi gửi request đến một URL <span class="highlight">không tồn tại</span> trên server, bạn sẽ nhận được status code nào?</p>
+                <div class="quiz-container" data-question="8">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Sai! 200 nghĩa là thành công, nhưng URL không tồn tại thì không thể thành công.', 8)">
+                        <span>A. 200 OK</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'B', 'Nhầm! 401 là chưa xác thực (Unauthorized), không phải không tìm thấy.', 8)">
+                        <span>B. 401 Unauthorized</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'C', 'Chuẩn! 404 Not Found = server không tìm thấy tài nguyên tại URL bạn yêu cầu. Đây là lỗi quen thuộc nhất — ai cũng từng thấy trang 404 Page Not Found trên web!', 8)">
+                        <span>C. 404 Not Found</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Không đúng! 500 là lỗi bên trong server, không phải lỗi do URL sai.', 8)">
+                        <span>D. 500 Internal Server Error</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-8"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 9 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: Q9 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q9</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">Postman Testing</span> Đoạn code <span class="highlight">pm.test("Status is 200", function() {...})</span> trong tab Tests của Postman dùng để làm gì?</p>
+                <div class="quiz-container" data-question="9">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Sai! pm.test() không gửi request — nó chạy SAU khi request đã nhận được response.', 9)">
+                        <span>A. Gửi thêm một request mới đến server</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'B', 'Nhầm! pm.test() không thay đổi response — nó chỉ kiểm tra response đã có.', 9)">
+                        <span>B. Thay đổi response trước khi hiển thị</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'C', 'Chuẩn! pm.test() tạo một bài kiểm tra tự động — kiểm tra response có đúng kỳ vọng không (status code, body, header...). Kết quả hiển thị PASS/FAIL trong tab Test Results.', 9)">
+                        <span>C. Tạo một assertion — kiểm tra tự động xem response có đúng kỳ vọng không</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Không đúng! pm.test() chạy ở phía Postman client, không ảnh hưởng gì đến server.', 9)">
+                        <span>D. In log ra console của server</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-9"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 10 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: Q10 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q10</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">HTTP Status Code</span> API trả về <span class="highlight">204 No Content</span>. Điều này có nghĩa gì?</p>
+                <div class="quiz-container" data-question="10">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Sai! 204 thuộc nhóm 2xx nên luôn là thành công.', 10)">
+                        <span>A. Request thất bại, server không tìm thấy dữ liệu</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B', 'Chuẩn! 204 No Content = thành công nhưng không có body trả về. Rất hay gặp sau DELETE hoặc PUT — server xử lý xong nhưng không cần trả dữ liệu gì.', 10)">
+                        <span>B. Thành công nhưng không có body trả về — thường gặp sau DELETE</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C', 'Nhầm rồi! 204 là thành công, khác với 404 (không tìm thấy).', 10)">
+                        <span>C. Giống 404 — tài nguyên không tồn tại</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Không đúng! 503 mới là server đang bảo trì.', 10)">
+                        <span>D. Server đang bảo trì, thử lại sau</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-10"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 11 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: Q11 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q11</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 8px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">JSON Path</span> Cho response bên dưới, cú pháp nào đếm đúng <span class="highlight">số lượng lỗi validation</span>?</p>
+                <pre style="margin-bottom: 10px;">{
+  "status": "error",
+  "errors": [
+    { "field": "email", "message": "Invalid format" },
+    { "field": "amount", "message": "Must be positive" }
+  ]
+}</pre>
+                <div class="quiz-container" data-question="11">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Sai cú pháp! JavaScript array không có thuộc tính .count.', 11)">
+                        <span>A. <code>res.errors.count</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B', 'Chuẩn! .length là thuộc tính đếm số phần tử mảng trong JavaScript. Ở đây trả về 2.', 11)">
+                        <span>B. <code>res.errors.length</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C', 'Nhầm! .size() không phải cú pháp JavaScript cho array.', 11)">
+                        <span>C. <code>res.errors.size()</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Sai thứ tự! Phải truy cập mảng errors trước rồi mới dùng .length.', 11)">
+                        <span>D. <code>res.length.errors</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-11"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 12 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: Q12 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q12</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">Postman</span> <span class="highlight">Collection Runner</span> trong Postman dùng để làm gì?</p>
+                <div class="quiz-container" data-question="12">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Sai! Collection Runner chạy request đã có, không tạo request mới.', 12)">
+                        <span>A. Tự động tạo nhiều request mới trong Collection</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B', 'Chuẩn! Collection Runner chạy tuần tự tất cả request trong Collection một cách tự động — không cần bấm Send từng cái. Có thể lặp nhiều lần với data file khác nhau.', 12)">
+                        <span>B. Chạy tự động tất cả request trong Collection theo thứ tự</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C', 'Nhầm! Collection Runner chạy request, không phải export.', 12)">
+                        <span>C. Export Collection ra file JSON để chia sẻ</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Không đúng! Collection Runner là tính năng chạy test, không phải tạo tài liệu.', 12)">
+                        <span>D. Tạo API documentation tự động từ Collection</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-12"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 13 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: Q13 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q13</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">API Testing</span> Bạn muốn test API tạo tài khoản với <span class="highlight">20 bộ dữ liệu khác nhau</span> (email hợp lệ, email trùng, email thiếu @...). Cách nào hiệu quả nhất?</p>
+                <div class="quiz-container" data-question="13">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Quá tốn thời gian! 20 request × sửa body × bấm Send = mất cả buổi chiều.', 13)">
+                        <span>A. Tạo 20 request riêng biệt, mỗi request sửa body thủ công</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B', 'Đỉnh cao hiệu quả! Tạo 1 request duy nhất với biến {{email}}, {{password}}... rồi chuẩn bị file CSV/JSON chứa 20 dòng dữ liệu → Collection Runner tự chạy 20 lần với data khác nhau.', 13)">
+                        <span>B. Tạo 1 request + 1 file dữ liệu CSV/JSON chứa 20 dòng → chạy Collection Runner</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C', 'Cực kỳ nguy hiểm! Copy-paste dễ sai, không tái sử dụng được và mất rất nhiều thời gian.', 13)">
+                        <span>C. Copy-paste request 20 lần, đổi body mỗi lần</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Sai hướng! Dynamic Variables sinh dữ liệu ngẫu nhiên — không kiểm soát được các test case cụ thể (email thiếu @, email trùng...).', 13)">
+                        <span>D. Dùng Dynamic Variables cho tất cả các field</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-13"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 14 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 15: Q14 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q14</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">HTTP Status Code</span> Dãy status code <span class="highlight">5xx</span> (500, 502, 503...) cho biết điều gì?</p>
+                <div class="quiz-container" data-question="14">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Nhầm rồi! 4xx mới là lỗi phía client.', 14)">
+                        <span>A. Lỗi do client gửi request sai</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'B', 'Sai! 2xx mới là thành công. 5xx luôn là lỗi.', 14)">
+                        <span>B. Request thành công, nhưng server xử lý chậm</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'C', 'Chuẩn! 5xx = lỗi phía server. 500 Internal Server Error, 502 Bad Gateway, 503 Service Unavailable. Tester cần log bug ngay vì đây là lỗi nghiêm trọng!', 14)">
+                        <span>C. Lỗi phía server — server không xử lý được request dù client gửi đúng</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Không đúng! 3xx mới là redirect.', 14)">
+                        <span>D. Server chuyển hướng request sang URL khác</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-14"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 15 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 16: Q15 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q15</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 8px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">JSON Path</span> Cho response bên dưới, assertion nào kiểm tra đúng rằng user <span class="highlight">đã active</span>?</p>
+                <pre style="margin-bottom: 10px;">{ "user": { "id": 42, "name": "QA Tester", "is_active": true, "roles": ["tester", "viewer"] } }</pre>
+                <div class="quiz-container" data-question="15">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Sai cú pháp! .to.be.true không cần ngoặc vì đây là property assertion, không phải function.', 15)">
+                        <span>A. <code>pm.expect(res.user.is_active).to.be.true()</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B', 'Chuẩn! .to.be.true kiểm tra giá trị chính xác là boolean true — không pass cho chuỗi true (string) hay 1 (number).', 15)">
+                        <span>B. <code>pm.expect(res.user.is_active).to.be.true</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C', 'Chưa chính xác! .to.eql(chuỗi true) so sánh với string, không phải boolean true. Hai kiểu khác nhau!', 15)">
+                        <span>C. <code>pm.expect(res.user.is_active).to.eql("true")</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Thiếu tầng! is_active nằm trong object user, phải đi qua res.user trước.', 15)">
+                        <span>D. <code>pm.expect(res.is_active).to.be.true</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-15"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 16 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 17: Q16 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q16</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">Postman Environment</span> Bạn export Environment từ Postman ra file. File đó có định dạng gì?</p>
+                <div class="quiz-container" data-question="16">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Sai! Postman không export Environment ra CSV.', 16)">
+                        <span>A. CSV — vì dễ đọc bằng Excel</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B', 'Chuẩn! Postman export Environment ra file JSON — chứa tên biến, giá trị initial và current. File này dùng để share cho team hoặc truyền vào Newman bằng cờ -e.', 16)">
+                        <span>B. JSON — chứa danh sách biến với giá trị initial và current</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C', 'Không đúng! YAML không phải format export của Postman.', 16)">
+                        <span>C. YAML — format phổ biến cho config</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Sai lệch! XML không phải format export mặc định của Postman.', 16)">
+                        <span>D. XML — giống cấu trúc SOAP API</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-16"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 17 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 18: Q17 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q17</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">HTTP Status Code</span> Khi test API chuyển tiền, server trả <span class="highlight">200 OK</span> nhưng body chứa <span class="highlight">{"success": false, "error": "Insufficient funds"}</span>. Test nên kết luận gì?</p>
+                <div class="quiz-container" data-question="17">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Sai! Đừng bị đánh lừa bởi status 200 — body rõ ràng báo lỗi.', 17)">
+                        <span>A. PASS — vì status 200 nghĩa là thành công</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B', 'Tư duy tester chuyên nghiệp! Status 200 chỉ là HTTP layer OK. Body báo success=false + error message → phải FAIL. Và nên log bug: server trả sai status code — lẽ ra phải trả 400 hoặc 422.', 17)">
+                        <span>B. FAIL — và log bug: server nên trả 4xx thay vì 200 khi giao dịch thất bại</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C', 'Không đúng! Đây không phải hành vi bình thường — status code và body mâu thuẫn nhau.', 17)">
+                        <span>C. Bỏ qua — đây là hành vi bình thường của API</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Thiếu chủ động! Tester phải tự verify qua assertion, không chờ người khác.', 17)">
+                        <span>D. Không test được — cần hỏi developer mới biết</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-17"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 18 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 19: Q18 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q18</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 8px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">JSON Path</span> Cho response bên dưới, cú pháp nào lấy đúng <span class="highlight">role đầu tiên</span> của user?</p>
+                <pre style="margin-bottom: 10px;">{ "user": { "id": 1, "roles": ["admin", "editor", "viewer"] } }</pre>
+                <div class="quiz-container" data-question="18">
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'A', 'Chuẩn xác! roles là mảng string, phần tử đầu tiên ở index [0] = admin.', 18)">
+                        <span>A. <code>res.user.roles[0]</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'B', 'Sai! Index [1] là phần tử thứ 2 (editor), không phải đầu tiên.', 18)">
+                        <span>B. <code>res.user.roles[1]</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C', 'Sai cú pháp! .first không phải là method của JavaScript array.', 18)">
+                        <span>C. <code>res.user.roles.first</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Thiếu tầng! roles nằm trong object user, phải đi qua res.user trước.', 18)">
+                        <span>D. <code>res.roles[0]</code></span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-18"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 19 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 20: Q19 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q19</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">Postman Variables</span> Trong Postman, cú pháp <span class="highlight">{{base_url}}</span> viết trong URL có ý nghĩa gì?</p>
+                <div class="quiz-container" data-question="19">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Sai! {{base_url}} không phải comment — nó là cú pháp biến thực sự và Postman sẽ xử lý nó.', 19)">
+                        <span>A. Đó là comment — Postman sẽ bỏ qua đoạn này</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'B', 'Chuẩn! Cú pháp {{tên_biến}} báo cho Postman tự thay thế bằng giá trị thực của biến đó (từ Environment, Collection, hoặc file dữ liệu). Ví dụ: {{base_url}} → https://api.example.com.', 19)">
+                        <span>B. Postman sẽ tự thay thế bằng giá trị thực của biến base_url</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'C', 'Nhầm! {{base_url}} là cú pháp gọi biến, không phải gọi hàm JavaScript.', 19)">
+                        <span>C. Gọi một hàm JavaScript tên base_url</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Không đúng! Postman hiểu {{}} là cú pháp biến — nếu biến chưa khai báo thì sẽ báo lỗi, không gửi nguyên văn.', 19)">
+                        <span>D. Gửi nguyên text "{{base_url}}" đến server</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-19"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 20 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 21: Q20 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Pre-Check Quiz — Q20</div>
+            </div>
+            <div class="slide-content">
+                <p style="margin-bottom: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-bright);"><span class="badge">HTTP Status Code</span> Khi test DELETE API, server trả về <span class="highlight">405 Method Not Allowed</span>. Nguyên nhân có thể là gì?</p>
+                <div class="quiz-container" data-question="20">
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'A', 'Nhầm rồi! 401/403 mới liên quan đến authentication/authorization.', 20)">
+                        <span>A. Token hết hạn, cần đăng nhập lại</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'B', 'Sai! 404 mới là tài nguyên không tồn tại.', 20)">
+                        <span>B. Tài nguyên cần xóa không tồn tại</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, true, 'C', 'Chuẩn! 405 Method Not Allowed = endpoint tồn tại nhưng không hỗ trợ HTTP method bạn gửi. Ví dụ: endpoint chỉ cho phép GET/POST, bạn gửi DELETE → 405.', 20)">
+                        <span>C. Endpoint không hỗ trợ method DELETE — chỉ cho phép GET/POST</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                    <div class="quiz-option" onclick="submitAnswer(this, false, 'D', 'Sai lệch! 500 mới là lỗi server nội bộ. 405 là lỗi phía client.', 20)">
+                        <span>D. Server bị lỗi khi xử lý request DELETE</span><i class="fa-regular fa-circle"></i>
+                    </div>
+                </div>
+                <div class="quiz-feedback" id="feedback-20"></div>
+            </div>
+            <div class="slide-footer">
+                <span>Kiểm tra kiến thức nền</span>
+                <span>Slide 21 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 22: QUIZ RESULTS -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Báo Cáo Thành Tích Pre-Check Quiz</div>
+            </div>
+            <div class="slide-content" style="display: flex; flex-direction: column; justify-content: flex-start; overflow-y: auto;">
+                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 14px; align-items: start;">
+                    <div class="result-card" style="margin: 0; padding: 16px;">
+                        <h3 style="color: var(--text-bright); font-size: 1rem; margin-bottom: 4px;">KẾT QUẢ ĐÁNH GIÁ</h3>
+                        <div class="score-display" id="quizScore" style="font-size: 3rem; margin: 6px 0;">0/20</div>
+                        <div class="badge-rating" id="scoreBadge" style="background: var(--primary-color); color: #0b0f17; margin-bottom: 8px; font-size: 0.78rem;">Đang tính điểm...</div>
+                        <p style="line-height: 1.4; font-size: 0.82rem; color: #8b949e;" id="scoreEvaluation">Hoàn thành 20 câu hỏi để nhận phân tích chi tiết.</p>
+                    </div>
+                    <div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;" id="topicBreakdown">
+                            <div class="topic-row" data-topic="env-variables" style="background: rgba(255,255,255,0.01); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                    <span style="font-size:0.76rem; font-weight:700; color:var(--text-bright);"><i class="fa-solid fa-sliders"></i> Environment & Variables</span>
+                                    <span id="score-env-variables" style="font-size:0.7rem; font-weight:700; color:#8b949e;">—</span>
+                                </div>
+                                <div style="font-size:0.68rem; color:#8b949e; line-height:1.3;">
+                                    <span style="color:#555;">Q1 | Q6 | Q9 | Q16 | Q19</span>
+                                </div>
+                                <div id="suggest-env-variables" style="font-size:0.68rem; margin-top:3px; display:none; line-height:1.3;"></div>
+                            </div>
+                            <div class="topic-row" data-topic="status-codes" style="background: rgba(255,255,255,0.01); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                    <span style="font-size:0.76rem; font-weight:700; color:var(--text-bright);"><i class="fa-solid fa-shield-halved"></i> HTTP Status Codes</span>
+                                    <span id="score-status-codes" style="font-size:0.7rem; font-weight:700; color:#8b949e;">—</span>
+                                </div>
+                                <div style="font-size:0.68rem; color:#8b949e; line-height:1.3;">
+                                    <span style="color:#555;">Q2 | Q8 | Q10 | Q14 | Q20</span>
+                                </div>
+                                <div id="suggest-status-codes" style="font-size:0.68rem; margin-top:3px; display:none; line-height:1.3;"></div>
+                            </div>
+                            <div class="topic-row" data-topic="json-path" style="background: rgba(255,255,255,0.01); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                    <span style="font-size:0.76rem; font-weight:700; color:var(--text-bright);"><i class="fa-solid fa-code"></i> JSON Path & Assertions</span>
+                                    <span id="score-json-path" style="font-size:0.7rem; font-weight:700; color:#8b949e;">—</span>
+                                </div>
+                                <div style="font-size:0.68rem; color:#8b949e; line-height:1.3;">
+                                    <span style="color:#555;">Q3 | Q7 | Q11 | Q15 | Q18</span>
+                                </div>
+                                <div id="suggest-json-path" style="font-size:0.68rem; margin-top:3px; display:none; line-height:1.3;"></div>
+                            </div>
+                            <div class="topic-row" data-topic="tester-mindset" style="background: rgba(255,255,255,0.01); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                    <span style="font-size:0.76rem; font-weight:700; color:var(--text-bright);"><i class="fa-solid fa-brain"></i> API Basics & Tư Duy Tester</span>
+                                    <span id="score-tester-mindset" style="font-size:0.7rem; font-weight:700; color:#8b949e;">—</span>
+                                </div>
+                                <div style="font-size:0.68rem; color:#8b949e; line-height:1.3;">
+                                    <span style="color:#555;">Q4 | Q5 | Q12 | Q13 | Q17</span>
+                                </div>
+                                <div id="suggest-tester-mindset" style="font-size:0.68rem; margin-top:3px; display:none; line-height:1.3;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="learningPath" style="margin-top: 10px; background: rgba(0,240,255,0.03); border: 1px solid rgba(0,240,255,0.1); border-radius: 10px; padding: 10px 14px; display: none;">
+                    <h4 style="font-size: 0.82rem; color: var(--accent-color); margin-bottom: 6px;"><i class="fa-solid fa-road"></i> Lộ Trình Học Tập Đề Xuất Cho Bạn</h4>
+                    <div id="learningPathContent" style="font-size: 0.76rem; color: #8b949e; line-height: 1.4;"></div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phân tích chi tiết theo từng nhóm kiến thức</span>
+                <span>Slide 22 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 23: AGENDA -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Agenda — Lộ Trình Buổi 5 (120 phút)</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.9rem; color: #8b949e; margin-bottom: 12px; text-align: center;">
+                    Buổi học hôm nay tập trung vào <span class="highlight">Data-Driven Testing</span> và <span class="highlight">Newman CLI</span> — chạy test hàng loạt và xuất báo cáo chuyên nghiệp.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; background: rgba(255,255,255,0.01); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                        <span class="highlight" style="font-family:monospace;">00:00-00:15</span>
+                        <span>Ôn tập kiến thức Buổi 4 &amp; Pre-Check Quiz (20 câu)</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; background: rgba(0,240,255,0.03); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(0,240,255,0.12);">
+                        <span class="highlight" style="font-family:monospace;">00:15-00:35</span>
+                        <span><strong>Phần 1</strong> — Data-Driven Testing (DDT): Khái niệm, thiết kế file CSV/JSON, map biến vào Postman</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; background: rgba(0,240,255,0.03); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(0,240,255,0.12);">
+                        <span class="highlight" style="font-family:monospace;">00:35-00:50</span>
+                        <span><strong>Phần 2</strong> — Chạy DDT trong Postman Collection Runner</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; background: rgba(230,192,28,0.05); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(230,192,28,0.15);">
+                        <span style="font-family:monospace; color:#e6c01c; font-weight:700;">00:50-01:00</span>
+                        <span><i class="fa-solid fa-mug-hot"></i> Break</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; background: rgba(0,240,255,0.03); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(0,240,255,0.12);">
+                        <span class="highlight" style="font-family:monospace;">01:00-01:20</span>
+                        <span><strong>Phần 3</strong> — Newman CLI: Cài đặt, lệnh cơ bản, truyền biến &amp; file dữ liệu</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; background: rgba(0,240,255,0.03); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(0,240,255,0.12);">
+                        <span class="highlight" style="font-family:monospace;">01:20-01:30</span>
+                        <span><strong>Phần 4</strong> — Báo cáo HTML (newman-reporter-htmlextra)</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; background: rgba(57,211,83,0.04); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.15);">
+                        <span style="font-family:monospace; color:var(--success-color); font-weight:700;">01:30-01:50</span>
+                        <span><strong>Phần 5</strong> — Thực hành Case Study 5 (Chạy DDT chuyển tiền + Newman + HTML Report)</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; background: rgba(255,255,255,0.01); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                        <span class="highlight" style="font-family:monospace;">01:50-02:00</span>
+                        <span>Tổng kết, Q&amp;A &amp; Giao bài tập</span>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Lộ trình tổng quan buổi học</span>
+                <span>Slide 23 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 24: DDT Concept -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 1.1 — Data-Driven Testing (DDT) Là Gì?</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.88rem; color: #8b949e; margin-bottom: 8px; text-align: center;">
+                    <span class="highlight">DDT</span> = Tách riêng <strong>logic test</strong> khỏi <strong>dữ liệu test</strong>. Cùng 1 test script, chạy với nhiều bộ dữ liệu khác nhau → mở rộng <strong>test coverage</strong> mà không cần tạo thêm request.
+                </p>
+                <div class="grid-2" style="margin-bottom: 8px;">
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 style="color:var(--danger-color); margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-xmark"></i> Không Có DDT (Thủ Công)</h4>
+                        <div style="font-size: 0.74rem; color: #8b949e; line-height: 1.4;">
+                            <p>1. Tạo request "Chuyển 500K" → sửa body → Send</p>
+                            <p>2. Tạo request "Chuyển -100K" → sửa body → Send</p>
+                            <p>3. Tạo request "Chuyển 999M" → sửa body → Send</p>
+                            <p>4. Tạo request "TK không tồn tại" → sửa body → Send</p>
+                            <p style="margin-top:6px; color:var(--danger-color); font-weight:600;"><i class="fa-solid fa-triangle-exclamation"></i> 10 cases = 10 request × sửa tay = chậm, dễ sai!</p>
+                        </div>
+                    </div>
+                    <div style="background: rgba(57,211,83,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(57,211,83,0.12);">
+                        <h4 style="color:var(--success-color); margin-bottom: 6px; font-size: 0.88rem;"><i class="fa-solid fa-check"></i> Có DDT (Tự Động)</h4>
+                        <div style="font-size: 0.74rem; color: #8b949e; line-height: 1.4;">
+                            <p>1. Tạo <strong>1 request</strong> duy nhất với biến <code>{{amount}}</code>, <code>{{account}}</code></p>
+                            <p>2. Tạo <strong>1 file CSV</strong> chứa 10 dòng dữ liệu khác nhau</p>
+                            <p>3. Chạy Collection Runner → <span style="color:var(--success-color); font-weight:700;">tự lặp 10 lần</span></p>
+                            <p>4. Mỗi lần lặp, Postman tự thay biến bằng dữ liệu từ file</p>
+                            <p style="margin-top:6px; color:var(--success-color); font-weight:600;"><i class="fa-solid fa-rocket"></i> 10 cases = 1 request + 1 file = nhanh, chính xác!</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="lifecycle-flow">
+                    <div class="flow-node active-node">
+                        <i class="fa-solid fa-file-csv"></i> File Dữ Liệu<br>
+                        <span style="font-weight:400; font-size:0.7rem;">CSV hoặc JSON</span>
+                    </div>
+                    <div class="flow-arrow"><i class="fa-solid fa-angles-right"></i></div>
+                    <div class="flow-node" style="background: rgba(255,121,198,0.05); border-color: #ff79c6; color:#ff79c6;">
+                        <i class="fa-solid fa-arrows-rotate"></i> Collection Runner<br>
+                        <span style="font-weight:400; font-size:0.7rem;">Lặp qua từng dòng</span>
+                    </div>
+                    <div class="flow-arrow"><i class="fa-solid fa-angles-right"></i></div>
+                    <div class="flow-node" style="background: rgba(230,192,28,0.05); border-color: #e6c01c; color:#e6c01c;">
+                        <i class="fa-solid fa-paper-plane"></i> Request<br>
+                        <span style="font-weight:400; font-size:0.7rem;">{{variable}} tự thay</span>
+                    </div>
+                    <div class="flow-arrow"><i class="fa-solid fa-angles-right"></i></div>
+                    <div class="flow-node" style="background: rgba(57,211,83,0.05); border-color: var(--success-color); color:var(--success-color);">
+                        <i class="fa-solid fa-check-double"></i> Assertions<br>
+                        <span style="font-weight:400; font-size:0.7rem;">PASS/FAIL mỗi iteration</span>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 1: DDT // Khái niệm</span>
+                <span>Slide 24 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 25: CSV vs JSON -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 1.2 — Thiết Kế File Dữ Liệu: CSV vs JSON</div>
+            </div>
+            <div class="slide-content" style="overflow-y:auto;">
+                <div class="tab-container" id="dataFileTabs">
+                    <button class="tab-btn active" onclick="switchNestedTab(event, 'df-csv', 'dataFileTabs')"><i class="fa-solid fa-file-csv"></i> CSV</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'df-json', 'dataFileTabs')"><i class="fa-solid fa-file-code"></i> JSON</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'df-compare', 'dataFileTabs')"><i class="fa-solid fa-scale-balanced"></i> So sánh</button>
+                </div>
+                <div class="tab-content active" id="df-csv">
+                    <div class="grid-2">
+                        <div>
+                            <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">File: transfer_data.csv</span>
+                            <pre style="margin-top:2px;">amount,to_account,expected_status,description
+500000,ACC001,200,Chuyển tiền hợp lệ
+-100000,ACC001,422,Số tiền âm
+0,ACC001,422,Số tiền bằng 0
+99999999999,ACC001,422,Quá hạn mức
+500000,ACC_NOT_EXIST,404,TK không tồn tại
+500000,,400,TK trống
+1000,ACC001,200,Số tiền nhỏ hợp lệ
+50000000,ACC001,422,Vượt hạn mức ngày
+500000,ACC001,200,Chuyển tiền lần 2
+100,ACC002,200,Chuyển tiền tối thiểu</pre>
+                        </div>
+                        <div>
+                            <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">Quy tắc CSV:</span>
+                            <ul class="list-modern" style="margin-top:4px;">
+                                <li><strong>Dòng 1</strong> = header (tên biến) — khớp với <code>{{amount}}</code>, <code>{{to_account}}</code>...</li>
+                                <li>Mỗi dòng sau = 1 bộ dữ liệu = 1 lần chạy (iteration)</li>
+                                <li>Phân tách bằng dấu phẩy, <strong>không có khoảng trắng thừa</strong></li>
+                                <li>Encoding: <strong>UTF-8</strong> (quan trọng nếu có tiếng Việt)</li>
+                                <li>Nếu giá trị chứa dấu phẩy → bọc trong dấu ngoặc kép <code>"giá trị, đặc biệt"</code></li>
+                            </ul>
+                            <div style="margin-top:6px; padding:6px 10px; background:rgba(57,211,83,0.04); border:1px dashed rgba(57,211,83,0.15); border-radius:6px; font-size:0.68rem; color:#8b949e;">
+                                <span style="color:var(--success-color); font-weight:700;"><i class="fa-solid fa-lightbulb"></i> Mẹo:</span> Thêm cột <code>description</code> và <code>expected_status</code> để assertions tự động so sánh kết quả!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="df-json">
+                    <div class="grid-2">
+                        <div>
+                            <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">File: transfer_data.json</span>
+                            <pre style="margin-top:2px;">[
+  {
+    "amount": 500000,
+    "to_account": "ACC001",
+    "expected_status": 200,
+    "description": "Chuyển tiền hợp lệ"
+  },
+  {
+    "amount": -100000,
+    "to_account": "ACC001",
+    "expected_status": 422,
+    "description": "Số tiền âm"
+  },
+  {
+    "amount": 500000,
+    "to_account": "ACC_NOT_EXIST",
+    "expected_status": 404,
+    "description": "TK không tồn tại"
+  }
+]</pre>
+                        </div>
+                        <div>
+                            <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">Quy tắc JSON:</span>
+                            <ul class="list-modern" style="margin-top:4px;">
+                                <li>File là 1 <strong>mảng JSON</strong> — mỗi object = 1 iteration</li>
+                                <li>Key trong object = tên biến trong Postman</li>
+                                <li>Hỗ trợ đúng <strong>kiểu dữ liệu</strong>: number, boolean, null (CSV mọi thứ là string)</li>
+                                <li>Có thể chứa <strong>nested object</strong> — phù hợp body phức tạp</li>
+                            </ul>
+                            <div style="margin-top:6px; padding:6px 10px; background:rgba(0,240,255,0.03); border:1px dashed rgba(0,240,255,0.15); border-radius:6px; font-size:0.68rem; color:#8b949e;">
+                                <span class="highlight"><i class="fa-solid fa-circle-info"></i> Khi nào dùng JSON?</span> Khi dữ liệu có nested object, kiểu dữ liệu quan trọng (number vs string), hoặc có field nullable.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="df-compare">
+                    <table style="width:100%; border-collapse:collapse; font-size:0.78rem;">
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.08); color:var(--text-bright);">
+                            <td style="padding:6px; font-weight:700;">Tiêu chí</td>
+                            <td style="padding:6px; font-weight:700;">CSV</td>
+                            <td style="padding:6px; font-weight:700;">JSON</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:5px 6px;" class="highlight">Dễ đọc/sửa</td><td style="padding:5px 6px; color:var(--success-color);">Rất dễ — mở bằng Excel</td><td style="padding:5px 6px; color:#8b949e;">Cần text editor</td></tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:5px 6px;" class="highlight">Kiểu dữ liệu</td><td style="padding:5px 6px; color:var(--danger-color);">Mọi thứ là string</td><td style="padding:5px 6px; color:var(--success-color);">Đúng kiểu: number, boolean, null</td></tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:5px 6px;" class="highlight">Nested data</td><td style="padding:5px 6px; color:var(--danger-color);">Không hỗ trợ</td><td style="padding:5px 6px; color:var(--success-color);">Hỗ trợ tốt</td></tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:5px 6px;" class="highlight">Số dòng lớn</td><td style="padding:5px 6px; color:var(--success-color);">Nhẹ, nhanh</td><td style="padding:5px 6px; color:#8b949e;">Nặng hơn</td></tr>
+                        <tr><td style="padding:5px 6px;" class="highlight">Nên dùng khi</td><td style="padding:5px 6px; color:#8b949e;">Dữ liệu phẳng, đơn giản</td><td style="padding:5px 6px; color:#8b949e;">Dữ liệu phức tạp, cần đúng kiểu</td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 1: DDT // File dữ liệu CSV vs JSON</span>
+                <span>Slide 25 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 26: Map variables -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 1.3 — Map Biến Từ File Dữ Liệu Vào Postman</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 8px; text-align: center;">
+                    Header trong CSV / key trong JSON <span class="highlight">tự động trở thành biến</span> trong Postman. Dùng cú pháp <code>{{tên_biến}}</code> ở bất kỳ đâu: URL, Body, Headers, Tests.
+                </p>
+                <div class="grid-2">
+                    <div>
+                        <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">Body request — dùng biến từ file:</span>
+                        <pre style="margin-top:2px;">{
+  "from_account": "{{from_account}}",
+  "to_account": "{{to_account}}",
+  "amount": {{amount}},
+  "description": "{{description}}"
+}</pre>
+                        <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600; margin-top:6px; display:block;">Tests script — assertion động theo expected_status:</span>
+                        <pre style="margin-top:2px;">const expectedStatus = pm.iterationData.get("expected_status");
+const desc = pm.iterationData.get("description");
+
+pm.test(`[${desc}] Status = ${expectedStatus}`, () => {
+    pm.response.to.have.status(
+        Number(expectedStatus)
+    );
+});</pre>
+                    </div>
+                    <div>
+                        <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">pm.iterationData — API đọc data file:</span>
+                        <div style="font-size:0.74rem; color:#8b949e; line-height:1.5; margin-top:4px;">
+                            <div style="padding:8px 10px; background:rgba(0,240,255,0.03); border-radius:8px; border-left:3px solid var(--accent-color); margin-bottom:6px;">
+                                <p><code class="highlight">pm.iterationData.get("key")</code></p>
+                                <p>Lấy giá trị của cột/key từ dòng hiện tại trong file dữ liệu.</p>
+                            </div>
+                            <div style="padding:8px 10px; background:rgba(0,240,255,0.03); border-radius:8px; border-left:3px solid var(--accent-color); margin-bottom:6px;">
+                                <p><code class="highlight">pm.iterationData.toJSON()</code></p>
+                                <p>Trả về toàn bộ dữ liệu dòng hiện tại dạng object.</p>
+                            </div>
+                            <div style="padding:8px 10px; background:rgba(0,240,255,0.03); border-radius:8px; border-left:3px solid var(--accent-color); margin-bottom:6px;">
+                                <p><code class="highlight">pm.info.iteration</code></p>
+                                <p>Số thứ tự iteration hiện tại (bắt đầu từ 0).</p>
+                            </div>
+                            <div style="padding:8px 10px; background:rgba(0,240,255,0.03); border-radius:8px; border-left:3px solid var(--accent-color);">
+                                <p><code class="highlight">pm.info.iterationCount</code></p>
+                                <p>Tổng số iterations (= số dòng dữ liệu).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 1: DDT // Map biến vào Postman</span>
+                <span>Slide 26 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 27: Running DDT in Postman -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 2 — Chạy DDT Trong Postman Collection Runner</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 10px; text-align: center;">
+                    3 bước để chạy Data-Driven Testing trong Postman:
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: grid; grid-template-columns: 36px 1fr; gap: 10px; align-items: start; background: rgba(0,240,255,0.04); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(0,240,255,0.15);">
+                        <div style="text-align:center;"><span style="background:var(--accent-color); color:#0b0f17; font-weight:900; border-radius:50%; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem;">1</span></div>
+                        <div>
+                            <strong style="color:var(--text-bright); font-size:0.88rem;">Mở Collection Runner</strong>
+                            <p style="font-size:0.76rem; color:#8b949e; margin-top:2px;">Click vào Collection → bấm nút <strong>Run</strong> (hoặc <i class="fa-solid fa-play"></i>) → cửa sổ Runner mở ra.</p>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 36px 1fr; gap: 10px; align-items: start; background: rgba(57,211,83,0.03); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(57,211,83,0.12);">
+                        <div style="text-align:center;"><span style="background:var(--success-color); color:#0b0f17; font-weight:900; border-radius:50%; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem;">2</span></div>
+                        <div>
+                            <strong style="color:var(--text-bright); font-size:0.88rem;">Chọn file dữ liệu</strong>
+                            <p style="font-size:0.76rem; color:#8b949e; margin-top:2px;">Trong Runner, click <strong>"Select File"</strong> → chọn file CSV hoặc JSON. Postman sẽ hiển thị <strong>Preview</strong> dữ liệu và tự set số iterations = số dòng/object trong file.</p>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 36px 1fr; gap: 10px; align-items: start; background: rgba(88,166,255,0.03); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(88,166,255,0.12);">
+                        <div style="text-align:center;"><span style="background:var(--primary-color); color:#0b0f17; font-weight:900; border-radius:50%; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem;">3</span></div>
+                        <div>
+                            <strong style="color:var(--text-bright); font-size:0.88rem;">Bấm Run &amp; Xem kết quả</strong>
+                            <p style="font-size:0.76rem; color:#8b949e; margin-top:2px;">Postman chạy Collection lặp lại cho <strong>mỗi dòng dữ liệu</strong>. Kết quả hiển thị PASS/FAIL cho từng iteration — click vào iteration để xem chi tiết request/response.</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top:10px; padding:8px 12px; background:rgba(248,81,73,0.04); border:1px dashed rgba(248,81,73,0.2); border-radius:8px; font-size:0.74rem; color:#8b949e;">
+                    <span style="color:var(--danger-color); font-weight:700;"><i class="fa-solid fa-triangle-exclamation"></i> Lỗi hay gặp:</span> File CSV encoding sai (không phải UTF-8) → dữ liệu tiếng Việt bị lỗi ký tự. Luôn lưu file CSV bằng <strong>UTF-8 without BOM</strong>.
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 2: Chạy DDT // Collection Runner</span>
+                <span>Slide 27 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 28: Newman Concept -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 3.1 — Tại Sao Cần Newman?</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.88rem; color: #8b949e; margin-bottom: 10px; text-align: center;">
+                    <span class="highlight">Newman</span> = Postman Collection Runner trên <strong>Command Line</strong>. Chạy được ở mọi nơi — kể cả server <strong>không có giao diện UI</strong>.
+                </p>
+                <div class="grid-2" style="margin-bottom: 10px;">
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 style="color:var(--danger-color); margin-bottom: 6px; font-size: 0.85rem;"><i class="fa-solid fa-desktop"></i> Postman GUI</h4>
+                        <ul class="list-modern">
+                            <li>Cần mở ứng dụng Postman trên máy</li>
+                            <li>Chỉ chạy thủ công bằng tay (click Run)</li>
+                            <li>Không tích hợp được CI/CD pipeline</li>
+                            <li>Không chạy được trên server Linux headless</li>
+                        </ul>
+                    </div>
+                    <div style="background: rgba(57,211,83,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(57,211,83,0.12);">
+                        <h4 style="color:var(--success-color); margin-bottom: 6px; font-size: 0.85rem;"><i class="fa-solid fa-terminal"></i> Newman CLI</h4>
+                        <ul class="list-modern">
+                            <li>Chạy từ Terminal — không cần giao diện</li>
+                            <li>Tích hợp dễ dàng vào <strong>CI/CD</strong> (Jenkins, GitLab CI, GitHub Actions)</li>
+                            <li>Chạy được trên server Linux, Docker container</li>
+                            <li>Xuất report tự động (HTML, JUnit XML...)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                    <div style="background: rgba(0,240,255,0.03); border: 1px solid rgba(0,240,255,0.1); border-radius: 10px; padding: 8px 12px;">
+                        <h4 style="font-size:0.78rem; color:var(--accent-color); margin-bottom:4px;"><i class="fa-solid fa-server"></i> Server CI/CD</h4>
+                        <p style="font-size:0.68rem; color:#8b949e; line-height:1.3;">Jenkins/GitLab CI chạy trên server Linux không có GUI → Newman là lựa chọn duy nhất.</p>
+                    </div>
+                    <div style="background: rgba(0,240,255,0.03); border: 1px solid rgba(0,240,255,0.1); border-radius: 10px; padding: 8px 12px;">
+                        <h4 style="font-size:0.78rem; color:var(--accent-color); margin-bottom:4px;"><i class="fa-solid fa-clock"></i> Scheduled Testing</h4>
+                        <p style="font-size:0.68rem; color:#8b949e; line-height:1.3;">Đặt cron job chạy Newman mỗi đêm → phát hiện regression sáng hôm sau.</p>
+                    </div>
+                    <div style="background: rgba(0,240,255,0.03); border: 1px solid rgba(0,240,255,0.1); border-radius: 10px; padding: 8px 12px;">
+                        <h4 style="font-size:0.78rem; color:var(--accent-color); margin-bottom:4px;"><i class="fa-solid fa-users"></i> Team Collaboration</h4>
+                        <p style="font-size:0.68rem; color:#8b949e; line-height:1.3;">Share Collection JSON + Environment JSON → mọi người chạy cùng 1 lệnh Newman, kết quả nhất quán.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 3: Newman CLI // Tại sao cần Newman</span>
+                <span>Slide 28 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 29: Newman Install & Commands -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 3.2 — Cài Đặt Newman & Lệnh Cơ Bản</div>
+            </div>
+            <div class="slide-content" style="overflow-y:auto;">
+                <div class="tab-container" id="newmanTabs">
+                    <button class="tab-btn active" onclick="switchNestedTab(event, 'nm-install', 'newmanTabs')"><i class="fa-solid fa-download"></i> Cài đặt</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'nm-basic', 'newmanTabs')"><i class="fa-solid fa-terminal"></i> Lệnh cơ bản</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'nm-flags', 'newmanTabs')"><i class="fa-solid fa-flag"></i> Các cờ quan trọng</button>
+                </div>
+                <div class="tab-content active" id="nm-install">
+                    <div class="grid-2">
+                        <div>
+                            <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">Bước 1: Cài Node.js</span>
+                            <pre style="margin-top:2px;"># Kiểm tra Node.js đã cài chưa
+node --version
+# Nếu chưa có → tải tại nodejs.org
+# Chọn phiên bản LTS (Long Term Support)
+
+# Kiểm tra npm (đi kèm Node.js)
+npm --version</pre>
+                            <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600; margin-top:6px; display:block;">Bước 2: Cài Newman</span>
+                            <pre style="margin-top:2px;"># Cài Newman toàn cục
+npm install -g newman
+
+# Kiểm tra cài đặt thành công
+newman --version</pre>
+                        </div>
+                        <div>
+                            <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">Bước 3: Export từ Postman</span>
+                            <div style="font-size:0.74rem; color:#8b949e; line-height:1.5; margin-top:4px;">
+                                <div style="padding:8px 10px; background:rgba(0,240,255,0.03); border-radius:8px; border-left:3px solid var(--accent-color); margin-bottom:6px;">
+                                    <p><span class="highlight">Export Collection:</span></p>
+                                    <p>Click <i class="fa-solid fa-ellipsis"></i> bên cạnh Collection → Export → chọn <strong>v2.1</strong> → Save file .json</p>
+                                </div>
+                                <div style="padding:8px 10px; background:rgba(0,240,255,0.03); border-radius:8px; border-left:3px solid var(--accent-color);">
+                                    <p><span class="highlight">Export Environment:</span></p>
+                                    <p>Click <i class="fa-solid fa-gear"></i> Environments → chọn env → Export → Save file .json</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="nm-basic">
+                    <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">Các lệnh Newman thường dùng:</span>
+                    <pre style="margin-top:4px;"># 1. Chạy Collection cơ bản
+newman run my_collection.json
+
+# 2. Chạy với Environment
+newman run my_collection.json -e staging_env.json
+
+# 3. Chạy với file dữ liệu (DDT)
+newman run my_collection.json -d transfer_data.csv
+
+# 4. Kết hợp Environment + Data file
+newman run my_collection.json -e staging_env.json -d transfer_data.csv
+
+# 5. Chạy với số iteration cụ thể (ghi đè số dòng file)
+newman run my_collection.json -d data.csv -n 5
+
+# 6. Thêm delay giữa các request (ms)
+newman run my_collection.json --delay-request 500</pre>
+                </div>
+                <div class="tab-content" id="nm-flags">
+                    <table style="width:100%; border-collapse:collapse; font-size:0.76rem;">
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.08); color:var(--text-bright);">
+                            <td style="padding:5px 6px; font-weight:700;">Cờ (Flag)</td>
+                            <td style="padding:5px 6px; font-weight:700;">Ý nghĩa</td>
+                            <td style="padding:5px 6px; font-weight:700;">Ví dụ</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:4px 6px;" class="highlight"><code>-e</code></td><td style="padding:4px 6px; color:#8b949e;">Environment file</td><td style="padding:4px 6px;"><code>-e dev_env.json</code></td></tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:4px 6px;" class="highlight"><code>-d</code></td><td style="padding:4px 6px; color:#8b949e;">Data file (CSV/JSON)</td><td style="padding:4px 6px;"><code>-d data.csv</code></td></tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:4px 6px;" class="highlight"><code>-n</code></td><td style="padding:4px 6px; color:#8b949e;">Số iterations</td><td style="padding:4px 6px;"><code>-n 10</code></td></tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:4px 6px;" class="highlight"><code>--delay-request</code></td><td style="padding:4px 6px; color:#8b949e;">Delay giữa request (ms)</td><td style="padding:4px 6px;"><code>--delay-request 1000</code></td></tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:4px 6px;" class="highlight"><code>--timeout-request</code></td><td style="padding:4px 6px; color:#8b949e;">Timeout cho mỗi request (ms)</td><td style="padding:4px 6px;"><code>--timeout-request 5000</code></td></tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:4px 6px;" class="highlight"><code>--env-var</code></td><td style="padding:4px 6px; color:#8b949e;">Override biến env inline</td><td style="padding:4px 6px;"><code>--env-var "base_url=..."</code></td></tr>
+                        <tr><td style="padding:4px 6px;" class="highlight"><code>-r</code></td><td style="padding:4px 6px; color:#8b949e;">Reporter (xuất report)</td><td style="padding:4px 6px;"><code>-r htmlextra</code></td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 3: Newman CLI // Cài đặt & Lệnh cơ bản</span>
+                <span>Slide 29 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 30: HTML Report -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 4 — Báo Cáo HTML (newman-reporter-htmlextra)</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 8px; text-align: center;">
+                    Xuất báo cáo kiểm thử HTML đẹp, chuyên nghiệp — share cho team Lead, PM, và stakeholders.
+                </p>
+                <div class="grid-2">
+                    <div>
+                        <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">Cài đặt & Chạy:</span>
+                        <pre style="margin-top:2px;"># Cài reporter htmlextra
+npm install -g newman-reporter-htmlextra
+
+# Chạy Newman + xuất HTML report
+newman run collection.json \
+  -e env.json \
+  -d data.csv \
+  -r htmlextra \
+  --reporter-htmlextra-export ./report.html
+
+# Mở report trong trình duyệt
+open report.html   # macOS
+start report.html  # Windows</pre>
+                    </div>
+                    <div>
+                        <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">Đọc hiểu HTML Report:</span>
+                        <div style="font-size:0.74rem; color:#8b949e; line-height:1.5; margin-top:4px;">
+                            <div style="padding:6px 10px; background:rgba(57,211,83,0.03); border-radius:8px; border-left:3px solid var(--success-color); margin-bottom:5px;">
+                                <p><span class="highlight">Summary</span> — Tổng số tests, passed, failed, thời gian chạy</p>
+                            </div>
+                            <div style="padding:6px 10px; background:rgba(88,166,255,0.03); border-radius:8px; border-left:3px solid var(--primary-color); margin-bottom:5px;">
+                                <p><span class="highlight">Iterations</span> — Chi tiết từng lần chạy (mỗi dòng data)</p>
+                            </div>
+                            <div style="padding:6px 10px; background:rgba(230,192,28,0.03); border-radius:8px; border-left:3px solid #e6c01c; margin-bottom:5px;">
+                                <p><span class="highlight">Requests</span> — URL, method, status code, response time</p>
+                            </div>
+                            <div style="padding:6px 10px; background:rgba(248,81,73,0.03); border-radius:8px; border-left:3px solid var(--danger-color); margin-bottom:5px;">
+                                <p><span class="highlight">Failed Tests</span> — Danh sách test FAIL với error message chi tiết</p>
+                            </div>
+                            <div style="padding:6px 10px; background:rgba(255,121,198,0.03); border-radius:8px; border-left:3px solid #ff79c6;">
+                                <p><span class="highlight">Request/Response Body</span> — Xem chi tiết body gửi đi và nhận về</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 4: HTML Report // newman-reporter-htmlextra</span>
+                <span>Slide 30 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 31: Case Study 5 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 5 — Thực Hành Case Study 5</div>
+            </div>
+            <div class="slide-content">
+                <div class="tab-container" id="caseTabs">
+                    <button class="tab-btn active" onclick="switchNestedTab(event, 'case-task', 'caseTabs')">Nhiệm vụ</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'case-csv', 'caseTabs')">File CSV mẫu</button>
+                    <button class="tab-btn" onclick="switchNestedTab(event, 'case-cmd', 'caseTabs')">Lệnh Newman</button>
+                </div>
+                <div class="tab-content active" id="case-task">
+                    <h4 class="highlight" style="margin-bottom:8px; font-size:0.9rem;"><i class="fa-solid fa-bullseye"></i> Đề bài</h4>
+                    <p style="font-size:0.82rem; color:#8b949e; line-height:1.5;">
+                        Tạo file CSV chứa <span class="highlight">10 kịch bản chuyển tiền</span> với các trường hợp kiểm thử:
+                    </p>
+                    <ul class="list-modern" style="margin-top:8px;">
+                        <li>Chuyển tiền <strong>hợp lệ</strong> (số tiền bình thường, tài khoản tồn tại)</li>
+                        <li>Chuyển tiền <strong>âm</strong> (amount &lt; 0)</li>
+                        <li>Chuyển tiền <strong>quá hạn mức</strong> (amount quá lớn)</li>
+                        <li>Tài khoản đích <strong>không tồn tại</strong></li>
+                        <li>Số tiền = <strong>0</strong></li>
+                        <li>Tài khoản đích <strong>trống</strong></li>
+                    </ul>
+                    <p style="font-size:0.78rem; color:#8b949e; margin-top:8px;">Chạy Collection bằng <span class="highlight">Newman</span> và xuất <span class="highlight">báo cáo HTML</span>.</p>
+                </div>
+                <div class="tab-content" id="case-csv">
+                    <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">File: transfer_cases.csv</span>
+                    <pre style="margin-top:4px;">amount,to_account,expected_status,description
+500000,ACC001,200,Chuyển tiền hợp lệ - số tiền trung bình
+-100000,ACC001,422,Số tiền âm
+0,ACC001,422,Số tiền bằng 0
+99999999999,ACC001,422,Quá hạn mức cho phép
+500000,ACC_NOT_EXIST,404,Tài khoản đích không tồn tại
+500000,,400,Tài khoản đích bị trống
+1000,ACC001,200,Số tiền nhỏ hợp lệ
+50000001,ACC001,422,Vượt hạn mức giao dịch/ngày
+500000,ACC002,200,Chuyển tiền sang TK khác
+100,ACC003,200,Chuyển tiền tối thiểu</pre>
+                </div>
+                <div class="tab-content" id="case-cmd">
+                    <span style="font-size:0.7rem; color:var(--accent-color); font-weight:600;">Lệnh chạy Newman + HTML Report:</span>
+                    <pre style="margin-top:4px;"># Bước 1: Export Collection và Environment từ Postman
+# → transfer_collection.json
+# → banking_env.json
+
+# Bước 2: Chạy Newman với DDT + HTML Report
+newman run transfer_collection.json \
+  -e banking_env.json \
+  -d transfer_cases.csv \
+  -r htmlextra \
+  --reporter-htmlextra-export ./transfer_report.html \
+  --reporter-htmlextra-title "Transfer API Test Report"
+
+# Bước 3: Mở report
+open transfer_report.html</pre>
+                    <div style="margin-top:8px; padding:6px 10px; background:rgba(57,211,83,0.04); border:1px dashed rgba(57,211,83,0.15); border-radius:6px; font-size:0.7rem; color:#8b949e;">
+                        <span style="color:var(--success-color); font-weight:700;"><i class="fa-solid fa-circle-check"></i> Kết quả mong đợi:</span> 10 iterations, mỗi iteration có PASS/FAIL rõ ràng, HTML report chứa đầy đủ request/response chi tiết.
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 5: Thực Hành // Case Study 5</span>
+                <span>Slide 31 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 32: Acceptance Criteria -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Phần 5 (tiếp) — Acceptance Criteria &amp; Checklist</div>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 0.86rem; color: #8b949e; margin-bottom: 12px; text-align:center;">
+                    Checklist tự đánh giá trước khi nộp bài:
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 10px; background: rgba(57,211,83,0.04); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.15);">
+                        <i class="fa-solid fa-square-check" style="color:var(--success-color); font-size:1.1rem;"></i>
+                        <span style="font-size:0.85rem;"><strong>File CSV</strong> — chứa tối thiểu 10 dòng dữ liệu với đủ các trường hợp (hợp lệ, âm, quá hạn mức, TK không tồn tại...).</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; background: rgba(57,211,83,0.04); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.15);">
+                        <i class="fa-solid fa-square-check" style="color:var(--success-color); font-size:1.1rem;"></i>
+                        <span style="font-size:0.85rem;"><strong>Biến mapping</strong> — Request body sử dụng <code>{{variable}}</code> khớp với header CSV, không hardcode.</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; background: rgba(57,211,83,0.04); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.15);">
+                        <i class="fa-solid fa-square-check" style="color:var(--success-color); font-size:1.1rem;"></i>
+                        <span style="font-size:0.85rem;"><strong>Assertions động</strong> — dùng <code>pm.iterationData.get("expected_status")</code> để so sánh, không hardcode expected value.</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; background: rgba(57,211,83,0.04); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.15);">
+                        <i class="fa-solid fa-square-check" style="color:var(--success-color); font-size:1.1rem;"></i>
+                        <span style="font-size:0.85rem;"><strong>Newman chạy thành công</strong> — lệnh <code>newman run</code> hoàn thành không lỗi, kết quả hiển thị đúng số iterations.</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; background: rgba(57,211,83,0.04); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(57,211,83,0.15);">
+                        <i class="fa-solid fa-square-check" style="color:var(--success-color); font-size:1.1rem;"></i>
+                        <span style="font-size:0.85rem;"><strong>HTML Report</strong> — file report.html được tạo, mở trên trình duyệt hiển thị đầy đủ summary, iterations, và request details.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Phần 5: Thực Hành // Acceptance Criteria</span>
+                <span>Slide 32 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 33: Summary -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Tổng Kết — Kiến Thức Cốt Lõi Buổi 5</div>
+            </div>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div style="background: rgba(255,255,255,0.01); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 8px; font-size: 0.9rem;"><i class="fa-solid fa-database"></i> Data-Driven Testing</h4>
+                        <p style="font-size:0.8rem; color:#8b949e; line-height:1.4;">Tách logic test khỏi dữ liệu. Thiết kế file CSV/JSON chuẩn, map biến bằng <code>{{variable}}</code>, chạy Collection Runner với nhiều bộ dữ liệu.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 8px; font-size: 0.9rem;"><i class="fa-solid fa-terminal"></i> Newman CLI</h4>
+                        <p style="font-size:0.8rem; color:#8b949e; line-height:1.4;">Cài Node.js + Newman, dùng <code>newman run</code> với cờ <code>-e</code> (env), <code>-d</code> (data), <code>-r</code> (reporter) để chạy test từ command line.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 8px; font-size: 0.9rem;"><i class="fa-solid fa-file-lines"></i> HTML Report</h4>
+                        <p style="font-size:0.8rem; color:#8b949e; line-height:1.4;">Cài <code>newman-reporter-htmlextra</code>, xuất báo cáo HTML chuyên nghiệp với summary, iterations, request/response details.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom: 8px; font-size: 0.9rem;"><i class="fa-solid fa-star"></i> Best Practices</h4>
+                        <p style="font-size:0.8rem; color:#8b949e; line-height:1.4;">File CSV encoding UTF-8, thêm cột <code>expected_status</code> + <code>description</code>, dùng <code>pm.iterationData</code> cho assertion động.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Tổng kết kiến thức buổi học</span>
+                <span>Slide 33 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 34: Cheat Sheet -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Cheat Sheet — Buổi 5</div>
+            </div>
+            <div class="slide-content" style="overflow-y:auto;">
+                <div class="grid-2">
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom:6px; font-size:0.86rem;"><i class="fa-solid fa-database"></i> DDT — pm.iterationData</h4>
+                        <pre>pm.iterationData.get("column_name");
+pm.iterationData.toJSON();
+pm.info.iteration;       // index hiện tại
+pm.info.iterationCount;  // tổng iterations</pre>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom:6px; font-size:0.86rem;"><i class="fa-solid fa-terminal"></i> Newman Commands</h4>
+                        <pre>newman run collection.json
+  -e env.json          # environment
+  -d data.csv          # data file
+  -n 10                # iterations
+  -r htmlextra         # reporter
+  --delay-request 500  # delay ms</pre>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 class="highlight" style="margin-bottom:6px; font-size:0.86rem;"><i class="fa-solid fa-file-lines"></i> HTML Report</h4>
+                        <pre>npm install -g newman-reporter-htmlextra
+newman run col.json -r htmlextra \
+  --reporter-htmlextra-export report.html \
+  --reporter-htmlextra-title "My Report"</pre>
+                    </div>
+                    <div style="background: rgba(0,240,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(0,240,255,0.12);">
+                        <h4 style="margin-bottom:6px; font-size:0.86rem; color:var(--accent-color);"><i class="fa-solid fa-layer-group"></i> Variable Priority (cao→thấp)</h4>
+                        <p style="font-size:0.76rem; color:#8b949e; line-height:1.5;">
+                            1. <strong>Local</strong> (pm.variables)<br>
+                            2. <strong>Data</strong> (file CSV/JSON)<br>
+                            3. <strong>Environment</strong> (pm.environment)<br>
+                            4. <strong>Collection</strong> (pm.collectionVariables)<br>
+                            5. <strong>Global</strong> (pm.globals)
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>IT Learn Studio // Tài liệu tham khảo nhanh</span>
+                <span>Slide 34 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 35: Q&A -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Q&A — Hỏi Đáp</div>
+            </div>
+            <div class="slide-content" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+                <div style="font-size:3rem; margin-bottom:15px;"><i class="fa-solid fa-comments" style="color:var(--accent-color);"></i></div>
+                <h2 style="color:var(--text-bright); font-size:1.6rem; margin-bottom:10px;">Bạn có câu hỏi nào không?</h2>
+                <p style="font-size:0.9rem; color:#8b949e; max-width:600px; line-height:1.5;">
+                    Đây là lúc để giải đáp mọi thắc mắc về <span class="highlight">DDT</span>, <span class="highlight">Newman CLI</span>, <span class="highlight">HTML Report</span>, hoặc bất kỳ nội dung nào trong buổi học hôm nay.
+                </p>
+            </div>
+            <div class="slide-footer">
+                <span>Q&A Session</span>
+                <span>Slide 35 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 36: Homework -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Bài Tập Về Nhà</div>
+            </div>
+            <div class="slide-content">
+                <div style="background: rgba(0,240,255,0.03); border: 1px solid rgba(0,240,255,0.15); border-radius: 14px; padding: 16px 20px; margin-bottom: 12px;">
+                    <h4 class="highlight" style="margin-bottom:8px; font-size:0.95rem;"><i class="fa-solid fa-pen-to-square"></i> Đề bài</h4>
+                    <p style="font-size:0.85rem; color:#8b949e; line-height:1.5;">
+                        Tự tạo bộ dữ liệu <span class="highlight">20 cases</span> cho API <strong>tạo tài khoản mới</strong> và chạy qua Newman.
+                    </p>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: grid; grid-template-columns: 36px 1fr; gap: 10px; align-items: start; background: rgba(255,255,255,0.01); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="text-align:center;"><span style="background:var(--accent-color); color:#0b0f17; font-weight:900; border-radius:50%; width:26px; height:26px; display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem;">1</span></div>
+                        <span style="font-size:0.82rem; color:#8b949e;">Tạo file CSV/JSON chứa 20 bộ dữ liệu: email hợp lệ, email trùng, email thiếu @, password quá ngắn, tên trống, số điện thoại sai format...</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 36px 1fr; gap: 10px; align-items: start; background: rgba(255,255,255,0.01); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="text-align:center;"><span style="background:var(--success-color); color:#0b0f17; font-weight:900; border-radius:50%; width:26px; height:26px; display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem;">2</span></div>
+                        <span style="font-size:0.82rem; color:#8b949e;">Tạo Collection Postman với request POST tạo tài khoản, body sử dụng <code>{{variable}}</code> từ file dữ liệu.</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 36px 1fr; gap: 10px; align-items: start; background: rgba(255,255,255,0.01); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="text-align:center;"><span style="background:var(--primary-color); color:#0b0f17; font-weight:900; border-radius:50%; width:26px; height:26px; display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem;">3</span></div>
+                        <span style="font-size:0.82rem; color:#8b949e;">Viết assertions động dùng <code>pm.iterationData.get("expected_status")</code> để so sánh kết quả.</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 36px 1fr; gap: 10px; align-items: start; background: rgba(255,255,255,0.01); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="text-align:center;"><span style="background:#e6c01c; color:#0b0f17; font-weight:900; border-radius:50%; width:26px; height:26px; display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem;">4</span></div>
+                        <span style="font-size:0.82rem; color:#8b949e;">Chạy bằng Newman + xuất HTML Report. Nộp lại: file CSV, Collection JSON, Environment JSON, và file HTML Report.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>Bài tập về nhà — Deadline: trước buổi 6</span>
+                <span>Slide 36 / 37</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 37: End -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo"><i class="fa-solid fa-laptop-code"></i> <span>IT Learn</span></div>
+                <div class="slide-title">Kết Thúc Buổi 5</div>
+            </div>
+            <div class="slide-content" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+                <div style="font-size:3rem; margin-bottom:15px;"><i class="fa-solid fa-trophy" style="color:var(--accent-color);"></i></div>
+                <h2 style="color:var(--text-bright); font-size:1.6rem; margin-bottom:10px;">Chúc mừng hoàn thành Buổi 5!</h2>
+                <p style="font-size:0.95rem; color:#8b949e; max-width:650px; line-height:1.5; margin-bottom:15px;">
+                    Bạn đã học được cách mở rộng test coverage bằng <span class="highlight">Data-Driven Testing</span>, chạy test từ command line bằng <span class="highlight">Newman</span>, và xuất <span class="highlight">HTML Report</span> chuyên nghiệp.
+                </p>
+                <div style="font-size:0.8rem; color:#8b949e;">
+                    <p>Buổi tiếp theo: <span class="highlight">Buổi 6 — CI/CD Integration & API Testing trong thực tế</span></p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>IT Learn Studio — Hẹn gặp lại buổi sau!</span>
+                <span>Slide 37 / 37</span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="controls">
+        <button class="nav-btn" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Trước</button>
+        <button class="nav-btn" onclick="nextSlide()">Sau <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const progressBar = document.getElementById('progressBar');
+        const TOTAL_QUESTIONS = 20;
+
+        const userAnswers = {};
+        for (let i = 1; i <= TOTAL_QUESTIONS; i++) {
+            userAnswers[i] = { answered: false, correct: false };
+        }
+
+        const correctGreetings = [
+            "Đỉnh chóp! 🌟 ", "Mượt thế nhờ! 😎 ", "Hết nước chấm! 🔥 ", "Đúng boong luôn! 🎯 ", "Out trình thực sự! 🚀 "
+        ];
+
+        const incorrectGreetings = [
+            "Úi, suýt soát! 🧐 ", "Không sao nè, thử lại nha! 💪 ", "Hơi lệch tủ tí thôi, tự tin lên! 🚀 ", "Ối, nhầm tí xíu! ⚡ ", "Cú này trượt nhẹ rồi! 🧩 "
+        ];
+
+        function getRandomGreeting(isCorrect) {
+            const arr = isCorrect ? correctGreetings : incorrectGreetings;
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function showSlide(index) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (index + slides.length) % slides.length;
+            slides[currentSlide].classList.add('active');
+            updateProgressBar();
+
+            // Quiz results slide index = 21 (slide 22, 0-indexed)
+            if (currentSlide === 21) {
+                calculateFinalScore();
+            }
+        }
+
+        function nextSlide() { showSlide(currentSlide + 1); }
+        function prevSlide() { showSlide(currentSlide - 1); }
+
+        function updateProgressBar() {
+            const percentage = ((currentSlide + 1) / slides.length) * 100;
+            progressBar.style.width = percentage + '%';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            else if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        let touchStartX = 0;
+        let touchEndX = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 60) {
+                if (diff > 0) nextSlide();
+                else prevSlide();
+            }
+        }, { passive: true });
+
+        function submitAnswer(element, isCorrect, optionText, baseFeedback, qId) {
+            if (userAnswers[qId].answered) return;
+
+            const container = element.parentElement;
+            const options = container.querySelectorAll('.quiz-option');
+            const feedback = document.getElementById(`feedback-${qId}`);
+
+            options.forEach(opt => opt.classList.add('disabled'));
+
+            userAnswers[qId].answered = true;
+            userAnswers[qId].correct = isCorrect;
+
+            const greeting = getRandomGreeting(isCorrect);
+
+            if (isCorrect) {
+                element.classList.add('correct');
+                element.querySelector('i').className = 'fa-solid fa-circle-check';
+                feedback.style.display = 'block';
+                feedback.style.background = 'rgba(57, 211, 83, 0.08)';
+                feedback.style.color = '#7eff93';
+                feedback.style.borderColor = 'rgba(57, 211, 83, 0.3)';
+                feedback.innerHTML = `<i class="fa-solid fa-circle-check"></i> &nbsp; <strong>${greeting}</strong> ${baseFeedback}`;
+            } else {
+                element.classList.add('incorrect');
+                element.querySelector('i').className = 'fa-solid fa-circle-xmark';
+
+                options.forEach(opt => {
+                    if (opt.getAttribute('onclick').includes('true')) {
+                        opt.classList.add('correct');
+                        opt.querySelector('i').className = 'fa-solid fa-circle-check';
+                    }
+                });
+
+                feedback.style.display = 'block';
+                feedback.style.background = 'rgba(248, 81, 73, 0.08)';
+                feedback.style.color = '#ff8e8a';
+                feedback.style.borderColor = 'rgba(248, 81, 73, 0.3)';
+                feedback.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> &nbsp; <strong>${greeting}</strong> ${baseFeedback}`;
+            }
+        }
+
+        const topicMap = {
+            'env-variables':  { questions: [1, 6, 9, 16, 19], label: 'Environment & Variables' },
+            'status-codes':   { questions: [2, 8, 10, 14, 20], label: 'HTTP Status Codes' },
+            'json-path':      { questions: [3, 7, 11, 15, 18], label: 'JSON Path & Assertions' },
+            'tester-mindset': { questions: [4, 5, 12, 13, 17], label: 'API Basics & Tư Duy Tester' }
+        };
+
+        const topicSuggestions = {
+            'env-variables': {
+                fail: '⚠️ Cần ôn lại: Environment Variables giúp chuyển đổi môi trường; thứ tự ưu tiên Local > Data > Environment > Collection > Global; pm.environment.set() ghi vào env đang active.',
+                slideRef: '📍 Xem: Slide 26 (Map biến) → Slide 34 (Cheat Sheet Variable Priority)',
+                color: 'var(--danger-color)'
+            },
+            'status-codes': {
+                fail: '⚠️ Cần ôn lại: 204=No Content (thành công không body); 409=Conflict (trùng dữ liệu); 422=Unprocessable Entity (dữ liệu không hợp lệ); 405=Method Not Allowed; 5xx=lỗi server.',
+                slideRef: '📍 Xem: Slide 28 (Newman) → Slide 33 (Tổng kết)',
+                color: 'var(--danger-color)'
+            },
+            'json-path': {
+                fail: '⚠️ Cần ôn lại: Truy cập nested object từ ngoài vào trong; mảng index từ 0; .length đếm phần tử; .to.be.true kiểm tra boolean chính xác.',
+                slideRef: '📍 Xem: Slide 26 (Map biến DDT) → Slide 34 (Cheat Sheet)',
+                color: 'var(--danger-color)'
+            },
+            'tester-mindset': {
+                fail: '⚠️ Cần ôn lại: POST tạo tài nguyên mới; Content-Type báo định dạng body; Collection Runner chạy tự động nhiều request; DDT dùng 1 request + file dữ liệu; status 200 + body error = FAIL.',
+                slideRef: '📍 Xem: Slide 24 (DDT Concept) → Slide 27 (Collection Runner)',
+                color: 'var(--danger-color)'
+            }
+        };
+
+        function calculateFinalScore() {
+            let totalCorrect = 0;
+            let totalAnswered = 0;
+
+            for (let i = 1; i <= TOTAL_QUESTIONS; i++) {
+                if (userAnswers[i].answered) {
+                    totalAnswered++;
+                    if (userAnswers[i].correct) totalCorrect++;
+                }
+            }
+
+            const scoreDisplay = document.getElementById('quizScore');
+            const scoreBadge = document.getElementById('scoreBadge');
+            const scoreEvaluation = document.getElementById('scoreEvaluation');
+
+            scoreDisplay.innerText = `${totalCorrect}/${TOTAL_QUESTIONS}`;
+
+            if (totalAnswered < TOTAL_QUESTIONS) {
+                scoreBadge.innerText = "CHƯA HOÀN THÀNH ⚠️";
+                scoreBadge.style.background = "#e6c01c";
+                scoreBadge.style.color = "#000";
+                scoreEvaluation.innerHTML = `Mới hoàn thành <span class="highlight">${totalAnswered}/${TOTAL_QUESTIONS}</span> câu. Quay lại hoàn tất để nhận phân tích chi tiết!`;
+            } else if (totalCorrect >= 18) {
+                scoreBadge.innerText = "CHIẾN THẦN DDT 👑";
+                scoreBadge.style.background = "var(--success-color)";
+                scoreBadge.style.color = "#0b0f17";
+                scoreEvaluation.innerHTML = `<strong>Kiến thức siêu vững!</strong> Bay thẳng sang thực chiến DDT và Newman CLI!`;
+            } else if (totalCorrect >= 14) {
+                scoreBadge.innerText = "TAY CHƠI HỆ CHIẾN ⚡";
+                scoreBadge.style.background = "var(--accent-color)";
+                scoreBadge.style.color = "#0b0f17";
+                scoreEvaluation.innerHTML = `<strong>Gần sẵn sàng!</strong> Xem gợi ý bên phải để bổ sung kiến thức còn thiếu.`;
+            } else if (totalCorrect >= 10) {
+                scoreBadge.innerText = "ẨN SỐ TIỀM NĂNG 🌱";
+                scoreBadge.style.background = "var(--primary-color)";
+                scoreBadge.style.color = "#0b0f17";
+                scoreEvaluation.innerHTML = `<strong>Cần bổ sung!</strong> Tập trung vào các mục <span style="color:var(--danger-color);">đỏ</span> bên phải.`;
+            } else {
+                scoreBadge.innerText = "TÂN BINH ĐANG LÊN 🛡️";
+                scoreBadge.style.background = "var(--danger-color)";
+                scoreBadge.style.color = "#fff";
+                scoreEvaluation.innerHTML = `<strong>Đừng lo!</strong> Lộ trình bên dưới sẽ giúp bạn nạp lại kiến thức từ đầu.`;
+            }
+
+            let weakTopics = [];
+            let strongTopics = [];
+
+            for (const [topicKey, topicData] of Object.entries(topicMap)) {
+                const qs = topicData.questions;
+                let correct = 0;
+                let answered = 0;
+                qs.forEach(q => {
+                    if (userAnswers[q].answered) {
+                        answered++;
+                        if (userAnswers[q].correct) correct++;
+                    }
+                });
+
+                const scoreEl = document.getElementById(`score-${topicKey}`);
+                const suggestEl = document.getElementById(`suggest-${topicKey}`);
+                const rowEl = suggestEl.closest('.topic-row');
+
+                if (answered === 0) {
+                    scoreEl.innerText = '—';
+                    continue;
+                }
+
+                scoreEl.innerText = `${correct}/${qs.length}`;
+
+                if (correct === qs.length) {
+                    scoreEl.style.color = 'var(--success-color)';
+                    rowEl.style.borderColor = 'rgba(57,211,83,0.2)';
+                    rowEl.style.background = 'rgba(57,211,83,0.03)';
+                    suggestEl.style.display = 'block';
+                    suggestEl.innerHTML = `<span style="color:var(--success-color);">✅ Tuyệt vời! Bạn đã nắm vững phần này.</span>`;
+                    strongTopics.push(topicData.label);
+                } else if (correct > 0) {
+                    scoreEl.style.color = '#e6c01c';
+                    rowEl.style.borderColor = 'rgba(230,192,28,0.2)';
+                    rowEl.style.background = 'rgba(230,192,28,0.03)';
+                    suggestEl.style.display = 'block';
+                    const info = topicSuggestions[topicKey];
+                    suggestEl.innerHTML = `<span style="color:#e6c01c;">⚡ Gần đạt — ôn nhanh điểm sai:</span> ${info.fail.replace('⚠️ Cần ôn lại: ', '')}<br><span style="color:#555;">${info.slideRef}</span>`;
+                    weakTopics.push({ label: topicData.label, key: topicKey, severity: 'partial' });
+                } else {
+                    scoreEl.style.color = 'var(--danger-color)';
+                    rowEl.style.borderColor = 'rgba(248,81,73,0.25)';
+                    rowEl.style.background = 'rgba(248,81,73,0.04)';
+                    suggestEl.style.display = 'block';
+                    const info = topicSuggestions[topicKey];
+                    suggestEl.innerHTML = `<span style="color:var(--danger-color);">${info.fail}</span><br><span style="color:#555;">${info.slideRef}</span>`;
+                    weakTopics.push({ label: topicData.label, key: topicKey, severity: 'full' });
+                }
+            }
+
+            const pathEl = document.getElementById('learningPath');
+            const pathContent = document.getElementById('learningPathContent');
+
+            if (totalAnswered >= TOTAL_QUESTIONS) {
+                pathEl.style.display = 'block';
+
+                if (weakTopics.length === 0) {
+                    pathEl.style.borderColor = 'rgba(57,211,83,0.2)';
+                    pathEl.style.background = 'rgba(57,211,83,0.03)';
+                    pathContent.innerHTML = `
+                        <span style="color:var(--success-color); font-weight:700;">🎯 Bạn đã sẵn sàng 100%!</span> Lộ trình đề xuất:<br>
+                        <span style="color:var(--text-bright);">Slide 23</span> (Agenda) → <span style="color:var(--text-bright);">Slide 24-27</span> (DDT) → <span style="color:var(--text-bright);">Slide 28-29</span> (Newman CLI) → <span style="color:var(--text-bright);">Slide 30</span> (HTML Report) → <span style="color:var(--text-bright);">Slide 31-32</span> (Thực hành Case Study)
+                    `;
+                } else {
+                    const fullFails = weakTopics.filter(t => t.severity === 'full');
+                    const partialFails = weakTopics.filter(t => t.severity === 'partial');
+
+                    let pathHTML = '';
+                    if (fullFails.length > 0) {
+                        pathHTML += `<span style="color:var(--danger-color); font-weight:700;">🔴 Ưu tiên cao — cần học kỹ:</span> ${fullFails.map(t => t.label).join(', ')}<br>`;
+                    }
+                    if (partialFails.length > 0) {
+                        pathHTML += `<span style="color:#e6c01c; font-weight:700;">🟡 Ôn nhanh — gần đạt:</span> ${partialFails.map(t => t.label).join(', ')}<br>`;
+                    }
+                    if (strongTopics.length > 0) {
+                        pathHTML += `<span style="color:var(--success-color); font-weight:700;">🟢 Đã vững:</span> ${strongTopics.join(', ')}<br>`;
+                    }
+
+                    pathHTML += `<br><span style="color:var(--text-bright); font-weight:600;">📍 Lộ trình đề xuất:</span> `;
+
+                    if (totalCorrect < 10) {
+                        pathHTML += `Slide 23 (Agenda) → Slide 24-27 (DDT từ đầu) → Slide 28-29 (Newman CLI) → Slide 30 (HTML Report) → Slide 31 (Thực hành có hướng dẫn)`;
+                    } else if (totalCorrect < 16) {
+                        pathHTML += `Ôn nhanh các mục <span style="color:var(--danger-color);">đỏ/vàng</span> ở trên → Slide 25-26 (CSV/JSON + Map biến) → Slide 29 (Newman Commands) → Slide 31 (Case Study)`;
+                    } else {
+                        pathHTML += `Lướt nhanh mục <span style="color:#e6c01c;">vàng</span> → Bay thẳng Slide 31 (Case Study 5) → Slide 32 (Acceptance Criteria) → Slide 34 (Cheat Sheet)`;
+                    }
+
+                    pathContent.innerHTML = pathHTML;
+                }
+            }
+        }
+
+        function switchNestedTab(evt, tabId, tabGroupContainerId) {
+            const tabContainer = document.getElementById(tabGroupContainerId);
+            const parentSlide = tabContainer.closest('.slide');
+            const tabContents = parentSlide.querySelectorAll('.tab-content');
+            const tabButtons = tabContainer.querySelectorAll('.tab-btn');
+
+            tabContents.forEach(content => content.classList.remove('active'));
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+
+            parentSlide.querySelector(`#${tabId}`).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            const footerSpan = e.target.closest('.slide-footer span:last-child');
+            if (footerSpan && footerSpan.textContent.includes('Slide')) {
+                e.stopPropagation();
+                showSlidePicker(footerSpan);
+                return;
+            }
+            const picker = document.getElementById('slidePickerDropdown');
+            if (picker && !e.target.closest('.slide-picker-dropdown')) {
+                picker.remove();
+            }
+        });
+
+        function showSlidePicker(target) {
+            let existing = document.getElementById('slidePickerDropdown');
+            if (existing) { existing.remove(); return; }
+
+            const dropdown = document.createElement('div');
+            dropdown.id = 'slidePickerDropdown';
+            dropdown.className = 'slide-picker-dropdown open';
+
+            slides.forEach((slide, i) => {
+                const titleEl = slide.querySelector('.slide-title');
+                const title = titleEl ? titleEl.textContent : (i === 0 ? 'Lobby' : `Slide ${i+1}`);
+                const item = document.createElement('div');
+                item.className = 'slide-picker-item' + (i === currentSlide ? ' current' : '');
+                item.textContent = `${i+1}. ${title}`;
+                item.onclick = (e) => { e.stopPropagation(); showSlide(i); dropdown.remove(); };
+                dropdown.appendChild(item);
+            });
+
+            target.style.position = 'relative';
+            target.appendChild(dropdown);
+        }
+    </script>
+</body>
+</html>
