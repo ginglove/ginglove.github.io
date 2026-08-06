@@ -7,314 +7,384 @@
         @page {
             size: A4 landscape;
             margin: 10mm 12mm;
-            background-color: #faf8f5;
+            background-color: #f8fafc;
         }
         *, *::before, *::after {
             box-sizing: border-box;
         }
         body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             margin: 0;
             padding: 0;
-            color: #2c3e50;
-            font-size: 8.5pt;
-            line-height: 1.35;
-            background-color: #faf8f5;
-        }
-        .header {
-            text-align: center;
-            border-bottom: 3px solid #d35400;
-            padding-bottom: 6px;
-            margin-bottom: 10px;
-        }
-        .header h1 {
-            color: #d35400;
-            font-size: 15pt;
-            margin: 0 0 3px 0;
-            text-transform: uppercase;
-        }
-        .header h2 {
-            color: #34495e;
-            font-size: 10pt;
-            margin: 0;
-            font-weight: bold;
-        }
-        .links-box {
-            background-color: #e8f8f5;
-            border-left: 4px solid #1abc9c;
-            padding: 6px 10px;
-            margin-bottom: 8px;
-            border-radius: 3px;
-        }
-        .links-box h3 {
-            margin: 0 0 3px 0;
-            color: #16a085;
+            color: #1e293b;
             font-size: 9.5pt;
-            text-transform: uppercase;
+            line-height: 1.45;
+            background-color: #f8fafc;
         }
-        .links-box ul {
-            margin: 0;
-            padding-left: 15px;
-        }
-        .links-box li {
-            margin-bottom: 2px;
-            font-size: 9pt;
-        }
-        .links-box a {
-            color: #2980b9;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        
-        .req-container {
+
+        /* Top Banner */
+        .header-banner {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
             display: table;
             width: 100%;
-            margin-bottom: 8px;
+        }
+        .header-main {
+            display: table-cell;
+            vertical-align: middle;
+        }
+        .header-banner h1 {
+            color: #f97316;
+            font-size: 16pt;
+            margin: 0 0 3px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 800;
+        }
+        .header-banner h2 {
+            color: #cbd5e1;
+            font-size: 10.5pt;
+            margin: 0;
+            font-weight: 400;
+        }
+
+        /* Environment & Links Cards Container */
+        .card-container {
+            margin-bottom: 12px;
+        }
+        .card-env {
+            background-color: #fffbe3;
+            border: 1px solid #fef08a;
+            border-left: 5px solid #eab308;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 9.5pt;
+            margin-bottom: 10px;
+        }
+        .card-links {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-left: 5px solid #0d9488;
+            padding: 10px 14px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .card-env h3 { margin: 0 0 5px 0; color: #a16207; font-size: 10pt; text-transform: uppercase; font-weight: 700; }
+        .card-links h3 { margin: 0 0 5px 0; color: #0f766e; font-size: 10pt; text-transform: uppercase; font-weight: 700; }
+        .card-links ul { margin: 0; padding-left: 18px; }
+        .card-links li { margin-bottom: 4px; font-size: 9.5pt; }
+        .card-links a { color: #0284c7; text-decoration: none; font-weight: 600; }
+
+        /* Full Width Request & Task Cards */
+        .req-section-wrapper {
+            margin-bottom: 14px;
         }
         .req-block {
-            display: table-cell;
-            width: 60%;
-            background-color: #e8f4f8;
-            border: 1px solid #bce8f1;
-            padding: 8px 10px;
-            border-radius: 4px;
-            vertical-align: top;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-left: 5px solid #0284c7;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
         }
         .task-block {
-            display: table-cell;
-            width: 40%;
-            background-color: #fdfbf7;
-            border: 1px solid #f3e5f5;
-            border-left: 4px solid #8e44ad;
-            padding: 8px 10px;
-            border-radius: 4px;
-            vertical-align: top;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-left: 5px solid #8b5cf6;
+            padding: 12px 16px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
         }
-        
+
+        /* Typography & Headings */
         h4.block-title {
-            margin: 0 0 5px 0;
-            font-size: 9.5pt;
+            margin: 0 0 6px 0;
+            font-size: 10.5pt;
             text-transform: uppercase;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 2px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 4px;
+            font-weight: 700;
         }
-        .req-block h4.block-title { color: #31708f; border-bottom-color: #bce8f1; }
-        .task-block h4.block-title { color: #8e44ad; border-bottom-color: #e8daef; }
-        
+        .req-block h4.block-title { color: #0284c7; }
+        .task-block h4.block-title { color: #7c3aed; }
+
+        /* Tables for API Fields */
         .field-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 4px;
-            margin-bottom: 6px;
-            font-size: 7.5pt;
+            margin-top: 6px;
+            margin-bottom: 8px;
+            font-size: 9pt;
             background: #fff;
         }
         .field-table th, .field-table td {
-            border: 1px solid #bce8f1;
-            padding: 3px 5px;
+            border: 1px solid #cbd5e1;
+            padding: 5px 8px;
             text-align: left;
         }
         .field-table th {
-            background-color: #d9edf7;
-            color: #31708f;
+            background-color: #f1f5f9;
+            color: #334155;
+            font-weight: 700;
         }
-        
-        .status-box {
-            background: #fff;
-            border: 1px solid #ccc;
-            padding: 5px;
-            margin-top: 5px;
-            font-size: 7.5pt;
-            border-radius: 3px;
-        }
-        .status-success { color: #27ae60; font-weight: bold; }
-        .status-fail { color: #c0392b; font-weight: bold; }
 
-        ul.task-list { margin: 0; padding-left: 15px; font-size: 8.5pt; }
-        ul.task-list li { margin-bottom: 3px; font-weight: 500; }
-        
-        .section-title {
-            background-color: #2c3e50;
-            color: #ffffff;
-            padding: 5px 10px;
-            font-size: 10pt;
+        /* Status & Response Card */
+        .status-box {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 8px 12px;
             margin-top: 8px;
-            margin-bottom: 6px;
-            border-radius: 3px;
+            font-size: 9pt;
+            border-radius: 6px;
+        }
+        .status-success { color: #16a34a; font-weight: 700; font-size: 9.5pt; }
+        .status-fail-head { color: #dc2626; font-weight: 700; font-size: 9.5pt; margin-top: 6px; display: block; }
+
+        ul.task-list { margin: 0; padding-left: 18px; font-size: 9.5pt; }
+        ul.task-list li { margin-bottom: 5px; font-weight: 500; }
+
+        /* Section Banners */
+        .section-title {
+            background-color: #0f172a;
+            color: #ffffff;
+            padding: 6px 12px;
+            font-size: 11pt;
+            margin-top: 14px;
+            margin-bottom: 10px;
+            border-radius: 6px;
             page-break-after: avoid;
             text-transform: uppercase;
-            font-weight: bold;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
-        
+
+        /* Test Case Table */
         table.tc-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 8pt;
+            font-size: 8.5pt;
             table-layout: fixed;
             background-color: #ffffff;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             page-break-inside: avoid;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            border-radius: 6px;
+            overflow: hidden;
         }
         table.tc-table th, table.tc-table td {
-            border: 1px solid #bdc3c7;
-            padding: 5px;
+            border: 1px solid #cbd5e1;
+            padding: 6px 8px;
             vertical-align: top;
             word-wrap: break-word;
         }
         table.tc-table th {
-            background-color: #a9d08e; 
-            color: #111;
-            font-weight: bold;
+            background-color: #10b981; 
+            color: #ffffff;
+            font-weight: 700;
             text-align: left;
             text-transform: uppercase;
-            font-size: 7.5pt;
+            font-size: 8pt;
         }
-        
+
+        /* Columns Width */
         .c-id { width: 3%; text-align: center; }
         .c-tcid { width: 7%; font-weight: bold; }
         .c-desc { width: 11%; }
         .c-pre { width: 9%; }
-        .c-step { width: 21%; }
-        .c-exp { width: 22%; }
+        .c-step { width: 20%; }
+        .c-exp { width: 23%; }
         .c-pri { width: 4%; text-align: center; }
-        .c-res1 { width: 13%; background-color: #fff9c4; font-style: italic; border-left: 2px solid #f1c40f;} 
+        .c-res1 { width: 13%; background-color: #fefce8; font-style: italic; border-left: 2px solid #eab308; } 
         .c-note { width: 10%; }
 
-        .example-row { background-color: #f4f6f7; }
+        .example-row { background-color: #f1f5f9; }
         .example-label {
             display: inline-block;
-            background-color: #e74c3c;
+            background-color: #ef4444;
             color: white;
-            padding: 1px 3px;
+            padding: 2px 5px;
             border-radius: 3px;
-            font-size: 6.5pt;
-            font-weight: bold;
-            margin-bottom: 2px;
+            font-size: 7.5pt;
+            font-weight: 700;
+            margin-bottom: 3px;
         }
         code {
-            background-color: #ebedef;
-            padding: 1px 2px;
+            background-color: #f1f5f9;
+            padding: 1px 3px;
             border-radius: 3px;
-            font-family: monospace;
-            color: #c0392b;
-            font-size: 7pt;
+            font-family: 'Consolas', 'Courier New', monospace;
+            color: #b91c1c;
+            font-size: 8.5pt;
+        }
+        pre {
+            margin: 3px 0;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 8pt;
+            background: #ffffff;
+            padding: 6px 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: #0f172a;
         }
         .reference {
-            font-size: 7pt;
-            color: #7f8c8d;
+            font-size: 8.5pt;
+            color: #64748b;
             font-style: italic;
+        }
+        .badge-err {
+            display: inline-block;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-weight: 700;
+            font-family: monospace;
+            font-size: 8pt;
+            border: 1px solid #fca5a5;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>VTI ACADEMY 🦊 BÀI TẬP THỰC HÀNH API TESTING CHI TIẾT</h1>
-        <h2>Dự án: Class Booking System v1.0 | Request/Response Tách Bạch & Mã Lỗi Đầy Đủ</h2>
+    <div class="header-banner">
+        <div class="header-main">
+            <h1>VTI ACADEMY 🦊 BÀI TẬP THỰC HÀNH API TESTING CHUYÊN SÂU</h1>
+            <h2>Dự án: Class Booking System v1.0 | Chi Tiết Response Lỗi Cho Từng API</h2>
+        </div>
     </div>
 
-    <div class="links-box">
-        <h3>🔗 LIÊN KẾT TÀI LIỆU & BIỂU MẪU LÀM BÀI</h3>
-        <ul>
-            <li><strong>Tài liệu API (API Docs):</strong> <a href="https://docs.google.com/document/d/17-ugYgszSw4NVCIS0xcukQ_U-rFPsPM0/edit?usp=sharing&ouid=101063452449863921987&rtpof=true&sd=true" target="_blank">Link file PDF tài liệu API System v1.0</a> [cite: 1]</li>
-            <li><strong>Biểu mẫu Test Case (Học viên điền bài vào đây):</strong> <a href="https://docs.google.com/spreadsheets/d/1JmLLWRQ9ttGUiMmAo9jF9IL1VE_ulzzcGzV83KqbBYQ/edit?usp=sharing" target="_blank">Link Google Sheets Test Case</a></li>
-            <li><strong>Bảng Q&A (Hỏi đáp & Hỗ trợ trong quá trình làm):</strong> <a href="https://docs.google.com/spreadsheets/d/1ZvH7R44YZIwfuRr9_hqR2Deln8frcAjnabjz3BHW4_w/edit?usp=sharing" target="_blank">Link Google Sheets Q&A</a></li>
-        </ul>
+    <div class="card-container">
+        <div class="card-env">
+            <h3>⚡ THÔNG TIN MÔI TRƯỜNG & CREDENTIALS</h3>
+            • <b>Base URL:</b> <code>https://training-web-class-management.vercel.app/api/</code><br>
+            • <b>Headers mặc định:</b> <code>Content-Type: application/json</code> | <code>Authorization: Bearer &lt;access_token&gt;</code><br>
+            • <b>Tài khoản Test Accounts (Username / Password):</b><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;🔑 <code>admin</code> / <code>Password@123</code> &nbsp;|&nbsp; 
+            🔑 <code>approver1</code> / <code>Password@123</code> &nbsp;|&nbsp; 
+            🔑 <code>reviewer1</code> / <code>Password@123</code> &nbsp;|&nbsp; 
+            🔑 <code>creator1</code> / <code>Password@123</code>
+        </div>
+        <div class="card-links">
+            <h3>🔗 THƯ VIỆN BÀI LÀM & TÀI LIỆU QUAN TRỌNG</h3>
+            <ul>
+                <li>📄 <b>Tài liệu API kỹ thuật đầy đủ:</b> <a href="https://docs.google.com/document/d/17-ugYgszSw4NVCIS0xcukQ_U-rFPsPM0/edit?usp=sharing&ouid=101063452449863921987&rtpof=true&sd=true" target="_blank">Xem Tài Liệu API System v1.0 PDF</a>[cite: 24]</li>
+                <li>📊 <b>Biểu mẫu Google Sheets Nộp Bài:</b> <a href="https://docs.google.com/spreadsheets/d/1JmLLWRQ9ttGUiMmAo9jF9IL1VE_ulzzcGzV83KqbBYQ/edit?usp=sharing" target="_blank">Mở Sheet Điền Test Case Tại Đây</a></li>
+                <li>💬 <b>Bảng Hỗ Trợ Giảng Viên (Q&A):</b> <a href="https://docs.google.com/spreadsheets/d/1ZvH7R44YZIwfuRr9_hqR2Deln8frcAjnabjz3BHW4_w/edit?usp=sharing" target="_blank">Mở Sheet Hỏi Đáp Q&A</a></li>
+            </ul>
+        </div>
     </div>
 
     <!-- PHẦN 1: AUTHENTICATION -->
-    <div class="section-title">PHẦN 1: MODULE XÁC THỰC (AUTHENTICATION)</div>
+    <div class="section-title">PHẦN 1: MODULE XÁC THỰC TÀI KHOẢN (AUTHENTICATION)</div>
     
-    <div class="req-container">
-        <div class="req-block" style="border-right: 5px solid #fff;">
-            <h4 class="block-title">📚 1.1. POST /auth/register <span class="reference">(Ref: Trang 7, 8)</span> [cite: 1]</h4>
+    <div class="req-section-wrapper">
+        <div class="req-block">
+            <h4 class="block-title">📚 1.1. POST /auth/register <span class="reference">(Ref: Trang 7, 8)</span>[cite: 24]</h4>
             <table class="field-table">
-                <tr><th>Field Name</th><th>Type</th><th>Required?</th><th>Validation Rules / Description</th></tr>
-                <tr><td><code>full_name</code></td><td>String</td><td><b>Yes (✓)</b></td><td>2-100 ký tự, chỉ chữ cái và khoảng trắng [cite: 1].</td></tr>
-                <tr><td><code>email</code></td><td>String</td><td><b>Yes (☑)</b></td><td>Định dạng RFC5321, tự động lowercase [cite: 1].</td></tr>
-                <tr><td><code>username</code></td><td>String</td><td><b>Yes (☑)</b></td><td>Regex <code>^[a-zA-Z0-9_]{6,50}$</code>, unique [cite: 1].</td></tr>
-                <tr><td><code>password</code></td><td>String</td><td><b>Yes (☑)</b></td><td>>= 8 ký tự, bắt buộc có chữ HOA + thường + số [cite: 1].</td></tr>
-                <tr><td><code>confirm_password</code></td><td>String</td><td><b>Yes (☑)</b></td><td>Phải khớp hoàn toàn với <code>password</code> [cite: 1].</td></tr>
-                <tr><td><code>phone_number</code></td><td>String</td><td>No</td><td>10 chữ số, bắt đầu bằng 0 (Optional) [cite: 1].</td></tr>
-                <tr><td><code>department</code></td><td>String</td><td>No</td><td>Tối đa 100 ký tự (Optional) [cite: 1].</td></tr>
+                <tr><th>Field Name</th><th>Type</th><th>Req?</th><th>Validation Rules / Quy tắc kiểm tra</th></tr>
+                <tr><td><code>full_name</code></td><td>String</td><td><b>Yes (✓)</b></td><td>2-100 ký tự, chỉ chứa chữ cái và khoảng trắng[cite: 24].</td></tr>
+                <tr><td><code>email</code></td><td>String</td><td><b>Yes (☑)</b></td><td>Định dạng RFC5321, tự động lowercase[cite: 24].</td></tr>
+                <tr><td><code>username</code></td><td>String</td><td><b>Yes (☑)</b></td><td>Regex <code>^[a-zA-Z0-9_]{6,50}$</code>, duy nhất (unique)[cite: 24].</td></tr>
+                <tr><td><code>password</code></td><td>String</td><td><b>Yes (☑)</b></td><td>>= 8 ký tự, bắt buộc chứa: Chữ HOA + Chữ thường + Số[cite: 24].</td></tr>
+                <tr><td><code>confirm_password</code></td><td>String</td><td><b>Yes (☑)</b></td><td>Khớp 100% với giá trị trường <code>password</code>[cite: 24].</td></tr>
             </table>
             
             <div class="status-box">
-                <span class="status-success">THÀNH CÔNG (201 Created) [cite: 1]:</span><br>
-                <code>{"success": true, "data": {"id": "uuid", "email": "...", "status": "INACTIVE"}, "timestamp": "..."}</code><br>
-                <span class="status-fail">THẤT BẠI:</span><br>
-                • <code>400 Bad Request</code>: <code>ERR_VALIDATION</code> hoặc <code>ERR_PASSWORD_MISMATCH</code> [cite: 1]<br>
-                • <code>409 Conflict</code>: <code>ERR_EMAIL_EXISTS</code> hoặc <code>ERR_USERNAME_EXISTS</code> [cite: 1]<br>
-                • <code>422 Unprocessable Entity</code>: <code>ERR_PASSWORD_WEAK</code> [cite: 1]<br>
-                • <code>429 Too Many Requests</code>: <code>ERR_RATE_LIMIT</code> (>5 req/phút/IP) [cite: 1]<br>
-                • <code>503 Service Unavailable</code>: <code>ERR_EMAIL_SERVICE_DOWN</code> [cite: 1]
+                <span class="status-success">✅ RESPONSE THÀNH CÔNG (HTTP 201 Created)[cite: 24]:</span>
+                <pre>{ "success": true, "data": { "id": "uuid-v4", "email": "nguyen@company.com", "username": "nguyen_a", "status": "INACTIVE" }, "timestamp": "2026-08-06T08:00:00Z" }</pre>
+                
+                <span class="status-fail-head">❌ CHI TIẾT CÁC RESPONSE THẤT BẠI (FAILURES):</span>
+                • <span class="badge-err">400 Bad Request</span> (Thiếu field / sai format)[cite: 24]:
+                <pre>{ "success": false, "error_code": "ERR_VALIDATION", "message": "Dữ liệu không hợp lệ: thiếu field, sai format" }</pre>
+                • <span class="badge-err">400 Bad Request</span> (Confirm pass không khớp)[cite: 24]:
+                <pre>{ "success": false, "error_code": "ERR_PASSWORD_MISMATCH", "message": "confirm_password không khớp" }</pre>
+                • <span class="badge-err">409 Conflict</span> (Trùng Email hoặc Username)[cite: 24]:
+                <pre>{ "success": false, "error_code": "ERR_EMAIL_EXISTS", "message": "Email đã được sử dụng" }
+{ "success": false, "error_code": "ERR_USERNAME_EXISTS", "message": "Username đã tồn tại" }</pre>
+                • <span class="badge-err">422 Unprocessable Entity</span> (Mật khẩu yếu)[cite: 24]:
+                <pre>{ "success": false, "error_code": "ERR_PASSWORD_WEAK", "message": "Mật khẩu không đủ tiêu chí phức tạp" }</pre>
+                • <span class="badge-err">429 Too Many Requests</span> (Vượt quá 5 request/phút)[cite: 24]:
+                <pre>{ "success": false, "error_code": "ERR_RATE_LIMIT", "message": "Quá 5 request/phút từ IP. retry_after: 60s" }</pre>
             </div>
 
-            <h4 class="block-title" style="margin-top:6px;">📚 1.2. POST /auth/login <span class="reference">(Ref: Trang 11)</span> [cite: 1]</h4>
+            <h4 class="block-title" style="margin-top:10px;">📚 1.2. POST /auth/login <span class="reference">(Ref: Trang 11)</span>[cite: 24]</h4>
             <table class="field-table">
-                <tr><th>Field Name</th><th>Type</th><th>Required?</th><th>Validation Rules / Description</th></tr>
-                <tr><td><code>username_or_email</code></td><td>String</td><td><b>Yes</b></td><td>Username hoặc Email [cite: 1].</td></tr>
-                <tr><td><code>password</code></td><td>String</td><td><b>Yes</b></td><td>Mật khẩu [cite: 1].</td></tr>
-                <tr><td><code>remember_me</code></td><td>Boolean</td><td>No</td><td><code>true</code> (30 ngày), <code>false</code>/default (7 ngày) [cite: 1].</td></tr>
+                <tr><th>Field Name</th><th>Type</th><th>Req?</th><th>Validation Rules / Quy tắc kiểm tra</th></tr>
+                <tr><td><code>username_or_email</code></td><td>String</td><td><b>Yes</b></td><td>Tên đăng nhập hoặc Email[cite: 24].</td></tr>
+                <tr><td><code>password</code></td><td>String</td><td><b>Yes</b></td><td>Mật khẩu tài khoản[cite: 24].</td></tr>
+                <tr><td><code>remember_me</code></td><td>Boolean</td><td>No</td><td><code>true</code> (TTL token 30 ngày), <code>false</code>/mặc định (7 ngày)[cite: 24].</td></tr>
             </table>
 
             <div class="status-box">
-                <span class="status-success">THÀNH CÔNG (200 OK) [cite: 1]:</span><br>
-                <code>{"success": true, "data": {"access_token": "...", "refresh_token": "...", "user": {...}}, "timestamp": "..."}</code><br>
-                <span class="status-fail">THẤT BẠI:</span><br>
-                • <code>401 Unauthorized</code>: <code>ERR_INVALID_CREDENTIALS</code> (Anti-enumeration) [cite: 1]<br>
-                • <code>403 Forbidden</code>: <code>ERR_ACCOUNT_INACTIVE</code> hoặc <code>ERR_EMAIL_NOT_VERIFIED</code> [cite: 1]<br>
-                • <code>423 Locked</code>: <code>ERR_ACCOUNT_LOCKED</code> (Sai pass >= 5 lần, kèm <code>unlock_at</code>) [cite: 1]
+                <span class="status-success">✅ RESPONSE THÀNH CÔNG (HTTP 200 OK)[cite: 24]:</span>
+                <pre>{ "success": true, "data": { "access_token": "eyJhbGci...", "refresh_token": "f8a3c9d2...", "token_type": "Bearer", "expires_in": 900, "user": { "id": "uuid", "full_name": "Nguyen Van A", "role": "CREATOR" } }, "timestamp": "2026-08-06T08:00:00Z" }</pre>
+                
+                <span class="status-fail-head">❌ CHI TIẾT CÁC RESPONSE THẤT BẠI (FAILURES):</span>
+                • <span class="badge-err">401 Unauthorized</span> (Anti-enumeration - Sai user hoặc pass)[cite: 24]:
+                <pre>{ "success": false, "error_code": "ERR_INVALID_CREDENTIALS", "details": { "remaining_attempts": 2 } }</pre>
+                • <span class="badge-err">403 Forbidden</span> (Chưa kích hoạt / Chưa verify mail)[cite: 24]:
+                <pre>{ "success": false, "error_code": "ERR_ACCOUNT_INACTIVE", "message": "Tài khoản chưa kích hoạt" }
+{ "success": false, "error_code": "ERR_EMAIL_NOT_VERIFIED", "message": "Email chưa xác nhận" }</pre>
+                • <span class="badge-err">423 Locked</span> (Sai pass >= 5 lần liên tiếp, khóa 15 phút)[cite: 24]:
+                <pre>{ "success": false, "error_code": "ERR_ACCOUNT_LOCKED", "details": { "unlock_at": "2026-08-06T08:15:00Z" } }</pre>
             </div>
         </div>
+
         <div class="task-block">
-            <h4 class="block-title">📝 NHIỆM VỤ THỰC HÀNH CỦA HỌC VIÊN</h4>
+            <h4 class="block-title">📌 NHIỆM VỤ THỰC HÀNH CỦA HỌC VIÊN</h4>
             <ul class="task-list">
-                <li><strong>Test Design:</strong> Thiết kế toàn bộ Test Case (Happy & Negative Cases) cho các API Đăng ký và Đăng nhập dựa trên các trường dữ liệu và mã lỗi tách bạch ở bên trái lên <a href="https://docs.google.com/spreadsheets/d/1JmLLWRQ9ttGUiMmAo9jF9IL1VE_ulzzcGzV83KqbBYQ/edit?usp=sharing" target="_blank">Google Sheets Test Case</a> [cite: 1].</li>
-                <li><strong>Execute:</strong> Thực thi request thật trên API Client và đối chiếu Response thành công/thất bại tương ứng.</li>
+                <li><b>Bước 1 - Phân tích & Viết Test Case:</b> Dựa vào từng mã lỗi và cấu hình Response ở trên, viết toàn bộ các Test Case (Happy & Negative Cases) cover tất cả mã lỗi <code>400</code>, <code>401</code>, <code>403</code>, <code>409</code>, <code>422</code>, <code>423</code>, <code>429</code> lên <a href="https://docs.google.com/spreadsheets/d/1JmLLWRQ9ttGUiMmAo9jF9IL1VE_ulzzcGzV83KqbBYQ/edit?usp=sharing" target="_blank">Google Sheets Nộp Bài</a>.</li>
+                <li><b>Bước 2 - Thực thi (Execute):</b> Dùng API Client gửi request thật lên hệ thống. Đối chiếu từng trường trong Response Body JSON nhận được.</li>
+                <li><b>Bước 3 - Log Kết quả:</b> Ghi rõ HTTP Status Code và <code>error_code</code> thực tế vào Sheets. Báo Bug nếu sai khác.</li>
             </ul>
         </div>
     </div>
 
     <!-- Preview Ví dụ Phần 1 -->
-    <h4 style="margin: 0 0 3px 0; color: #7f8c8d; font-size: 8pt; font-style: italic;">Preview Ví dụ Test Case Chuẩn (1:1 Mapping):</h4>
+    <h4 style="margin: 0 0 4px 0; color: #64748b; font-size: 8.5pt; font-style: italic;">💡 Mô hình Mẫu Viết Test Case Chuẩn (Ánh Xạ Step - Output 1:1):</h4>
     <table class="tc-table">
         <thead>
             <tr>
                 <th class="c-id">#</th>
                 <th class="c-tcid">ID</th>
-                <th class="c-desc">Mô tả kịch bản (Scenario)</th>
+                <th class="c-desc">Kịch bản (Scenario)</th>
                 <th class="c-pre">Tiền điều kiện</th>
                 <th class="c-step">Các bước thao tác (Step / Procedure)</th>
-                <th class="c-exp">Đầu ra mong đợi (1:1 với Step)</th>
+                <th class="c-exp">Đầu ra mong đợi (1:1 tương ứng Step)</th>
                 <th class="c-pri">Pri</th>
                 <th class="c-res1">Test Result Thực tế</th>
-                <th class="c-note">Note / Bug</th>
+                <th class="c-note">Ghi chú / Bug</th>
             </tr>
         </thead>
         <tbody>
             <tr class="example-row">
                 <td style="text-align:center;">1</td>
                 <td>TC_AUTH_01</td>
-                <td><span class="example-label">VÍ DỤ CHUẨN</span><br>Đăng ký thất bại do mật khẩu yếu (Không có chữ HOA)</td>
+                <td><span class="example-label">VÍ DỤ CHUẨN</span><br>Đăng ký thất bại do mật khẩu yếu (Chỉ có chữ thường và số)</td>
                 <td>DB hoạt động bình thường, email chưa tồn tại.</td>
                 <td>
-                    1. Khởi tạo request POST đến <code>/auth/register</code> [cite: 1]<br>
-                    2. Headers: <code>Content-Type: application/json</code> [cite: 1]<br>
-                    3. Gắn Body: <code>password: "password@123"</code> (thiếu chữ hoa)<br>
+                    1. Khởi tạo request POST đến <code>/auth/register</code>[cite: 24]<br>
+                    2. Headers: <code>Content-Type: application/json</code>[cite: 24]<br>
+                    3. Đính kèm Body JSON: <code>password: "password123"</code> (thiếu chữ hoa)<br>
                     4. Thực thi (Send) request.
                 </td>
                 <td>
-                    1. Endpoint và Method được thiết lập.<br>
-                    2. Header được ghi nhận chuẩn xác.<br>
-                    3. Payload chứa pass yếu được đính kèm.<br>
-                    4. Server trả về:<br>
-                       - Status: <strong>422 Unprocessable Entity</strong> [cite: 1]<br>
-                       - Body: <code>{"success": false, "error_code": "ERR_PASSWORD_WEAK", "message": "..."}</code> [cite: 1]
+                    1. Endpoint và Method POST được chọn.<br>
+                    2. Header Content-Type được nhận dạng.<br>
+                    3. Request Body vi phạm quy tắc mật khẩu.<br>
+                    4. Hệ thống phản hồi lỗi:<br>
+                       - Status Code: <strong>422 Unprocessable Entity</strong>[cite: 24]<br>
+                       - Body JSON: <code>{"success": false, "error_code": "ERR_PASSWORD_WEAK", "message": "..."}</code>[cite: 24]
                 </td>
                 <td>High</td>
-                <td><span style="color:#7f8c8d; font-size: 7.5pt;">(Thực thi thật trên API Client, ghi kết quả vào Sheets)</span></td>
+                <td><span style="color:#64748b; font-size: 8pt;">(Dán Status + Body nhận được trên API Client vào Sheets)</span></td>
                 <td></td>
             </tr>
         </tbody>
@@ -322,86 +392,99 @@
 
     <!-- PHẦN 2: BOOKINGS -->
     <div style="page-break-before: always;"></div>
-    <div class="section-title">PHẦN 2: MODULE QUẢN LÝ ĐẶT PHÒNG (BOOKINGS)</div>
+    <div class="section-title">PHẦN 2: MODULE QUẢN LÝ ĐẶT PHÒNG HỌC (BOOKINGS)</div>
     
-    <div class="req-container">
-        <div class="req-block" style="border-right: 5px solid #fff;">
-            <h4 class="block-title">📚 2.1. GET /bookings <span class="reference">(Ref: Trang 21)</span> [cite: 1]</h4>
-            <p style="margin: 2px 0;"><strong>Headers:</strong> <code>Authorization: Bearer &lt;access_token&gt;</code> [cite: 1]. <strong>Params:</strong> <code>status[]</code>, <code>class_id</code>, <code>page</code>, <code>limit</code> [cite: 1].</p>
-            <div class="status-box" style="margin-top:2px;">
-                <span class="status-success">THÀNH CÔNG (200 OK) [cite: 1]:</span> <code>{"success": true, "data": [...], "timestamp": "..."}</code><br>
-                <span class="status-fail">THẤT BẠI:</span> <code>401 Unauthorized</code> (Thiếu/sai token) [cite: 1]
+    <div class="req-section-wrapper">
+        <div class="req-block">
+            <h4 class="block-title">📚 2.1. GET /bookings <span class="reference">(Ref: Trang 21)</span>[cite: 24]</h4>
+            <p style="margin: 3px 0;"><strong>Headers:</strong> <code>Authorization: Bearer &lt;access_token&gt;</code>[cite: 24] | <strong>Query Params:</strong> <code>status[]</code>, <code>class_id</code>, <code>page</code>, <code>limit</code>[cite: 24].</p>
+            <div class="status-box">
+                <span class="status-success">✅ RESPONSE THÀNH CÔNG (HTTP 200 OK)[cite: 24]:</span><br>
+                <pre>{ "success": true, "data": [ { "id": "uuid", "title": "Lớp Automation", "status": "DRAFT", "creator_name": "creator1" } ], "timestamp": "..." }</pre>
+                <span class="status-fail-head">❌ CHI TIẾT CÁC RESPONSE THẤT BẠI (FAILURES):</span>
+                • <span class="badge-err">401 Unauthorized</span> (Thiếu token hoặc token không hợp lệ/hết hạn)[cite: 24]:
+                <pre>{ "success": false, "error_code": "ERR_UNAUTHORIZED", "message": "Thiếu token xác thực hoặc token không hợp lệ" }</pre>
             </div>
 
-            <h4 class="block-title" style="margin-top:6px;">📚 2.2. POST /bookings (Tạo DRAFT) <span class="reference">(Ref: Trang 22)</span> [cite: 1]</h4>
+            <h4 class="block-title" style="margin-top:10px;">📚 2.2. POST /bookings (Tạo Booking DRAFT) <span class="reference">(Ref: Trang 22)</span>[cite: 24]</h4>
             <table class="field-table">
-                <tr><th>Field Name</th><th>Type</th><th>Required?</th><th>Validation Rules / Description</th></tr>
-                <tr><td><code>title</code></td><td>String</td><td><b>Yes (✓)</b></td><td>Tiêu đề, tối đa 200 ký tự [cite: 1].</td></tr>
-                <tr><td><code>class_id</code></td><td>UUID</td><td><b>Yes (☑)</b></td><td>ID phòng, status phải là <code>AVAILABLE</code> [cite: 1].</td></tr>
-                <tr><td><code>start_datetime</code></td><td>Datetime</td><td><b>Yes (☑)</b></td><td>ISO8601 UTC, >= NOW() + <code>advance_hours</code> [cite: 1].</td></tr>
-                <tr><td><code>end_datetime</code></td><td>Datetime</td><td><b>Yes (☑)</b></td><td>> start, duration <= <code>max_duration_hours</code> [cite: 1].</td></tr>
-                <tr><td><code>purpose</code></td><td>String</td><td><b>Yes (☑)</b></td><td>Mục đích, tối đa 500 ký tự [cite: 1].</td></tr>
-                <tr><td><code>attendees_count</code></td><td>Integer</td><td><b>Yes (☑)</b></td><td>Số người > 0 và <= class.capacity [cite: 1].</td></tr>
-                <tr><td><code>description</code></td><td>String</td><td>No</td><td>Mô tả, tối đa 2000 ký tự (Optional) [cite: 1].</td></tr>
-                <tr><td><code>equipment_needed</code></td><td>Array</td><td>No</td><td>['projector', 'ac', 'mic', ...] (Optional) [cite: 1].</td></tr>
+                <tr><th>Field Name</th><th>Type</th><th>Req?</th><th>Validation Rules / Quy tắc kiểm tra</th></tr>
+                <tr><td><code>title</code></td><td>String</td><td><b>Yes (✓)</b></td><td>Tiêu đề booking, tối đa 200 ký tự[cite: 24].</td></tr>
+                <tr><td><code>class_id</code></td><td>UUID</td><td><b>Yes (☑)</b></td><td>ID phòng học, phòng phải có trạng thái = <code>AVAILABLE</code>[cite: 24].</td></tr>
+                <tr><td><code>start_datetime</code></td><td>Datetime</td><td><b>Yes (☑)</b></td><td>ISO8601 UTC. Phải >= NOW() + <code>advance_hours</code>[cite: 24].</td></tr>
+                <tr><td><code>end_datetime</code></td><td>Datetime</td><td><b>Yes (☑)</b></td><td>ISO8601 UTC. > start, Thời lượng <= <code>max_duration_hours</code>[cite: 24].</td></tr>
+                <tr><td><code>purpose</code></td><td>String</td><td><b>Yes (☑)</b></td><td>Mục đích sử dụng, tối đa 500 ký tự[cite: 24].</td></tr>
+                <tr><td><code>attendees_count</code></td><td>Integer</td><td><b>Yes (☑)</b></td><td>Số người tham gia > 0 và <= sức chứa phòng (class.capacity)[cite: 24].</td></tr>
             </table>
 
             <div class="status-box">
-                <span class="status-success">THÀNH CÔNG (201 Created) [cite: 1]:</span><br>
-                <code>{"success": true, "data": {"id": "uuid", "status": "DRAFT"}, "timestamp": "..."}</code><br>
-                <span class="status-fail">THẤT BẠI:</span><br>
-                • <code>409 Conflict</code>: <code>ERR_CLASS_CONFLICT</code> (Trùng giờ) [cite: 1]<br>
-                • <code>422 Unprocessable Entity</code>: Các mã lỗi <code>ERR_TIME_TOO_SOON</code>, <code>ERR_DURATION_EXCEEDED</code>, <code>ERR_ATTENDEES_EXCEEDED</code>, <code>ERR_OUTSIDE_HOURS</code>, <code>ERR_QUOTA_EXCEEDED</code> [cite: 1]<br>
-                • <code>413 Payload Too Large</code>: <code>ERR_FILE_TOO_LARGE</code> [cite: 1]
+                <span class="status-success">✅ RESPONSE THÀNH CÔNG (HTTP 201 Created)[cite: 24]:</span>
+                <pre>{ "success": true, "data": { "id": "b1a2c3d4-...", "status": "DRAFT" }, "timestamp": "2026-08-06T08:00:00Z" }</pre>
+                
+                <span class="status-fail-head">❌ CHI TIẾT CÁC RESPONSE THẤT BẠI (FAILURES):</span>
+                • <span class="badge-err">409 Conflict</span> (Phòng đã có booking trùng giờ)[cite: 24]:
+                <pre>{ "success": false, "error_code": "ERR_CLASS_CONFLICT", "details": { "conflicting_booking_id": "uuid-booking-exist" } }</pre>
+                • <span class="badge-err">422 Unprocessable Entity</span> (Đặt phòng vi phạm advance_hours)[cite: 24]:
+                <pre>{ "success": false, "error_code": "ERR_TIME_TOO_SOON", "message": "Thời gian đặt phòng vi phạm booking_min_hours_advance" }</pre>
+                • <span class="badge-err">422 Unprocessable Entity</span> (Vượt thời lượng tối đa / Vượt sức chứa)[cite: 24]:
+                <pre>{ "success": false, "error_code": "ERR_DURATION_EXCEEDED", "message": "Thời lượng đặt vượt quá max_duration_hours" }
+{ "success": false, "error_code": "ERR_ATTENDEES_EXCEEDED", "message": "Số lượng người tham dự vượt quá sức chứa phòng" }</pre>
+                • <span class="badge-err">422 Unprocessable Entity</span> (Ngoài giờ hoạt động / Vượt quota tuần)[cite: 24]:
+                <pre>{ "success": false, "error_code": "ERR_OUTSIDE_HOURS", "message": "Thời gian đặt nằm ngoài giờ hoạt động" }
+{ "success": false, "error_code": "ERR_QUOTA_EXCEEDED", "message": "Vượt quá weekly_booking_quota của người tạo" }</pre>
+                • <span class="badge-err">413 Payload Too Large</span> (File đính kèm quá lớn)[cite: 24]:
+                <pre>{ "success": false, "error_code": "ERR_FILE_TOO_LARGE", "message": "File đính kèm vượt max_file_size_mb" }</pre>
             </div>
         </div>
+
         <div class="task-block">
-            <h4 class="block-title">📝 NHIỆM VỤ THỰC HÀNH CỦA HỌC VIÊN</h4>
+            <h4 class="block-title">📌 NHIỆM VỤ THỰC HÀNH CỦA HỌC VIÊN</h4>
             <ul class="task-list">
-                <li><strong>Test Design:</strong> Thiết kế toàn bộ Test Case (Happy & Negative Cases) cho các API Bookings dựa trên trường dữ liệu và các mã lỗi tách bạch ở bên trái lên <a href="https://docs.google.com/spreadsheets/d/1JmLLWRQ9ttGUiMmAo9jF9IL1VE_ulzzcGzV83KqbBYQ/edit?usp=sharing" target="_blank">Google Sheets Test Case</a> [cite: 1].</li>
-                <li><strong>Execute:</strong> Lấy Token thật, chạy request trên API Client, đối chiếu Response thành công/thất bại và ghi nhận kết quả thực tế.</li>
+                <li><b>Bước 1 - Lấy Access Token:</b> Thực thi API Login bằng <code>creator1</code> / <code>Password@123</code> để nhận JWT Token.</li>
+                <li><b>Bước 2 - Lên Kịch bản Test:</b> Viết toàn bộ các Test Case (mức độ bao phủ 100%) thử nghiệm tất cả các trường hợp lỗi <code>409</code>, <code>413</code>, <code>422</code> (Time, Capacity, Duration, Quota) vào tab Bookings trên <a href="https://docs.google.com/spreadsheets/d/1JmLLWRQ9ttGUiMmAo9jF9IL1VE_ulzzcGzV83KqbBYQ/edit?usp=sharing" target="_blank">Google Sheets Nộp Bài</a>.</li>
+                <li><b>Bước 3 - Thực thi & Điền Kết quả:</b> Gắn Token vào Header <code>Authorization: Bearer &lt;token&gt;</code>, gửi request thật và kiểm tra chính xác Response Body JSON nhận được.</li>
             </ul>
         </div>
     </div>
 
     <!-- Preview Ví dụ Phần 2 -->
-    <h4 style="margin: 0 0 3px 0; color: #7f8c8d; font-size: 8pt; font-style: italic;">Preview Ví dụ Test Case Chuẩn (1:1 Mapping):</h4>
+    <h4 style="margin: 0 0 4px 0; color: #64748b; font-size: 8.5pt; font-style: italic;">💡 Mô hình Mẫu Viết Test Case Chuẩn (Ánh Xạ Step - Output 1:1):</h4>
     <table class="tc-table">
         <thead>
             <tr>
                 <th class="c-id">#</th>
                 <th class="c-tcid">ID</th>
-                <th class="c-desc">Mô tả kịch bản (Scenario)</th>
+                <th class="c-desc">Kịch bản (Scenario)</th>
                 <th class="c-pre">Tiền điều kiện</th>
                 <th class="c-step">Các bước thao tác (Step / Procedure)</th>
-                <th class="c-exp">Đầu ra mong đợi (1:1 với Step)</th>
+                <th class="c-exp">Đầu ra mong đợi (1:1 tương ứng Step)</th>
                 <th class="c-pri">Pri</th>
                 <th class="c-res1">Test Result Thực tế</th>
-                <th class="c-note">Note / Bug</th>
+                <th class="c-note">Ghi chú / Bug</th>
             </tr>
         </thead>
         <tbody>
             <tr class="example-row">
                 <td style="text-align:center;">1</td>
                 <td>TC_BKG_01</td>
-                <td><span class="example-label">VÍ DỤ CHUẨN</span><br>Tạo Booking thất bại do <code>attendees_count</code> vượt quá sức chứa phòng</td>
+                <td><span class="example-label">VÍ DỤ CHUẨN</span><br>Tạo Booking thất bại do số lượng người tham dự vượt quá sức chứa phòng</td>
                 <td>Đã có Access Token của CREATOR, có <code>class_id</code> của phòng sức chứa 20 người.</td>
                 <td>
-                    1. Khởi tạo request POST đến <code>/bookings</code> [cite: 1]<br>
-                    2. Headers: <code>Authorization: Bearer &lt;token&gt;</code> [cite: 1]<br>
+                    1. Khởi tạo request POST đến <code>/bookings</code>[cite: 24]<br>
+                    2. Headers: <code>Authorization: Bearer &lt;token&gt;</code>[cite: 24]<br>
                     3. Gắn Body JSON hợp lệ nhưng set <code>attendees_count: 50</code><br>
                     4. Thực thi (Send) request.
                 </td>
                 <td>
-                    1. Endpoint và Method được thiết lập.<br>
-                    2. Header Authorization mang token hợp lệ.<br>
-                    3. Payload vi phạm capacity được đính kèm.<br>
-                    4. Server trả về:<br>
-                       - Status: <strong>422 Unprocessable Entity</strong> [cite: 1]<br>
-                       - Body: <code>{"success": false, "error_code": "ERR_ATTENDEES_EXCEEDED", "message": "..."}</code> [cite: 1]
+                    1. Endpoint và Method POST được chọn.<br>
+                    2. Header Authorization đính kèm token hợp lệ.<br>
+                    3. Payload chứa số người vượt giới hạn được gửi.<br>
+                    4. Hệ thống phản hồi lỗi:<br>
+                       - Status Code: <strong>422 Unprocessable Entity</strong>[cite: 24]<br>
+                       - Body JSON: <code>{"success": false, "error_code": "ERR_ATTENDEES_EXCEEDED", "message": "..."}</code>[cite: 24]
                 </td>
                 <td>High</td>
-                <td><span style="color:#7f8c8d; font-size: 7.5pt;">(Thực thi thật trên API Client, ghi kết quả vào Sheets)</span></td>
+                <td><span style="color:#64748b; font-size: 8pt;">(Dán Status + Body nhận được trên API Client vào Sheets)</span></td>
                 <td></td>
             </tr>
         </tbody>
